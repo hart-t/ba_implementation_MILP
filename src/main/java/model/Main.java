@@ -18,8 +18,6 @@ public class Main {
 
             System.out.println("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
             RCPSPParser.RCPSPInstance instance = parseFile("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
-            //RCPSPParser.RCPSPInstance instance = parseFile("/home/tobsi/university/kit/benchmarkSets/j301_1.sm");
-
 
             GRBEnv env = new GRBEnv(true);
             env.set("logFile", "rcpsp.log");
@@ -34,29 +32,6 @@ public class Main {
             int[][] demands = instance.resourceRequirements;
             int[] resourceCaps = instance.resourceAvailabilities;
             int numResources = instance.numberOfResources;
-
-            /*
-
-            //add variables
-            double[] lb = new double[numJobs];
-
-            double[] ub = new double[numJobs];
-            Arrays.fill(ub, 1.0);
-
-            double[] objectiveCoefficients = new double[numJobs];
-            Arrays.fill(objectiveCoefficients, 1.0);
-
-            char[] charType = new char[numJobs];
-            Arrays.fill(charType, GRB.BINARY);
-
-            String[] variableNames = new String[numJobs];
-            for (int i = 0; i < numJobs; i++) {
-                variableNames[i] = "x" + (i + 1);
-            }
-
-            model.addVars(lb, ub, objectiveCoefficients, charType, variableNames);
-
-            */
 
             List<Integer> T = new ArrayList<>();
             for (int t = 0; t <= horizon; t++) {
@@ -75,7 +50,10 @@ public class Main {
             // Objective: minimize finish time of last job (n-1)
             GRBLinExpr objective = new GRBLinExpr();
             for (int t : T) {
-                objective.addTerm(t, x.get("x_" + (numJobs - 1) + "_" + t));
+                String key = "x_" + (numJobs - 1) + "_" + t;
+                if (x.containsKey(key)) {
+                    objective.addTerm(t, x.get(key));
+                }
             }
             model.setObjective(objective, GRB.MINIMIZE);
 
@@ -83,7 +61,10 @@ public class Main {
             for (int i = 0; i < numJobs; i++) {
                 GRBLinExpr startOnce = new GRBLinExpr();
                 for (int t : T) {
-                    startOnce.addTerm(1.0, x.get("x_" + i + "_" + t));
+                    String key = "x_" + i + "_" + t;
+                    if (x.containsKey(key)) {
+                        startOnce.addTerm(1.0, x.get(key));
+                    }
                 }
                 model.addConstr(startOnce, GRB.EQUAL, 1.0, "StartOnce_" + i);
             }
@@ -91,13 +72,21 @@ public class Main {
             // Precedence constraints
             for (int i = 0; i < numJobs; i++) {
                 for (int successor : successors[i]) {
-                    GRBLinExpr startJ = new GRBLinExpr();
-                    GRBLinExpr startI = new GRBLinExpr();
-                    for (int t : T) {
-                        startJ.addTerm(t, x.get("x_" + successor + "_" + t));
-                        startI.addTerm(t, x.get("x_" + i + "_" + t));
+                    if (successor >= 0 && successor < numJobs) {  // Validate successor index
+                        GRBLinExpr startJ = new GRBLinExpr();
+                        GRBLinExpr startI = new GRBLinExpr();
+                        for (int t : T) {
+                            String keyJ = "x_" + successor + "_" + t;
+                            String keyI = "x_" + i + "_" + t;
+                            if (x.containsKey(keyJ)) {
+                                startJ.addTerm(t, x.get(keyJ));
+                            }
+                            if (x.containsKey(keyI)) {
+                                startI.addTerm(t, x.get(keyI));
+                            }
+                        }
+                        model.addConstr(startJ, GRB.GREATER_EQUAL, startI, "Pre_" + i + "_" + successor);
                     }
-                    model.addConstr(startJ, GRB.GREATER_EQUAL, startI, "Pre_" + i + "_" + successor);
                 }
             }
 
@@ -123,12 +112,12 @@ public class Main {
             // Print results
             for (int i = 0; i < numJobs; i++) {
                 for (int t : T) {
-                    if (x.get("x_" + i + "_" + t).get(GRB.DoubleAttr.X) > 0.5) {
+                    String key = "x_" + i + "_" + t;
+                    if (x.containsKey(key) && x.get(key).get(GRB.DoubleAttr.X) > 0.5) {
                         System.out.println("Job " + i + " starts at time " + t);
                     }
                 }
             }
-
 
             model.dispose();
             env.dispose();
