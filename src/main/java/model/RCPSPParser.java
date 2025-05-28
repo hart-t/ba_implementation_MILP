@@ -8,6 +8,7 @@ public class RCPSPParser {
 
     public static class RCPSPInstance {
         public int numberOfJobs;
+        public int horizon;
         public int numberOfResources;
         public int[] jobDurations;
         public int[][] jobSuccessors;
@@ -30,8 +31,12 @@ public class RCPSPParser {
             if (token.equals("):")) {
                 instance.numberOfJobs = scanner.nextInt();
                 System.out.println("Number of jobs: " + instance.numberOfJobs);
+            } else if (token.equals("horizon")) {
+                    scanner.next(); // skip ':'
+                    instance.horizon = scanner.nextInt();
+                    System.out.println("Horizon: " + instance.horizon);
             } else if (token.equals("renewable")) {
-                scanner.next(); // skip '='
+                scanner.next(); // skip ':'
                 instance.numberOfResources = scanner.nextInt();
                 System.out.println("Number of resources: " + instance.numberOfResources);
                 break;
