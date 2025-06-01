@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-public class RCPSPParser {
+public class RCPSP_Parser {
 
     public static class RCPSPInstance {
         public int numberOfJobs;

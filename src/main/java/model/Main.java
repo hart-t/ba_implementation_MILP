@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-import static model.RCPSPParser.parseFile;
+import static model.RCPSP_Parser.parseFile;
 
 public class Main {
     public static void main(String[] args) {
@@ -17,7 +17,7 @@ public class Main {
             assert files != null;
 
             System.out.println("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
-            RCPSPParser.RCPSPInstance instance = parseFile("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
+            RCPSP_Parser.RCPSPInstance instance = parseFile("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
 
             GRBEnv env = new GRBEnv(true);
             env.set("logFile", "rcpsp.log");
@@ -48,14 +48,16 @@ public class Main {
             }
 
             // Objective: minimize finish time of last job (n-1)
-            GRBLinExpr objective = new GRBLinExpr();
-            for (int t : T) {
-                String key = "x_" + (numJobs - 1) + "_" + t;
-                if (x.containsKey(key)) {
-                    objective.addTerm(t, x.get(key));
-                }
-            }
-            model.setObjective(objective, GRB.MINIMIZE);
+           GRBLinExpr totalCompletionTime = new GRBLinExpr();
+           for (int i = 0; i < numJobs; i++) {
+               for (int t : T) {
+                   String key = "x_" + i + "_" + t;
+                   if (x.containsKey(key)) {
+                       totalCompletionTime.addTerm(t, x.get(key));
+                   }
+               }
+           }
+           model.setObjective(totalCompletionTime, GRB.MINIMIZE);
 
             // Each job must start exactly once
             for (int i = 0; i < numJobs; i++) {
@@ -95,8 +97,8 @@ public class Main {
                 for (int t = 0; t <= horizon; t++) {
                     GRBLinExpr usage = new GRBLinExpr();
                     for (int j = 0; j < numJobs; j++) {
-                        int pj = durations[j];
-                        for (int t2 = Math.max(0, t - pj + 1); t2 <= t; t2++) {
+                        assert demands[j].length == numResources : "Mismatch in resource constraints.";
+                        for (int t2 = t; t2 < Math.min(t + durations[j], horizon + 1); t2++) { // Ensure range is correct
                             String key = "x_" + j + "_" + t2;
                             if (x.containsKey(key)) {
                                 usage.addTerm(demands[j][r], x.get(key));
@@ -107,7 +109,35 @@ public class Main {
                 }
             }
 
+            // After optimizing the model
             model.optimize();
+
+            // Output results
+            double makespan = 0.0;
+            for (int i = 0; i < numJobs; i++) {
+                for (int t : T) {
+                    String key = "x_" + i + "_" + t;
+                    if (x.containsKey(key) && x.get(key).get(GRB.DoubleAttr.X) > 0.5) {
+                        System.out.println("Job " + i + " starts at time " + t);
+                        
+                        // Check if this is the last job and update the makespan
+                        if (i == numJobs - 1 && t > makespan) {
+                            makespan = t;
+                        }
+                    }
+                }
+            }
+
+            // Output the makespan
+            System.out.println("Makespan (total project duration): " + makespan);
+
+            model.optimize();
+
+            if (model.get(GRB.IntAttr.Status) == GRB.INFEASIBLE) {
+                System.out.println("Model is infeasible. Check constraints or input data.");
+                model.computeIIS(); // Compute irreducible infeasible subsystem
+                model.write("infeasible.ilp"); // Write IIS to file
+            }
 
             // Print results
             for (int i = 0; i < numJobs; i++) {
