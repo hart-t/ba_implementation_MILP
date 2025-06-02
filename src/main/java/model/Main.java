@@ -43,7 +43,6 @@ public class Main {
             for (int i = 0; i < numJobs; i++) {
                 for (int t : T) { // Ensure all times from 0 to horizon are included
                     String varName = "x_" + (i + 1) + "_" + t;
-                    System.out.println("Creating variable: " + varName);
                     x.put(varName, model.addVar(0.0, 1.0, 0.0, GRB.BINARY, varName));
                 }
             }
@@ -54,11 +53,11 @@ public class Main {
                 for (int successor : successors[i]) {
                     String successorVar = "x_" + successor + "_" + horizon;
                     String currentVar = "x_" + (i + 1) + "_" + horizon;
-                    
+
                     if (!x.containsKey(currentVar)) {
                         System.err.println("Error: Missing variable for job at horizon: " + currentVar);
                     }
-                    
+
                     if (!x.containsKey(successorVar)) {
                         System.err.println("Error: Missing variable for successor at horizon: " + successorVar);
                     }
@@ -86,7 +85,7 @@ public class Main {
                         startOnce.addTerm(1.0, x.get(key));
                     }
                 }
-                model.addConstr(startOnce, GRB.EQUAL, 1.0, "StartOnce_" + i);
+                model.addConstr(startOnce, GRB.EQUAL, 1.0, "StartOnce_" + (i + 1));
             }
 
             // Ensure all variables exist before adding constraints
@@ -100,7 +99,7 @@ public class Main {
                     // Check if the variables exist in x before using them
                     if (x.containsKey(var_i_horizon) && x.containsKey(var_successor_horizon)) {
                         // Add the precedence constraint
-                        model.addConstr(x.get(var_i_horizon), GRB.GREATER_EQUAL, x.get(var_successor_horizon), "Pre_" + i + "_" + successor);
+                        model.addConstr(x.get(var_i_horizon), GRB.GREATER_EQUAL, x.get(var_successor_horizon), "Pre_" + (i + 1) + "_" + successor);
                     } else {
                         System.err.println("Warning: Variable not found for constraint: " + var_i_horizon + " or " + var_successor_horizon);
                     }
@@ -120,11 +119,35 @@ public class Main {
                             }
                         }
                     }
-                    model.addConstr(usage, GRB.LESS_EQUAL, resourceCaps[r], "Res_" + r + "_" + t);
+                    model.addConstr(usage, GRB.LESS_EQUAL, resourceCaps[r], "Res_" + (r + 1) + "_" + t);
                 }
             }
 
             model.optimize();
+
+            if(model.getVars().length == 0) {
+                System.out.println("No variables found. Check input data.");
+                return;
+            }/*
+            // Print all variables and their bounds
+            System.out.println("## Variables ##");
+            for (GRBVar var : model.getVars()) {
+                System.out.println("Name: " + var.get(GRB.StringAttr.VarName) +
+                                   ", Lower Bound: " + var.get(GRB.DoubleAttr.LB) +
+                                   ", Upper Bound: " + var.get(GRB.DoubleAttr.UB));
+            }*/
+
+            // Print all constraints
+            System.out.println("## Constraints ##");
+            for (GRBConstr constr : model.getConstrs()) {
+                System.out.println("Name: " + constr.get(GRB.StringAttr.ConstrName) +
+                                   ", RHS: " + constr.get(GRB.DoubleAttr.RHS) +
+                                   ", Sense: " + constr.get(GRB.CharAttr.Sense));
+            }
+
+
+
+
             System.out.println("Total completion time: " + model.get(GRB.DoubleAttr.ObjVal));
 
             if (model.get(GRB.IntAttr.Status) == GRB.INFEASIBLE) {

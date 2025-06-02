@@ -75,14 +75,14 @@ public class RCPSP_Parser {
         instance.jobSuccessors = successorsMatrix;
 
         // Print matrix
-
+        /*
         for (int i = 0; i < successorsMatrix.length; i++) {
             System.out.print("Row " + i + ": ");
             for (int j = 0; j < successorsMatrix[i].length; j++) {
                 System.out.print(successorsMatrix[i][j] + " ");
             }
             System.out.println();
-        }
+        }*/
 
         // Skip lines to where durations and demands start ("REQUESTS/DURATIONS:")
         while (scanner.hasNextLine()) {
@@ -106,14 +106,14 @@ public class RCPSP_Parser {
         }
 
         // Print matrix
-
+        /*
         for (int i = 0; i < instance.resourceRequirements.length; i++) {
             System.out.print("Row " + i + ": ");
             for (int j = 0; j < instance.resourceRequirements[i].length; j++) {
                 System.out.print(instance.resourceRequirements[i][j] + " ");
             }
             System.out.println();
-        }
+        }*/
 
         // Skip lines to "RESOURCEAVAILABILITIES"
         while (scanner.hasNextLine()) {
