@@ -25,13 +25,13 @@ public class Main {
 
             GRBModel model = new GRBModel(env);
 
-            int numJobs = instance.numberOfJobs;
-            int horizon = instance.horizon;
-            int[] durations = instance.jobDurations;
-            int[][] successors = instance.jobSuccessors;
-            int[][] demands = instance.resourceRequirements;
-            int[] resourceCaps = instance.resourceAvailabilities;
-            int numResources = instance.numberOfResources;
+            int numJobs = instance.numberOfJobs; // number of jobs in the instance
+            int horizon = instance.horizon; // maximum horizon for the instance
+            int[] durations = instance.jobDurations; // durations[i] contains the duration of job i
+            int[][] successors = instance.jobSuccessors; // successors[i] contains the successors of job i
+            int[][] demands = instance.resourceRequirements; // demands[i][r] is the demand of job i for resource r
+            int[] resourceCaps = instance.resourceAvailabilities; // resourceCaps[r] is the maximum available capacity of resource r
+            int numResources = instance.numberOfResources; // total number of resources
 
             List<Integer> T = new ArrayList<>();
             for (int t = 0; t <= horizon; t++) {
@@ -41,29 +41,47 @@ public class Main {
             // Create binary decision variables x[i][t]
             Map<String, GRBVar> x = new HashMap<>();
             for (int i = 0; i < numJobs; i++) {
-                for (int t : T) {
-                    String varName = "x_" + i + "_" + t;
+                for (int t : T) { // Ensure all times from 0 to horizon are included
+                    String varName = "x_" + (i + 1) + "_" + t;
+                    System.out.println("Creating variable: " + varName);
                     x.put(varName, model.addVar(0.0, 1.0, 0.0, GRB.BINARY, varName));
                 }
             }
 
+            // DEBUGGGGGG
+            // Validate all successors to ensure required variables exist
+            for (int i = 0; i < numJobs; i++) {
+                for (int successor : successors[i]) {
+                    String successorVar = "x_" + successor + "_" + horizon;
+                    String currentVar = "x_" + (i + 1) + "_" + horizon;
+                    
+                    if (!x.containsKey(currentVar)) {
+                        System.err.println("Error: Missing variable for job at horizon: " + currentVar);
+                    }
+                    
+                    if (!x.containsKey(successorVar)) {
+                        System.err.println("Error: Missing variable for successor at horizon: " + successorVar);
+                    }
+                }
+            }
+
             // Objective: minimize finish time of last job (n-1)
-           GRBLinExpr totalCompletionTime = new GRBLinExpr();
-           for (int i = 0; i < numJobs; i++) {
-               for (int t : T) {
-                   String key = "x_" + i + "_" + t;
-                   if (x.containsKey(key)) {
-                       totalCompletionTime.addTerm(t, x.get(key));
-                   }
-               }
-           }
-           model.setObjective(totalCompletionTime, GRB.MINIMIZE);
+            GRBLinExpr totalCompletionTime = new GRBLinExpr();
+            for (int i = 0; i < numJobs; i++) {
+                for (int t : T) {
+                    String key = "x_" + (i + 1) + "_" + t;
+                    if (x.containsKey(key)) {
+                        totalCompletionTime.addTerm(t, x.get(key));
+                    }
+                }
+            }
+            model.setObjective(totalCompletionTime, GRB.MINIMIZE);
 
             // Each job must start exactly once
             for (int i = 0; i < numJobs; i++) {
                 GRBLinExpr startOnce = new GRBLinExpr();
                 for (int t : T) {
-                    String key = "x_" + i + "_" + t;
+                    String key = "x_" + (i + 1) + "_" + t;
                     if (x.containsKey(key)) {
                         startOnce.addTerm(1.0, x.get(key));
                     }
@@ -71,35 +89,32 @@ public class Main {
                 model.addConstr(startOnce, GRB.EQUAL, 1.0, "StartOnce_" + i);
             }
 
-            // Precedence constraints
+            // Ensure all variables exist before adding constraints
             for (int i = 0; i < numJobs; i++) {
-                for (int successor : successors[i]) {
-                    if (successor >= 0 && successor < numJobs) {  // Validate successor index
-                        GRBLinExpr startJ = new GRBLinExpr();
-                        GRBLinExpr startI = new GRBLinExpr();
-                        for (int t : T) {
-                            String keyJ = "x_" + successor + "_" + t;
-                            String keyI = "x_" + i + "_" + t;
-                            if (x.containsKey(keyJ)) {
-                                startJ.addTerm(t, x.get(keyJ));
-                            }
-                            if (x.containsKey(keyI)) {
-                                startI.addTerm(t, x.get(keyI));
-                            }
-                        }
-                        model.addConstr(startJ, GRB.GREATER_EQUAL, startI, "Pre_" + i + "_" + successor);
+                int[] successorsList = successors[i];
+                for (int successor : successorsList) {
+                    // Construct the variable keys
+                    String var_i_horizon = "x_" + (i + 1) + "_" + horizon;
+                    String var_successor_horizon = "x_" + successor + "_" + horizon;
+
+                    // Check if the variables exist in x before using them
+                    if (x.containsKey(var_i_horizon) && x.containsKey(var_successor_horizon)) {
+                        // Add the precedence constraint
+                        model.addConstr(x.get(var_i_horizon), GRB.GREATER_EQUAL, x.get(var_successor_horizon), "Pre_" + i + "_" + successor);
+                    } else {
+                        System.err.println("Warning: Variable not found for constraint: " + var_i_horizon + " or " + var_successor_horizon);
                     }
                 }
             }
+
 
             // Resource constraints
             for (int r = 0; r < numResources; r++) {
                 for (int t = 0; t <= horizon; t++) {
                     GRBLinExpr usage = new GRBLinExpr();
                     for (int j = 0; j < numJobs; j++) {
-                        assert demands[j].length == numResources : "Mismatch in resource constraints.";
-                        for (int t2 = t; t2 < Math.min(t + durations[j], horizon + 1); t2++) { // Ensure range is correct
-                            String key = "x_" + j + "_" + t2;
+                        for (int t2 = Math.max(0, t - durations[j] + 1); t2 <= t; t2++) { // Ensure range is correct
+                            String key = "x_" + (j + 1) + "_" + t2;
                             if (x.containsKey(key)) {
                                 usage.addTerm(demands[j][r], x.get(key));
                             }
@@ -109,44 +124,13 @@ public class Main {
                 }
             }
 
-            // After optimizing the model
             model.optimize();
-
-            // Output results
-            double makespan = 0.0;
-            for (int i = 0; i < numJobs; i++) {
-                for (int t : T) {
-                    String key = "x_" + i + "_" + t;
-                    if (x.containsKey(key) && x.get(key).get(GRB.DoubleAttr.X) > 0.5) {
-                        System.out.println("Job " + i + " starts at time " + t);
-                        
-                        // Check if this is the last job and update the makespan
-                        if (i == numJobs - 1 && t > makespan) {
-                            makespan = t;
-                        }
-                    }
-                }
-            }
-
-            // Output the makespan
-            System.out.println("Makespan (total project duration): " + makespan);
-
-            model.optimize();
+            System.out.println("Total completion time: " + model.get(GRB.DoubleAttr.ObjVal));
 
             if (model.get(GRB.IntAttr.Status) == GRB.INFEASIBLE) {
                 System.out.println("Model is infeasible. Check constraints or input data.");
-                model.computeIIS(); // Compute irreducible infeasible subsystem
-                model.write("infeasible.ilp"); // Write IIS to file
-            }
-
-            // Print results
-            for (int i = 0; i < numJobs; i++) {
-                for (int t : T) {
-                    String key = "x_" + i + "_" + t;
-                    if (x.containsKey(key) && x.get(key).get(GRB.DoubleAttr.X) > 0.5) {
-                        System.out.println("Job " + i + " starts at time " + t);
-                    }
-                }
+                model.computeIIS();    // Compute irreducible infeasible subsystem
+                model.write("infeasible.ilp"); // Writes IIS to "infeasible.ilp"
             }
 
             model.dispose();

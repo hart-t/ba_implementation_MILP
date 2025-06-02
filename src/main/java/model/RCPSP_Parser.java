@@ -55,14 +55,33 @@ public class RCPSP_Parser {
         scanner.nextLine();
         //System.out.println(scanner.next());
         // Read job successors
+
+
+        // Creating a matrix with the number of successors followed by the successor indices
+        int[][] successorsMatrix = new int[instance.numberOfJobs][];
+
         for (int i = 0; i < instance.numberOfJobs; i++) {
             scanner.nextInt(); // job number
             scanner.nextInt(); // number of modes
             int numSuccessors = scanner.nextInt();
-            instance.jobSuccessors[i] = new int[numSuccessors];
+            //int numSuccessors = instance.jobSuccessors[i].length;
+            successorsMatrix[i] = new int[numSuccessors]; // First element for count, rest for indices.
+            //successorsMatrix[i][0] = numSuccessors; // Number of successors
             for (int j = 0; j < numSuccessors; j++) {
-                instance.jobSuccessors[i][j] = scanner.nextInt();
+                successorsMatrix[i][j] = scanner.nextInt();
             }
+        }
+
+        instance.jobSuccessors = successorsMatrix;
+
+        // Print matrix
+
+        for (int i = 0; i < successorsMatrix.length; i++) {
+            System.out.print("Row " + i + ": ");
+            for (int j = 0; j < successorsMatrix[i].length; j++) {
+                System.out.print(successorsMatrix[i][j] + " ");
+            }
+            System.out.println();
         }
 
         // Skip lines to where durations and demands start ("REQUESTS/DURATIONS:")
@@ -79,9 +98,21 @@ public class RCPSP_Parser {
             scanner.nextInt(); // job number
             scanner.nextInt(); // mode
             instance.jobDurations[i] = scanner.nextInt(); // duration
+            //System.out.println(instance.jobDurations[i]);
             for (int j = 0; j < instance.numberOfResources; j++) {
                 instance.resourceRequirements[i][j] = scanner.nextInt();
+                //System.out.println(instance.resourceRequirements[i][j]);
             }
+        }
+
+        // Print matrix
+
+        for (int i = 0; i < instance.resourceRequirements.length; i++) {
+            System.out.print("Row " + i + ": ");
+            for (int j = 0; j < instance.resourceRequirements[i].length; j++) {
+                System.out.print(instance.resourceRequirements[i][j] + " ");
+            }
+            System.out.println();
         }
 
         // Skip lines to "RESOURCEAVAILABILITIES"
