@@ -28,11 +28,12 @@ public class ZeroOneApproach {
         Map<String, GRBVar> x = new HashMap<>();
         for (int i = 0; i < numJobs; i++) {
             for (int t : T) { // Ensure all times from 0 to horizon are included
-                String varName = "x_" + (i + 1) + "_" + t;
+                String varName = "x_" + i + "_" + t;
                 x.put(varName, model.addVar(0.0, 1.0, 0.0, GRB.BINARY, varName));
             }
         }
 
+        /*
         // DEBUGGGGGG
         // Validate all successors to ensure required variables exist
         for (int i = 0; i < numJobs; i++) {
@@ -49,14 +50,19 @@ public class ZeroOneApproach {
                 }
             }
         }
+        */
+
+
 
         // Objective: minimize finish time of last job (n-1)
         GRBLinExpr totalCompletionTime = new GRBLinExpr();
         for (int i = 0; i < numJobs; i++) {
             for (int t : T) {
-                String key = "x_" + (i + 1) + "_" + t;
+                String key = "x_" + i + "_" + t;
                 if (x.containsKey(key)) {
                     totalCompletionTime.addTerm(t, x.get(key));
+                    //System.out.println(x.get(key).get(GRB.StringAttr.VarName));
+                    //System.out.println(key);
                 }
             }
         }
@@ -66,20 +72,24 @@ public class ZeroOneApproach {
         for (int i = 0; i < numJobs; i++) {
             GRBLinExpr startOnce = new GRBLinExpr();
             for (int t : T) {
-                String key = "x_" + (i + 1) + "_" + t;
+                String key = "x_" + i + "_" + t;
                 if (x.containsKey(key)) {
                     startOnce.addTerm(1.0, x.get(key));
+                    //System.out.println(x.get(key).get(GRB.StringAttr.VarName));
+                    //System.out.println(key);
                 }
             }
-            model.addConstr(startOnce, GRB.EQUAL, 1.0, "StartOnce_" + (i + 1));
+            model.addConstr(startOnce, GRB.EQUAL, 1.0, "StartOnce_" + i);
         }
 
+
+/*
         // Ensure all variables exist before adding constraints
         for (int i = 0; i < numJobs; i++) {
             int[] successorsList = successors[i];
             for (int successor : successorsList) {
                 // Construct the variable keys
-                String var_i_horizon = "x_" + (i + 1) + "_" + horizon;
+                String var_i_horizon = "x_" + i + "_" + horizon;
                 String var_successor_horizon = "x_" + successor + "_" + horizon;
 
                 // Check if the variables exist in x before using them
@@ -91,7 +101,7 @@ public class ZeroOneApproach {
                 }
             }
         }
-
+*/
 
         // Resource constraints
         for (int r = 0; r < numResources; r++) {
@@ -99,13 +109,13 @@ public class ZeroOneApproach {
                 GRBLinExpr usage = new GRBLinExpr();
                 for (int j = 0; j < numJobs; j++) {
                     for (int t2 = Math.max(0, t - durations[j] + 1); t2 <= t; t2++) { // Ensure range is correct
-                        String key = "x_" + (j + 1) + "_" + t2;
+                        String key = "x_" + j + "_" + t2;
                         if (x.containsKey(key)) {
                             usage.addTerm(demands[j][r], x.get(key));
                         }
                     }
                 }
-                model.addConstr(usage, GRB.LESS_EQUAL, resourceCaps[r], "Res_" + (r + 1) + "_" + t);
+                model.addConstr(usage, GRB.LESS_EQUAL, resourceCaps[r], "Res_" + r + "_" + t);
             }
         }
 

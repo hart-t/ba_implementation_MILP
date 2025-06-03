@@ -7,13 +7,20 @@ import java.util.*;
 public class RCPSP_Parser {
 
     public static class RCPSPInstance {
+
         public int numberOfJobs;
+        public int[] numSuccessors;
+        public int[] successors;
+        public int[] predecessors;
+        public int[] jobDurations;
+        public int[] jobResources;
+        public int[] resourceAvailabilities;
+
+
         public int horizon;
         public int numberOfResources;
-        public int[] jobDurations;
         public int[][] jobSuccessors;
         public int[][] resourceRequirements;
-        public int[] resourceAvailabilities;
 
         public int getNumberOfJobs() {
             return numberOfJobs;
@@ -66,9 +73,11 @@ public class RCPSP_Parser {
             int numSuccessors = scanner.nextInt();
             //int numSuccessors = instance.jobSuccessors[i].length;
             successorsMatrix[i] = new int[numSuccessors]; // First element for count, rest for indices.
+            //instance.numSuccessors[i] = numSuccessors;
             //successorsMatrix[i][0] = numSuccessors; // Number of successors
             for (int j = 0; j < numSuccessors; j++) {
-                successorsMatrix[i][j] = scanner.nextInt();
+                successorsMatrix[i][j] = (scanner.nextInt() - 1);
+                //instance.successors[i] = successorsMatrix[i][j];
             }
         }
 
