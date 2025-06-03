@@ -3,10 +3,7 @@ package model;
 import com.gurobi.gurobi.*;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.*;
 
-import static model.RCPSP_Parser.parseFile;
 
 public class Main {
     public static void main(String[] args) {
@@ -16,8 +13,8 @@ public class Main {
             File[] files = new File("/home/tobsi/university/kit/benchmarkSets").listFiles();
             assert files != null;
 
-            System.out.println("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
-            RCPSP_Parser.RCPSPInstance instance = parseFile("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
+            //System.out.println("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
+            //RcpspParser.dataInstance instance = parseFile("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
 
             GRBEnv env = new GRBEnv(true);
             env.set("logFile", "rcpsp.log");
@@ -75,9 +72,6 @@ public class Main {
 
         } catch (GRBException e) {
             System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());
-        } catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
         }
     }
 }

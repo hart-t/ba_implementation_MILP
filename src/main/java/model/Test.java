@@ -19,15 +19,17 @@ public class Test {
         FileReader fileReader = new FileReader();
         FileReader.JobData data = fileReader.dataRead(file);
 
-        // Set the upper bound Completion Time of the project
-        // we set T=100 when solving the J30 problem
+        // RcpspParser rcpspParser = new RcpspParser();
+        // RcpspParser.dataInstance dataInstance = rcpspParser.readFile(file);
+
+        // T=100 like its recommended for J30 instances (time to solve)
         final int T = 100;
 
         // Initialize the Gurobi environment and model
         GRBEnv env = new GRBEnv();
         GRBModel model = new GRBModel(env);
 
-        // Add variables xjt note that j activity starts at time t
+        // Add variables xjt, activity j starts at time t
         GRBVar[][] x = new GRBVar[data.numberJob][T];
         for (int i = 0; i < data.numberJob; i++) {
             for (int t = 0; t < T; t++) {
@@ -35,7 +37,7 @@ public class Test {
             }
         }
 
-        // Set the objective which means minimize the Completion Time
+        // Set the objective (makespan), last element is dummy element (only one without successor)
         GRBLinExpr obj = new GRBLinExpr();
         for (int t = 0; t < T; t++) {
             obj.addTerm(t, x[data.numberJob - 1][t]);
@@ -48,11 +50,12 @@ public class Test {
             for (int t = 0; t < T; t++) {
                 expr.addTerm(1.0, x[i][t]);
             }
-            model.addConstr(expr, GRB.EQUAL, 1.0, "oneJob_" + i);
+            model.addConstr(expr, GRB.EQUAL, 1.0, "singleStart_" + i);
         }
 
         // Timing constraints
         for (int i = 0; i < data.numberJob; i++) {
+            // if job has predecessors
             if (!data.jobPredecessors.get(i).isEmpty()) {
                 for (int j : data.jobPredecessors.get(i)) {
                     GRBLinExpr sumTi = new GRBLinExpr();
@@ -72,12 +75,16 @@ public class Test {
         }
 
         // Resource constraints
-        final int NUMBER_RESOURCE = 4;
-        for (int k = 0; k < NUMBER_RESOURCE; k++) {
-            for (int t3 = 0; t3 < 50; t3++) {
+        // for each resource
+        for (int k = 0; k < data.resourceCapacity.size(); k++) {
+            // horizon
+            for (int t3 = 0; t3 < data.horizon; t3++) {
                 GRBLinExpr useResource = new GRBLinExpr();
+                // for each job
                 for (int j = 0; j < data.numberJob; j++) {
                     for (int tt = t3; tt < t3 + data.jobDuration.get(j) && tt < T; tt++) {
+                        // Add the resource demand of job j for resource k at time tt
+                        // x[j][tt] = 1 if job j is scheduled at time tt
                         useResource.addTerm(data.jobResource.get(j).get(k), x[j][tt]);
                     }
                 }
@@ -90,7 +97,7 @@ public class Test {
         model.write("linear_model.lp");
         model.optimize();
 
-        // Get the solution
+        // Safe solution in outputDict
         Map<Integer, Integer> outputDict = new HashMap<>();
         for (GRBVar var : model.getVars()) {
             if (var.get(GRB.DoubleAttr.X) != 0) {
@@ -106,7 +113,6 @@ public class Test {
         List<Integer> start = new ArrayList<>(data.numberJob);
         List<Integer> finish = new ArrayList<>(data.numberJob);
 
-        // Initialize lists with correct size
         for (int i = 0; i < data.numberJob; i++) {
             start.add(0);
             finish.add(0);
@@ -117,13 +123,10 @@ public class Test {
             start.set(entry.getKey(), entry.getValue());
         }
 
-        // Calculate finish times
+        // Fill finish times
         for (int i = 0; i < data.numberJob; i++) {
             finish.set(i, start.get(i) + data.jobDuration.get(i));
         }
-
-        System.out.println("start: " + start);
-        System.out.println("finish: " + finish);
 
         // Clean up Gurobi model and environment
         model.dispose();

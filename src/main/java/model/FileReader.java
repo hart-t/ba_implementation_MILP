@@ -11,6 +11,7 @@ public class FileReader {
     
     public static class JobData {
         public final int numberJob;
+        public final int horizon;
         public final List<Integer> jobNumSuccessors;
         public final List<List<Integer>> jobSuccessors;
         public final List<List<Integer>> jobPredecessors;
@@ -18,11 +19,12 @@ public class FileReader {
         public final List<List<Integer>> jobResource;
         public final List<Integer> resourceCapacity;
         
-        public JobData(int numberJob, List<Integer> jobNumSuccessors, 
+        public JobData(int numberJob, int horizon, List<Integer> jobNumSuccessors,
                       List<List<Integer>> jobSuccessors, List<List<Integer>> jobPredecessors,
                       List<Integer> jobDuration, List<List<Integer>> jobResource,
                       List<Integer> resourceCapacity) {
             this.numberJob = numberJob;
+            this.horizon = horizon;
             this.jobNumSuccessors = jobNumSuccessors;
             this.jobSuccessors = jobSuccessors;
             this.jobPredecessors = jobPredecessors;
@@ -51,10 +53,12 @@ public class FileReader {
         List<List<Integer>> jobResource = new ArrayList<>();
 
         int numberJob = Integer.parseInt(data.get(5)[4]);
+        int horizon = Integer.parseInt(data.get(6)[2]);
         List<Integer> resourceCapacity = Arrays.stream(data.get(89))
                                              .map(Integer::parseInt)
                                              .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 
+        System.out.println(resourceCapacity);
         // Process successors
         for (int job = 18; job < 18 + numberJob; job++) {
             jobNumSuccessors.add(Integer.parseInt(data.get(job)[2]));
@@ -87,7 +91,7 @@ public class FileReader {
             row++;
         }
 
-        return new JobData(numberJob, jobNumSuccessors, jobSuccessors, 
+        return new JobData(numberJob, horizon, jobNumSuccessors, jobSuccessors,
                          jobPredecessors, jobDuration, jobResource, resourceCapacity);
     }
 }
