@@ -82,16 +82,19 @@ public class Test {
                 GRBLinExpr useResource = new GRBLinExpr();
                 // for each job
                 for (int j = 0; j < data.numberJob; j++) {
-                    for (int tt = t3; tt < t3 + data.jobDuration.get(j) && tt < T; tt++) {
-                        // Add the resource demand of job j for resource k at time tt
-                        // x[j][tt] = 1 if job j is scheduled at time tt
-                        useResource.addTerm(data.jobResource.get(j).get(k), x[j][tt]);
+                    for (int t4 = t3; t4 < t3 + data.jobDuration.get(j) && t4 < T; t4++) {
+                        // Add the resource demand of job j for resource k at time t4
+                        // x[j][t4] = 1 if job j is scheduled at time t4
+                        useResource.addTerm(data.jobResource.get(j).get(k), x[j][t4]);
                     }
                 }
                 model.addConstr(useResource, GRB.LESS_EQUAL, data.resourceCapacity.get(k),
                         "resource_" + k + "_" + t3);
             }
         }
+
+        // apply serial SGS start Solution to model
+        applySolutionWithGurobi(model, data.numberJob, data.jobDuration, heuristicSerialSGS.serialSGS(data));
 
         // Write model to file and optimize
         model.write("linear_model.lp");
@@ -133,5 +136,24 @@ public class Test {
         env.dispose();
 
         return new ScheduleResult(start, finish);
+    }
+
+    public static void applySolutionWithGurobi(GRBModel model, int numberJob, List<Integer> jobDuration,
+                                               List<Integer> startTimes) throws GRBException {
+        System.out.println("testlast");
+        model.update();
+        for (int i = 0; i < numberJob; i++) {
+            int startTime = startTimes.get(i); // Start time for job i
+            for (int t = startTime; t < startTime + jobDuration.get(i); t++) {
+                // Get the variable corresponding to job i and time t
+                GRBVar var = model.getVarByName("x[" + i + "," + t + "]");
+                if (var != null) {
+                    // Set the start value for the variable
+                    var.set(GRB.DoubleAttr.Start, 1.0);
+                }
+            }
+        }
+
+        model.update();
     }
 }
