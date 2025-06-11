@@ -20,12 +20,8 @@ public class heuristicSerialSGS {
         boolean[] scheduled = new boolean[numberJob];
 
         int[][] resourceUsed = new int[resourceCapacity.size()][horizon];
-        // int[] available = new int[resourceCapacity.size()];
 
-        System.out.println("test1");
         // schedule all jobs
-        System.out.println(jobPredecessors);
-        System.out.println(numberJob);
         while (!allScheduled(scheduled)) {
 
             for (int i = 0; i < numberJob; i++) {
@@ -36,14 +32,7 @@ public class heuristicSerialSGS {
                 boolean allPredecessorsScheduled = true;
                 for (int predecessor : jobPredecessors.get(i)) {
                     if (!scheduled[(predecessor - 1)]) {
-                        System.out.println("test1---------------------------------------" + (predecessor - 1));
-                        System.out.println(i);
-
-
-
-
                         allPredecessorsScheduled = false;
-                        System.out.println(scheduled);
 
                         break;
                     }
@@ -84,15 +73,12 @@ public class heuristicSerialSGS {
                             }
                         }
                         startTimes.set(i, t);
-                        System.out.println("test2" + i);
                         scheduled[i] = true;
                         break;
                     }
                 }
             }
         }
-
-        System.out.println("test2");
         return startTimes;
     }
 
