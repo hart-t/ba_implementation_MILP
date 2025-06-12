@@ -49,20 +49,26 @@ public class RcpspParser {
 
 
         // Skip to the relevant line containing job and resource count
+        label:
         while (scanner.hasNext()) {
             String token = scanner.next();
-            if (token.equals("):")) {
-                numberJob = scanner.nextInt();
-                System.out.println("Number of jobs: " + numberJob);
-            } else if (token.equals("horizon")) {
+            switch (token) {
+                case "):":
+                    numberJob = scanner.nextInt();
+                    System.out.println("Number of jobs: " + numberJob);
+                    break;
+                case "horizon":
                     scanner.next(); // skip ':'
+
                     horizon = scanner.nextInt();
                     System.out.println("Horizon: " + horizon);
-            } else if (token.equals("renewable")) {
-                scanner.next(); // skip ':'
-                numberOfResources = scanner.nextInt();
-                System.out.println("Number of resources: " + numberOfResources);
-                break;
+                    break;
+                case "renewable":
+                    scanner.next(); // skip ':'
+
+                    numberOfResources = scanner.nextInt();
+                    System.out.println("Number of resources: " + numberOfResources);
+                    break label;
             }
         }
 

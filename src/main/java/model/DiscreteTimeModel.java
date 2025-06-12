@@ -4,14 +4,7 @@ import com.gurobi.gurobi.*;
 import java.util.*;
 
 public class DiscreteTimeModel {
-    public static class ScheduleResult {
-        public final List<Integer> start;
-        public final List<Integer> finish;
-
-        public ScheduleResult(List<Integer> start, List<Integer> finish) {
-            this.start = start;
-            this.finish = finish;
-        }
+    public record ScheduleResult(List<Integer> start, List<Integer> finish) {
     }
 
     public static ScheduleResult gurobiRcpspJ30(String file) throws Exception {
