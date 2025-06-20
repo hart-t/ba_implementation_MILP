@@ -35,13 +35,13 @@ public class ContinuousTimeModel {
         GRBModel model = new GRBModel(env);
 
         //add starting time variables
-        GRBVar startingTimeVars[] =new GRBVar[data.numberJob];
+        GRBVar[] startingTimeVars =new GRBVar[data.numberJob];
         for (int i = 0; i < data.numberJob; i++) {
             startingTimeVars[i] = model.addVar(0.0, data.horizon, 0.0, GRB.CONTINUOUS, "startingTime[" + i + "]");
         }
 
         //indicate whether activity i is processed before activity j
-        GRBVar precedenceVars[][] =new GRBVar[data.numberJob][data.numberJob];
+        GRBVar[][] precedenceVars =new GRBVar[data.numberJob][data.numberJob];
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = 0; j < data.numberJob; j++) {
                 precedenceVars[i][j] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "[" + i + "] precedes [" + j + "]");
@@ -50,7 +50,7 @@ public class ContinuousTimeModel {
 
         //Finally, continuous flow variables are introduced to denote the quantity of resource k that is transferred
         // from activity i (at the end of its processing) to activity j (at the start of its processing).
-        GRBVar continuousFlowVars[][][] =new GRBVar[data.numberJob][data.numberJob][data.resourceCapacity.size()];
+        GRBVar[][][] continuousFlowVars =new GRBVar[data.numberJob][data.numberJob][data.resourceCapacity.size()];
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = 0; j < data.numberJob; j++) {
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
@@ -104,6 +104,23 @@ public class ContinuousTimeModel {
                 }
             }
         }
+
+        //generate TE matrix, This means that if there is a path from activity i to j in the precedence graph
+        //(even if not directly), then (i,j) element TE.
+        int[][] teMatrix = computeTEMatrix(data.numberJob, data.jobSuccessors, data.jobDuration);
+        for (int[] row : teMatrix) {
+            System.out.println(Arrays.toString(row));
+        }
+
+        List<Integer> earliestStartList = new ArrayList<>(data.numberJob);
+        List<Integer> latestStartList = new ArrayList<>(data.numberJob);
+
+        //earliestStartList = generateEarliestStartList(teMatrix, data.jobDuration);
+        //latestStartList = generateLatestStartList(teMatrix, data.jobDuration);
+
+
+
+
 
         //Constraints (14) are so-called disjunctive constraints linking the start time of i and j with respect to
         //variable xij.
@@ -191,12 +208,7 @@ public class ContinuousTimeModel {
                     expr2.toString() + " (C18)");
         }
 
-        //generate TE matrix, This means that if there is a path from activity i to j in the precedence graph
-        //(even if not directly), then (i,j) element TE.
-        int[][] TE = computeTEMatrix(data.numberJob, data.jobPredecessors);
-        for (int[] row : TE) {
-            System.out.println(Arrays.toString(row));
-        }
+
 
         //Constraints (19), (20) set the preexisting precedence constraints.
         for (int i = 0; i < data.numberJob; i++) {
@@ -205,7 +217,7 @@ public class ContinuousTimeModel {
                 GRBLinExpr expr2 = new GRBLinExpr();
                 GRBLinExpr expr3 = new GRBLinExpr();
 
-                expr1.addTerm(1, precedenceVars[i][j]);
+                expr1.addTerm(teMatrix[i][j], precedenceVars[i][j]);
                 expr2.addConstant(1);
                 expr3.addConstant(0);
 
@@ -261,6 +273,10 @@ public class ContinuousTimeModel {
         env.dispose();
     }
 
+    /*private static List<Integer> generateEarliestStartList(int[][] teMatrix, List<Integer> jobDuration) {
+
+    }*/
+
     private static void fillWithCVariables(GRBModel model, GRBVar[] startingTimeVars, GRBVar[][] precedenceVars,
                                            GRBVar[][][] continuousFlowVars, int[][] resourceDemands) {
 
@@ -268,26 +284,25 @@ public class ContinuousTimeModel {
 
     }
 
-
-    //TODO testen!!
-    public static int[][] computeTEMatrix(int jobCount, List<List<Integer>> jobPredecessors) {
+    public static int[][] computeTEMatrix(int jobCount, List<List<Integer>> jobSuccessors, List<Integer> jobDuration) {
         int[][] teMatrix = new int[jobCount][jobCount];
 
-        for (int j = 0; j < jobCount; j++) {
-            Set<Integer> allPredecessors = new HashSet<>();
-            collectAllPredecessors(j, allPredecessors, jobPredecessors);
-            for (int i : allPredecessors) {
-                teMatrix[i][j] = 1;
+        for (int i = 0; i < jobCount; i++) {
+            Set<Integer> allSuccessors = new HashSet<>();
+            collectAllSuccessors(i, allSuccessors, jobSuccessors);
+            for (int successor : allSuccessors) {
+                teMatrix[i][successor] = 1;
             }
         }
 
         return teMatrix;
     }
-    //TODO testen!!
-    private static void collectAllPredecessors(int job, Set<Integer> result, List<List<Integer>> jobPredecessors) {
-        for (int pred : jobPredecessors.get(job)) {
-            if (result.add(pred)) {
-                collectAllPredecessors(pred, result, jobPredecessors);
+
+    private static void collectAllSuccessors(int job, Set<Integer> result, List<List<Integer>> jobSuccessors) {
+        for (int successor : jobSuccessors.get(job)) {
+            successor -= 1;
+            if (result.add(successor)) {
+                collectAllSuccessors(successor, result, jobSuccessors);
             }
         }
     }
