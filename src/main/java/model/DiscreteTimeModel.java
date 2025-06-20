@@ -35,7 +35,7 @@ public class DiscreteTimeModel {
                 data.numberJob, T);
 
         // apply serial SGS start Solution to model
-        applySolutionWithGurobi(model, data.numberJob, data.jobDuration, heuristicSerialSGS.serialSGS(data));
+        applySolutionWithGurobi(model, data.numberJob, data.jobDuration, HeuristicSerialSGS.serialSGS(data));
 
         // Write model to file and optimize
         model.write("linear_model.lp");

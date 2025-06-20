@@ -1,10 +1,9 @@
 package model;
 
 import java.util.*;
-import com.gurobi.gurobi.*;
 
 
-public class heuristicSerialSGS {
+public class HeuristicSerialSGS {
 
     public static List<Integer> serialSGS(FileReader.JobData jobData) {
         int numberJob = jobData.numberJob;
