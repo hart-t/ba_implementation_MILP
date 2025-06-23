@@ -37,14 +37,16 @@ public class ContinuousTimeModel {
         //add starting time variables
         GRBVar[] startingTimeVars =new GRBVar[data.numberJob];
         for (int i = 0; i < data.numberJob; i++) {
-            startingTimeVars[i] = model.addVar(0.0, data.horizon, 0.0, GRB.CONTINUOUS, "startingTime[" + i + "]");
+            startingTimeVars[i] = model.addVar(0.0, data.horizon, 0.0, GRB.CONTINUOUS, "startingTime[" +
+                    i + "]");
         }
 
         //indicate whether activity i is processed before activity j
         GRBVar[][] precedenceVars =new GRBVar[data.numberJob][data.numberJob];
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = 0; j < data.numberJob; j++) {
-                precedenceVars[i][j] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "[" + i + "] precedes [" + j + "]");
+                precedenceVars[i][j] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "[" + i +
+                        "] precedes [" + j + "]");
             }
         }
 
@@ -54,7 +56,7 @@ public class ContinuousTimeModel {
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = 0; j < data.numberJob; j++) {
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
-                    continuousFlowVars[i][j][k] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY,
+                    continuousFlowVars[i][j][k] = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.INTEGER,
                             "quantity of resource " + k + "transferred from " + i + " to " + j);
                 }
             }
@@ -108,12 +110,23 @@ public class ContinuousTimeModel {
         //generate TE matrix, This means that if there is a path from activity i to j in the precedence graph
         //(even if not directly), then (i,j) element TE.
         int[][] teMatrix = computeTEMatrix(data.numberJob, data.jobSuccessors, data.jobDuration);
+
         for (int[] row : teMatrix) {
             System.out.println(Arrays.toString(row));
         }
 
-        List<Integer> earliestStartList = new ArrayList<>(data.numberJob);
-        List<Integer> latestStartList = new ArrayList<>(data.numberJob);
+        int[][] precedenceActivityOnNodeGraph = generatePrecedenceActivityOnNodeGraph(data.jobPredecessors,
+                data.jobDuration);
+
+        System.out.println("-------------------------------------------------------------------------------------");
+
+        for (int[] row : precedenceActivityOnNodeGraph) {
+            System.out.println(Arrays.toString(row));
+        }
+
+        int[][] startTimes = generateEarliestAndLatestStartTimes(data.jobPredecessors, data.jobDuration, data.horizon);
+        int[] earliestStartTime = startTimes[0];
+        int[] latestStartTime = startTimes[1];
 
         //earliestStartList = generateEarliestStartList(teMatrix, data.jobDuration);
         //latestStartList = generateLatestStartList(teMatrix, data.jobDuration);
@@ -121,7 +134,7 @@ public class ContinuousTimeModel {
 
 
 
-
+        //TODO
         //Constraints (14) are so-called disjunctive constraints linking the start time of i and j with respect to
         //variable xij.
         //p duration
@@ -246,16 +259,43 @@ public class ContinuousTimeModel {
 
 
         //(22) set dummy starter starting time at 0
-        GRBLinExpr expr1 = new GRBLinExpr();
-        GRBLinExpr expr2 = new GRBLinExpr();
+        GRBLinExpr expr01 = new GRBLinExpr();
+        GRBLinExpr expr02 = new GRBLinExpr();
 
-        expr1.addTerm(1, startingTimeVars[0]);
-        expr2.addConstant(0);
+        expr01.addTerm(1, startingTimeVars[0]);
+        expr02.addConstant(0);
 
-        model.addConstr(expr1, GRB.EQUAL, expr2, expr1.toString() + "starting time " + expr2.toString()
+        model.addConstr(expr01, GRB.EQUAL, expr02, expr01.toString() + "starting time " + expr02.toString()
                         + "(C22)");
 
         //(23) Starting time of variable x is between its earliest and latest starting time
+        for (int i = 0; i < data.numberJob; i++) {
+            GRBLinExpr expr1 = new GRBLinExpr();
+            GRBLinExpr expr2 = new GRBLinExpr();
+            GRBLinExpr expr3 = new GRBLinExpr();
+
+            expr1.addTerm(1, startingTimeVars[i]);
+            expr2.addConstant(earliestStartTime[i]);
+            expr3.addConstant(latestStartTime[i]);
+
+            model.addConstr(expr2, GRB.LESS_EQUAL, expr1, expr2.toString() + " earliest possible start <= " +
+                    expr1.toString());
+            model.addConstr(expr1, GRB.LESS_EQUAL, expr3, expr1.toString() + " latest possible start >= " +
+                    expr3.toString());
+        }
+
+        //TODO braucht man das wenn GRB.BINARY?
+        //(24) xij is binary
+        for (int i = 0; i < data.numberJob; i++) {
+            for (int j = 0; j < data.numberJob; j++) {
+                GRBLinExpr expr1 = new GRBLinExpr();
+                GRBLinExpr expr2 = new GRBLinExpr();
+
+                expr1.addTerm(1, precedenceVars[i][j]);
+                expr2.addConstant(1);
+            }
+        }
+
 
 
 
@@ -273,9 +313,65 @@ public class ContinuousTimeModel {
         env.dispose();
     }
 
-    /*private static List<Integer> generateEarliestStartList(int[][] teMatrix, List<Integer> jobDuration) {
+    private static int[][] generateEarliestAndLatestStartTimes(List<List<Integer>> jobPredecessors,
+                                                             List<Integer> jobDuration, int horizon) {
+        int[][] startTimes = new int[2][jobDuration.size()];
 
-    }*/
+        int n = jobDuration.size();  // Number of nodes
+        List<List<DAGLongestPath.Edge>> graph = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            graph.add(new ArrayList<>());
+        }
+
+        for (int i = 0; i < jobPredecessors.size(); i++) {
+            for (int predecessor : jobPredecessors.get(i)) {
+                graph.get(predecessor - 1).add(new DAGLongestPath.Edge(i, jobDuration.get(predecessor - 1)));
+            }
+        }
+
+        int source = 0;
+        int[] earliestStartTimes = DAGLongestPath.findLongestPaths(graph, source);
+        int[] latestStartTimes = new int[jobDuration.size()];
+
+        for (int i = 0; i < jobDuration.size(); i++) {
+            int duration = DAGLongestPath.findLongestPaths(graph, i)[jobDuration.size() - 1];
+            latestStartTimes[i] = horizon - duration;
+        }
+
+
+        for (int i = 0; i < earliestStartTimes.length; i++) {
+            if (earliestStartTimes[i] == Integer.MIN_VALUE) {
+                System.out.println("Node " + i + ": unreachable");
+            } else {
+                System.out.println("Node " + i + ": " + earliestStartTimes[i]);
+                System.out.println("Node " + i + ": " + latestStartTimes[i]);
+            }
+        }
+
+        startTimes[0] = earliestStartTimes;
+        startTimes[1] = latestStartTimes;
+        return startTimes;
+    }
+
+    private static int[][] generatePrecedenceActivityOnNodeGraph(List<List<Integer>> jobPredecessors,
+                                                                 List<Integer> jobDuration) {
+        int[][] precedenceActivityOnNodeGraph = new int[jobDuration.size()][jobDuration.size()];
+
+        for (int i = 0; i < jobDuration.size(); i++) {
+            for (int j = 0; j < jobDuration.size(); j++) {
+                precedenceActivityOnNodeGraph[i][j] = -1;
+            }
+        }
+
+        for (int i = 0; i < jobPredecessors.size(); i++) {
+            for (int predecessor : jobPredecessors.get(i)) {
+                precedenceActivityOnNodeGraph[predecessor - 1][i] = jobDuration.get(predecessor - 1);
+            }
+        }
+
+        return precedenceActivityOnNodeGraph;
+    }
 
     private static void fillWithCVariables(GRBModel model, GRBVar[] startingTimeVars, GRBVar[][] precedenceVars,
                                            GRBVar[][][] continuousFlowVars, int[][] resourceDemands) {
@@ -304,6 +400,38 @@ public class ContinuousTimeModel {
             if (result.add(successor)) {
                 collectAllSuccessors(successor, result, jobSuccessors);
             }
+        }
+    }
+
+    public static int[][] computeTEMatrix2(int jobCount, List<List<Integer>> jobSuccessors, List<Integer> jobDuration) {
+        int[][] teMatrix = new int[jobCount][jobCount];
+
+        for (int i = 0; i < jobCount; i++) {
+            boolean[] visited = new boolean[jobCount];
+            collectCumulativeDurations(i, 0, visited, teMatrix, jobSuccessors, jobDuration);
+        }
+
+        return teMatrix;
+    }
+
+    private static void collectCumulativeDurations(
+            int currentJob,
+            int accumulatedDuration,
+            boolean[] visited,
+            int[][] teMatrix,
+            List<List<Integer>> jobSuccessors,
+            List<Integer> jobDuration
+    ) {
+        for (int successor : jobSuccessors.get(currentJob)) {
+            int successorIndex = successor - 1;
+            int newCumulativeDuration = accumulatedDuration + jobDuration.get(currentJob);
+
+            // Update the matrix if no value has been set yet or if a shorter path is found
+            if (teMatrix[currentJob][successorIndex] == 0 || teMatrix[currentJob][successorIndex] > newCumulativeDuration) {
+                teMatrix[currentJob][successorIndex] = newCumulativeDuration;
+            }
+
+            collectCumulativeDurations(successorIndex, newCumulativeDuration, visited, teMatrix, jobSuccessors, jobDuration);
         }
     }
 

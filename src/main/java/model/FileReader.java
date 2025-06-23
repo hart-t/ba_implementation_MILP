@@ -35,6 +35,7 @@ public class FileReader {
     }
 
     public JobData dataRead(String file) throws Exception {
+        System.out.println("Reading file: " + file);
         List<String[]> data = new ArrayList<>();
         
         // Read file and split lines
