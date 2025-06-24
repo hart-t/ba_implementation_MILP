@@ -11,8 +11,8 @@ public class Main {
         assert files != null;
 
         try {
-            ContinuousTimeModel.gurobiRcpspJ30("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
-            DiscreteTimeModel.ScheduleResult result = DiscreteTimeModel.gurobiRcpspJ30("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
+            Result.ScheduleDoubleResult result = ContinuousTimeModel.gurobiRcpspJ30("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
+            //Result.ScheduleIntegerResult result = DiscreteTimeModel.gurobiRcpspJ30("/home/tobsi/university/kit/benchmarkSets/" + files[0].getName());
             System.out.println("Start times: " + result.start());
             System.out.println("Finish times: " + result.finish());
         } catch (Exception e) {

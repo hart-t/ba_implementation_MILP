@@ -7,7 +7,7 @@ public class DiscreteTimeModel {
     public record ScheduleResult(List<Integer> start, List<Integer> finish) {
     }
 
-    public static ScheduleResult gurobiRcpspJ30(String file) throws Exception {
+    public static Result.ScheduleIntegerResult gurobiRcpspJ30(String file) throws Exception {
         // Create FileReader instance and get the data
         FileReader fileReader = new FileReader();
         FileReader.JobData data = fileReader.dataRead(file);
@@ -41,13 +41,13 @@ public class DiscreteTimeModel {
         model.write("linear_model.lp");
         model.optimize();
 
-        ScheduleResult scheduleResult = fillListsToReturn(model, data.jobDuration, data.numberJob);
+        Result.ScheduleIntegerResult scheduleIntegerResult = fillListsToReturn(model, data.jobDuration, data.numberJob);
 
         // Clean up Gurobi model and environment
         model.dispose();
         env.dispose();
 
-        return scheduleResult;
+        return scheduleIntegerResult;
     }
 
     // Add variables xjt, activity j starts at time t
@@ -144,7 +144,7 @@ public class DiscreteTimeModel {
         model.update();
     }
 
-    private static ScheduleResult fillListsToReturn(GRBModel model, List<Integer> jobDuration, int numJob) throws GRBException {
+    private static Result.ScheduleIntegerResult fillListsToReturn(GRBModel model, List<Integer> jobDuration, int numJob) throws GRBException {
 
         // Safe solution in outputDict
         Map<Integer, Integer> outputDict = new HashMap<>();
@@ -176,6 +176,6 @@ public class DiscreteTimeModel {
         for (int i = 0; i < numJob; i++) {
             finish.set(i, start.get(i) + jobDuration.get(i));
         }
-        return new ScheduleResult(start, finish);
+        return new Result.ScheduleIntegerResult(start, finish);
     }
 }
