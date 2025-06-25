@@ -27,7 +27,6 @@ public class ContinuousTimeModel {
 
         for (int i = 0; i < data.jobPredecessors.size(); i++) {
             for (int predecessor : data.jobPredecessors.get(i)) {
-                System.out.println(i + "_" + predecessor);
             }
         }
 

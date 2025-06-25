@@ -1,0 +1,72 @@
+\ Model (null)_copy
+\ LP format - for model browsing. Use MPS format to capture full model detail.
+\ Signature: 0x6c9ffa2c3f7e1119
+Minimize
+ 
+Subject To
+ com.gurobi.gurobi.GRBLinExpr@7837c99c_equals_com.gurobi.gurobi.GRBLinExpr@669abb5c_(C16):
+   quantity_of_resource_0transferred_from_0_to_1
+   + quantity_of_resource_0transferred_from_0_to_2
+   + quantity_of_resource_0transferred_from_0_to_3
+   + quantity_of_resource_0transferred_from_0_to_4
+   + quantity_of_resource_0transferred_from_0_to_5
+   + quantity_of_resource_0transferred_from_0_to_6
+   + quantity_of_resource_0transferred_from_0_to_7
+   + quantity_of_resource_0transferred_from_0_to_8
+   + quantity_of_resource_0transferred_from_0_to_9
+   + quantity_of_resource_0transferred_from_0_to_10
+   + quantity_of_resource_0transferred_from_0_to_11
+   + quantity_of_resource_0transferred_from_0_to_12
+   + quantity_of_resource_0transferred_from_0_to_13
+   + quantity_of_resource_0transferred_from_0_to_14
+   + quantity_of_resource_0transferred_from_0_to_15
+   + quantity_of_resource_0transferred_from_0_to_16
+   + quantity_of_resource_0transferred_from_0_to_17
+   + quantity_of_resource_0transferred_from_0_to_18
+   + quantity_of_resource_0transferred_from_0_to_19
+   + quantity_of_resource_0transferred_from_0_to_20
+   + quantity_of_resource_0transferred_from_0_to_21
+   + quantity_of_resource_0transferred_from_0_to_22
+   + quantity_of_resource_0transferred_from_0_to_23
+   + quantity_of_resource_0transferred_from_0_to_24
+   + quantity_of_resource_0transferred_from_0_to_25
+   + quantity_of_resource_0transferred_from_0_to_26
+   + quantity_of_resource_0transferred_from_0_to_27
+   + quantity_of_resource_0transferred_from_0_to_28
+   + quantity_of_resource_0transferred_from_0_to_29
+   + quantity_of_resource_0transferred_from_0_to_30
+   + quantity_of_resource_0transferred_from_0_to_31 = -15
+Bounds
+Generals
+ quantity_of_resource_0transferred_from_0_to_1
+ quantity_of_resource_0transferred_from_0_to_2
+ quantity_of_resource_0transferred_from_0_to_3
+ quantity_of_resource_0transferred_from_0_to_4
+ quantity_of_resource_0transferred_from_0_to_5
+ quantity_of_resource_0transferred_from_0_to_6
+ quantity_of_resource_0transferred_from_0_to_7
+ quantity_of_resource_0transferred_from_0_to_8
+ quantity_of_resource_0transferred_from_0_to_9
+ quantity_of_resource_0transferred_from_0_to_10
+ quantity_of_resource_0transferred_from_0_to_11
+ quantity_of_resource_0transferred_from_0_to_12
+ quantity_of_resource_0transferred_from_0_to_13
+ quantity_of_resource_0transferred_from_0_to_14
+ quantity_of_resource_0transferred_from_0_to_15
+ quantity_of_resource_0transferred_from_0_to_16
+ quantity_of_resource_0transferred_from_0_to_17
+ quantity_of_resource_0transferred_from_0_to_18
+ quantity_of_resource_0transferred_from_0_to_19
+ quantity_of_resource_0transferred_from_0_to_20
+ quantity_of_resource_0transferred_from_0_to_21
+ quantity_of_resource_0transferred_from_0_to_22
+ quantity_of_resource_0transferred_from_0_to_23
+ quantity_of_resource_0transferred_from_0_to_24
+ quantity_of_resource_0transferred_from_0_to_25
+ quantity_of_resource_0transferred_from_0_to_26
+ quantity_of_resource_0transferred_from_0_to_27
+ quantity_of_resource_0transferred_from_0_to_28
+ quantity_of_resource_0transferred_from_0_to_29
+ quantity_of_resource_0transferred_from_0_to_30
+ quantity_of_resource_0transferred_from_0_to_31
+End
