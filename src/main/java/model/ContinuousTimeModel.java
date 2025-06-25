@@ -43,6 +43,7 @@ public class ContinuousTimeModel {
         GRBVar[][] precedenceVars =new GRBVar[data.numberJob][data.numberJob];
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = 0; j < data.numberJob; j++) {
+                if (i == j) continue; // Skip self-precedence
                 precedenceVars[i][j] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "[" + i +
                         "] precedes [" + j + "]");
             }
@@ -53,6 +54,7 @@ public class ContinuousTimeModel {
         GRBVar[][][] continuousFlowVars =new GRBVar[data.numberJob][data.numberJob][data.resourceCapacity.size()];
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = 0; j < data.numberJob; j++) {
+                if (i == j) continue; // Skip self-transfer
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
                     continuousFlowVars[i][j][k] = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.INTEGER,
                             "quantity of resource " + k + "transferred from " + i + " to " + j);
@@ -78,6 +80,7 @@ public class ContinuousTimeModel {
         // processed in parallel.
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = i; j < data.numberJob; j++) {
+                if (i == j) continue; // Skip self-precedence
                 GRBLinExpr expr = new GRBLinExpr();
                 expr.addTerm(1, precedenceVars[i][j]);
                 expr.addTerm(1, precedenceVars[j][i]);
@@ -89,7 +92,11 @@ public class ContinuousTimeModel {
         // Constraints (13) express the transitivity of the precedence relations.
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = 0; j < data.numberJob; j++) {
+                if (i == j) continue;
                 for (int k = 0; k < data.numberJob; k++) {
+                    if (i == k) continue;
+                    if (k == j) continue;
+
                     GRBLinExpr expr1 = new GRBLinExpr();
                     GRBLinExpr expr2 = new GRBLinExpr();
 
@@ -109,9 +116,9 @@ public class ContinuousTimeModel {
         // (even if not directly), then (i,j) element TE.
         int[][] teMatrix = computeTEMatrix(data.numberJob, data.jobSuccessors, data.jobDuration);
 
-        for (int[] row : teMatrix) {
+        /*for (int[] row : teMatrix) {
             System.out.println(Arrays.toString(row));
-        }
+        }*/
 
         int[][] startTimes = generateEarliestAndLatestStartTimes(data.jobPredecessors, data.jobDuration, data.horizon);
         int[] earliestStartTime = startTimes[0];
@@ -122,9 +129,17 @@ public class ContinuousTimeModel {
         // p duration
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = 0; j < data.numberJob; j++) {
+                if (i == j) continue;
+                if (precedenceVars[i][j] == null) continue;
                 // Mij is some large enough constant, which can be set to any valid upper bound for Si - Sj
                 // (e.g., Mij = ESi - LSj)
+                // TODO make it make sense
+                /*
+                if i calculate Mij like its described as ESi - LSj and i precedes j then the Mij is negative?
+                but the same discription said to set Mij as a large enough constant
+                 */
                 int Mij = earliestStartTime[i] - latestStartTime[j];
+                Mij = data.horizon;
                 GRBLinExpr expr1 = new GRBLinExpr();
                 GRBLinExpr expr2 = new GRBLinExpr();
 
@@ -142,6 +157,8 @@ public class ContinuousTimeModel {
         // from i to j is set to min{bik, bjk} while if i does not precede j the flow must be zero.
         for (int i = 0; i < data.numberJob - 1; i++) {
             for (int j = 1; j < data.numberJob; j++) {
+                if (i == j) continue;
+                if (precedenceVars[i][j] == null) continue;
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
                     GRBLinExpr expr1 = new GRBLinExpr();
                     GRBLinExpr expr2 = new GRBLinExpr();
@@ -163,9 +180,11 @@ public class ContinuousTimeModel {
                 GRBLinExpr expr2 = new GRBLinExpr();
 
                 for (int j = 0; j < data.numberJob; j++) {
+                    if (i == j) continue; // Skip self-
                     expr1.addTerm(1, continuousFlowVars[i][j][k]);
                 }
 
+                if (expr1 == null) continue;
                 expr2.addConstant(resourceDemands[i][k]);
 
                 model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 + " (C16)");
@@ -181,9 +200,11 @@ public class ContinuousTimeModel {
                 GRBLinExpr expr2 = new GRBLinExpr();
 
                 for (int i = 0; i < data.numberJob; i++) {
+                    if (i == j) continue; // Skip self-
                     expr1.addTerm(1, continuousFlowVars[i][j][k]);
                 }
 
+                if (expr1 == null) continue;
                 expr2.addConstant(resourceDemands[j][k]);
 
                 model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 + " (C17)");
@@ -206,6 +227,8 @@ public class ContinuousTimeModel {
         // Constraints (19), (20) set the preexisting precedence constraints.
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = 0; j < data.numberJob; j++) {
+                if (i == j) continue;
+
                 GRBLinExpr expr1 = new GRBLinExpr();
                 GRBLinExpr expr2 = new GRBLinExpr();
                 GRBLinExpr expr3 = new GRBLinExpr();
@@ -214,14 +237,19 @@ public class ContinuousTimeModel {
                 expr2.addConstant(1);
                 expr3.addConstant(0);
 
-                model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 + " (C19)");
-                model.addConstr(expr1, GRB.EQUAL, expr3, expr1 + " equals " + expr3 + " (C20)");
+                if (teMatrix[i][j] == 1) {
+                    model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 + " (C19)");
+                }
+                if (teMatrix[i][j] == 0) {
+                    model.addConstr(expr1, GRB.EQUAL, expr3, expr1 + " equals " + expr3 + " (C20)");
+                }
             }
         }
 
         // (21) non-negative constraint for flow variables
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = 0; j < data.numberJob; j++) {
+                if (i == j) continue; // Skip self
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
                     GRBLinExpr expr1 = new GRBLinExpr();
                     GRBLinExpr expr2 = new GRBLinExpr();
@@ -265,6 +293,8 @@ public class ContinuousTimeModel {
         // (24) xij is binary
         for (int i = 0; i < data.numberJob; i++) {
             for (int j = 0; j < data.numberJob; j++) {
+                if (i == j) continue;
+
                 GRBLinExpr expr1 = new GRBLinExpr();
                 GRBQuadExpr qexpr2 = new GRBQuadExpr();
 
@@ -275,6 +305,8 @@ public class ContinuousTimeModel {
             }
         }
 
+        // Objective function: minimize the starting time of the last job
+        // This is equivalent to minimizing the makespan of the schedule
         GRBLinExpr obj = new GRBLinExpr();
         obj.addTerm(1, startingTimeVars[data.numberJob - 1]);
         model.setObjective(obj, GRB.MINIMIZE);
@@ -286,8 +318,15 @@ public class ContinuousTimeModel {
         //fillWithCVariables(model, startingTimeVars, precedenceVars, continuousFlowVars, resourceDemands);
 
         // Write model to file and optimize
+        model.set(GRB.DoubleParam.TimeLimit, 60.0);
         model.write("linear_model.lp");
         model.optimize();
+
+        if (model.get(GRB.IntAttr.Status) == GRB.Status.INFEASIBLE) {
+            System.out.println("Model is infeasible.");
+            model.computeIIS();
+            model.write("model.ilp");
+        }
 
         Result.ScheduleDoubleResult scheduleDoubleResult = fillListsToReturn(model, data.jobDuration, data.numberJob);
 
@@ -325,14 +364,14 @@ public class ContinuousTimeModel {
         }
 
 
-        for (int i = 0; i < earliestStartTimes.length; i++) {
+        /*for (int i = 0; i < earliestStartTimes.length; i++) {
             if (earliestStartTimes[i] == Integer.MIN_VALUE) {
                 System.out.println("Node " + i + ": unreachable");
             } else {
                 System.out.println("Node " + i + ": " + earliestStartTimes[i]);
                 System.out.println("Node " + i + ": " + latestStartTimes[i]);
             }
-        }
+        }*/
 
         startTimes[0] = earliestStartTimes;
         startTimes[1] = latestStartTimes;
@@ -421,35 +460,25 @@ public class ContinuousTimeModel {
     }
 
     private static Result.ScheduleDoubleResult fillListsToReturn(GRBModel model, List<Integer> jobDuration, int numJob) throws GRBException {
-        System.out.println("-------------------------------------------------------------------------------");
 
         // Safe solution in outputDict
-        Map<Integer, Integer> outputDict = new HashMap<>();
-        for (GRBVar var : model.getVars()) {
-            //GRBVar var = model.getVars()[i];
-            //System.out.println(var.get(GRB.StringAttr.VarName));// + " " + var.get(GRB.DoubleAttr.X));
-        }
-        for (GRBVar var : model.getVars()) {
-            if (var.get(GRB.DoubleAttr.X) != 0) {
-                System.out.println(var.get(GRB.StringAttr.VarName) + " " + var.get(GRB.DoubleAttr.X));
-                String[] varParts = var.get(GRB.StringAttr.VarName)
-                        .replace("x[", "")
-                        .replace("]", "")
-                        .split(",");
-                outputDict.put(Integer.parseInt(varParts[0]), Integer.parseInt(varParts[1]));
-            }
+        Map<Integer, Double> outputDict = new HashMap<>();
+        for (int i = 0; i < numJob; i++) {
+            GRBVar var = model.getVars()[i];
+            System.out.println(var.get(GRB.StringAttr.VarName) + " " + var.get(GRB.DoubleAttr.X));
+            outputDict.put(i, var.get(GRB.DoubleAttr.X));
         }
 
-        List<Integer> start = new ArrayList<>(numJob);
-        List<Integer> finish = new ArrayList<>(numJob);
+        List<Double> start = new ArrayList<>(numJob);
+        List<Double> finish = new ArrayList<>(numJob);
 
         for (int i = 0; i < numJob; i++) {
-            start.add(0);
-            finish.add(0);
+            start.add(0.0);
+            finish.add(0.0);
         }
 
         // Fill start times
-        for (Map.Entry<Integer, Integer> entry : outputDict.entrySet()) {
+        for (Map.Entry<Integer, Double> entry : outputDict.entrySet()) {
             start.set(entry.getKey(), entry.getValue());
         }
 
