@@ -3,34 +3,72 @@ package model;
 import com.gurobi.gurobi.*;
 import java.util.*;
 
-public class DiscreteTimeModel {
+public class DiscreteTimeModel2 {
 
     public static Result.ScheduleIntegerResult gurobiRcpspJ30(String file) throws Exception {
         // Create FileReader instance and get the data
         FileReader fileReader = new FileReader();
         FileReader.JobData data = fileReader.dataRead(file);
 
-        // RcpspParser rcpspParser = new RcpspParser();
-        // RcpspParser.dataInstance dataInstance = rcpspParser.readFile(file);
-
-        // T=100 like its recommended for J30 instances (time to solve)
-        final int T = 100;
-
         // Initialize the Gurobi environment and model
         GRBEnv env = new GRBEnv();
         GRBModel model = new GRBModel(env);
 
-        GRBVar[][] x = new GRBVar[data.numberJob][T];
-        fillWithVariables(model, x, data.numberJob, T);
+        GRBVar[][] startingTimeVars =new GRBVar[data.numberJob][data.horizon];
+        for (int i = 0; i < data.numberJob; i++) {
+            for (int t = 0; t < data.horizon; t++) {
+                startingTimeVars[i][t] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "startingTime[" +
+                        i + "] at [" + t + "]");
+            }
+        }
 
-        setObjective(model, x, data.numberJob, T);
+        int[][] startTimes = DAGLongestPath.generateEarliestAndLatestStartTimes
+                (data.jobPredecessors, data.jobDuration, data.horizon);
+        int[] earliestStartTime = startTimes[0];
+        int[] latestStartTime = startTimes[1];
 
-        addDoOnceConstraints(model, x, data.numberJob, T);
 
-        addTimeConstraints(model, x, data.jobPredecessors, data.jobDuration, data.numberJob, T);
+        // (3) Set the objective: minimize sum_{t=LSi} {ESi} t * x[n+1, t]
+        GRBLinExpr obj = new GRBLinExpr();
+        for (int t = earliestStartTime[data.numberJob - 1]; t <= latestStartTime[data.numberJob - 1]; t++) {
+            obj.addTerm(t, startingTimeVars[data.numberJob - 1][t]);
+        }
+        model.setObjective(obj, GRB.MINIMIZE);
 
-        addResourceConstraints(model, x, data.resourceCapacity, data.jobResource, data.jobDuration, data.horizon,
-                data.numberJob, T);
+        // i must precede j
+        // (4)
+        /*
+        for (int i = 0; i < data.numberJob; i++) {
+            for (int j = 0; j < ; j++) {
+                
+            }
+        }*/
+
+        for (int j = 0; j < data.numberJob; j++) {
+            for (int pred : data.jobPredecessors.get(j)) {
+                int i = pred;
+                GRBLinExpr left = new GRBLinExpr();
+                GRBLinExpr right = new GRBLinExpr();
+
+                // Left: sum_{t=LSj}^{ESj} t * x[j][t]
+                for (int t = earliestStartTime[j]; t <= latestStartTime[j]; t++) {
+                    left.addTerm(t, startingTimeVars[j][t]);
+                }
+                // Right: sum_{t=LSi}^{ESi} t * x[i][t] + p_i
+                for (int t = earliestStartTime[i]; t <= latestStartTime[i]; t++) {
+                    right.addTerm(t, startingTimeVars[i][t]);
+                }
+                right.addConstant(data.jobDuration.get(i));
+
+                model.addConstr(left, GRB.GREATER_EQUAL, right, "precedence_" + i + "_" + j);
+            }
+        }
+
+
+
+
+
+
 
         // apply serial SGS start Solution to model
         applySolutionWithGurobi(model, data.numberJob, data.jobDuration, HeuristicSerialSGS.serialSGS(data));
@@ -125,7 +163,7 @@ public class DiscreteTimeModel {
     }
 
     private static void applySolutionWithGurobi(GRBModel model, int numberJob, List<Integer> jobDuration,
-                                               List<Integer> startTimes) throws GRBException {
+                                                List<Integer> startTimes) throws GRBException {
         model.update();
         for (int i = 0; i < numberJob; i++) {
             int startTime = startTimes.get(i); // Start time for job i

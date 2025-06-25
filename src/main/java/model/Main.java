@@ -10,7 +10,7 @@ public class Main {
         File[] files = new File("/home/tobsi/university/kit/benchmarkSets").listFiles();
         assert files != null;
         //String filename = "/home/tobsi/university/kit/benchmarkSets/" + files[0].getName();
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j3037_3.sm";
+        String filename = "/home/tobsi/university/kit/benchmarkSets/j303_3.sm";
         //3037_4? false
         //3037_3? 63.00003099163224 starting time? 17 25?
 

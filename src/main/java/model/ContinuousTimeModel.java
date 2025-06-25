@@ -25,6 +25,12 @@ public class ContinuousTimeModel {
         FileReader fileReader = new FileReader();
         FileReader.JobData data = fileReader.dataRead(file);
 
+        for (int i = 0; i < data.jobPredecessors.size(); i++) {
+            for (int predecessor : data.jobPredecessors.get(i)) {
+                System.out.println(i + "_" + predecessor);
+            }
+        }
+
         // T=100 like its recommended for J30 instances (time to solve)
         final int T = 100;
 
@@ -120,7 +126,8 @@ public class ContinuousTimeModel {
             System.out.println(Arrays.toString(row));
         }*/
 
-        int[][] startTimes = generateEarliestAndLatestStartTimes(data.jobPredecessors, data.jobDuration, data.horizon);
+        int[][] startTimes = DAGLongestPath.generateEarliestAndLatestStartTimes
+                (data.jobPredecessors, data.jobDuration, data.horizon);
         int[] earliestStartTime = startTimes[0];
         int[] latestStartTime = startTimes[1];
 
@@ -318,7 +325,8 @@ public class ContinuousTimeModel {
         //fillWithCVariables(model, startingTimeVars, precedenceVars, continuousFlowVars, resourceDemands);
 
         // Write model to file and optimize
-        model.set(GRB.DoubleParam.TimeLimit, 60.0);
+        // T=100 like its recommended for J30 instances (time to solve)
+        model.set(GRB.DoubleParam.TimeLimit, 100);
         model.write("linear_model.lp");
         model.optimize();
 
@@ -335,47 +343,6 @@ public class ContinuousTimeModel {
         env.dispose();
 
         return scheduleDoubleResult;
-    }
-
-    private static int[][] generateEarliestAndLatestStartTimes(List<List<Integer>> jobPredecessors,
-                                                             List<Integer> jobDuration, int horizon) {
-        int[][] startTimes = new int[2][jobDuration.size()];
-
-        int n = jobDuration.size();  // Number of nodes
-        List<List<DAGLongestPath.Edge>> graph = new ArrayList<>();
-
-        for (int i = 0; i < n; i++) {
-            graph.add(new ArrayList<>());
-        }
-
-        for (int i = 0; i < jobPredecessors.size(); i++) {
-            for (int predecessor : jobPredecessors.get(i)) {
-                graph.get(predecessor - 1).add(new DAGLongestPath.Edge(i, jobDuration.get(predecessor - 1)));
-            }
-        }
-
-        int source = 0;
-        int[] earliestStartTimes = DAGLongestPath.findLongestPaths(graph, source);
-        int[] latestStartTimes = new int[jobDuration.size()];
-
-        for (int i = 0; i < jobDuration.size(); i++) {
-            int duration = DAGLongestPath.findLongestPaths(graph, i)[jobDuration.size() - 1];
-            latestStartTimes[i] = horizon - duration;
-        }
-
-
-        /*for (int i = 0; i < earliestStartTimes.length; i++) {
-            if (earliestStartTimes[i] == Integer.MIN_VALUE) {
-                System.out.println("Node " + i + ": unreachable");
-            } else {
-                System.out.println("Node " + i + ": " + earliestStartTimes[i]);
-                System.out.println("Node " + i + ": " + latestStartTimes[i]);
-            }
-        }*/
-
-        startTimes[0] = earliestStartTimes;
-        startTimes[1] = latestStartTimes;
-        return startTimes;
     }
 
     private static int[][] generatePrecedenceActivityOnNodeGraph(List<List<Integer>> jobPredecessors,
