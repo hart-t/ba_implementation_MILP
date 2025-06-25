@@ -22,9 +22,9 @@ public class Main {
             //System.out.println("Start times: " + timeDiscreteResult.start());
             //System.out.println("Finish times: " + timeDiscreteResult.finish());
             
-            Result.ScheduleIntegerResult timeDiscreteResult2 = DiscreteTimeModel2.gurobiRcpspJ30(filename);
-            System.out.println("Start times: " + timeDiscreteResult2.start());
-            System.out.println("Finish times: " + timeDiscreteResult2.finish());
+            //Result.ScheduleIntegerResult timeDiscreteResult2 = DiscreteTimeModel2.gurobiRcpspJ30(filename);
+            //System.out.println("Start times: " + timeDiscreteResult2.start());
+            //System.out.println("Finish times: " + timeDiscreteResult2.finish());
 
         } catch (Exception e) {
             e.printStackTrace();
