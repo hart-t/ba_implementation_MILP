@@ -23,7 +23,7 @@ public class DAGLongestPath {
         stack.push(node);
     }
 
-    private static int[] findLongestPaths(List<List<Edge>> graph, int source) {
+    public static int[] findLongestPaths(List<List<Edge>> graph, int source) {
         int n = graph.size();
         Stack<Integer> stack = new Stack<>();
         boolean[] visited = new boolean[n];
