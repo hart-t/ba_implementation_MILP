@@ -10,7 +10,7 @@ public class Main {
         File[] files = new File("/home/tobsi/university/kit/benchmarkSets").listFiles();
         assert files != null;
         //String filename = "/home/tobsi/university/kit/benchmarkSets/" + files[0].getName();
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j303_3.sm";
+        String filename = "/home/tobsi/university/kit/benchmarkSets/j3037_3.sm";
         //3037_4? false
         //3037_3? 63.00003099163224 starting time? 17 25?
 
@@ -18,11 +18,11 @@ public class Main {
             Result.ScheduleDoubleResult continuousFlowResult = ContinuousTimeModel.gurobiRcpspJ30(filename);
             System.out.println("Start times: " + continuousFlowResult.start());
             System.out.println("Finish times: " + continuousFlowResult.finish());
-            Result.ScheduleIntegerResult timeDiscreteResult = DiscreteTimeModel.gurobiRcpspJ30(filename);
-            System.out.println("Start times: " + timeDiscreteResult.start());
-            System.out.println("Finish times: " + timeDiscreteResult.finish());
+            //Result.ScheduleIntegerResult timeDiscreteResult = DiscreteTimeModel.gurobiRcpspJ30(filename);
+            //System.out.println("Start times: " + timeDiscreteResult.start());
+            //System.out.println("Finish times: " + timeDiscreteResult.finish());
             
-            Result.ScheduleIntegerResult timeDiscreteResult2 = DiscreteTimeModel.gurobiRcpspJ30(filename);
+            Result.ScheduleIntegerResult timeDiscreteResult2 = DiscreteTimeModel2.gurobiRcpspJ30(filename);
             System.out.println("Start times: " + timeDiscreteResult2.start());
             System.out.println("Finish times: " + timeDiscreteResult2.finish());
 

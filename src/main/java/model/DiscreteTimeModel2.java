@@ -45,10 +45,12 @@ public class DiscreteTimeModel2 {
         }
 
 
-        // (3) Set the objective: minimize sum_{t=LSi} {ESi} t * x[n+1, t]
+        // (3) Set the objective: minimize sum_{t=ESi}^{LSi} t * x[n+1, t]
         GRBLinExpr obj = new GRBLinExpr();
         for (int t = earliestStartTime[data.numberJob - 1]; t <= latestStartTime[data.numberJob - 1]; t++) {
-            obj.addTerm(t, startingTimeVars[data.numberJob - 1][t]);
+            if (t >= 0 && t < data.horizon && startingTimeVars[data.numberJob - 1][t] != null) {
+                obj.addTerm(t, startingTimeVars[data.numberJob - 1][t]);
+            }
         }
         model.setObjective(obj, GRB.MINIMIZE);
 
@@ -56,17 +58,23 @@ public class DiscreteTimeModel2 {
         // translations of precedence constraints 
         for (int j = 0; j < data.numberJob; j++) {
             for (int pred : data.jobPredecessors.get(j)) {
-                int i = pred;
+                int i = pred - 1; // Convert to 0-based index if predecessors are 1-based
+                if (i < 0 || i >= data.numberJob) continue; // Safety check
+                
                 GRBLinExpr left = new GRBLinExpr();
                 GRBLinExpr right = new GRBLinExpr();
 
                 // Left: sum_{t=ESj}^{LSj} t * x[j][t]
                 for (int t = earliestStartTime[j]; t <= latestStartTime[j]; t++) {
-                    left.addTerm(t, startingTimeVars[j][t]);
+                    if (t >= 0 && t < data.horizon && startingTimeVars[j][t] != null) {
+                        left.addTerm(t, startingTimeVars[j][t]);
+                    }
                 }
                 // Right: sum_{t=ESi}^{LSi} t * x[i][t] + p_i
                 for (int t = earliestStartTime[i]; t <= latestStartTime[i]; t++) {
-                    right.addTerm(t, startingTimeVars[i][t]);
+                    if (t >= 0 && t < data.horizon && startingTimeVars[i][t] != null) {
+                        right.addTerm(t, startingTimeVars[i][t]);
+                    }
                 }
                 right.addConstant(data.jobDuration.get(i));
 
@@ -89,7 +97,7 @@ public class DiscreteTimeModel2 {
                         // Only add terms if the range is valid
                         if (tauMin <= tauMax) {
                             for (int tau = tauMin; tau <= tauMax; tau++) {
-                                if (tau >= 0 && tau < data.horizon) {
+                                if (tau >= 0 && tau < data.horizon && startingTimeVars[i][tau] != null) {
                                     resourceUsage.addTerm(resourceDemand, startingTimeVars[i][tau]);
                                 }
                             }
@@ -106,13 +114,15 @@ public class DiscreteTimeModel2 {
         for (int i = 0; i < data.numberJob; i++) {
             GRBLinExpr activityStart = new GRBLinExpr();
             for (int t = earliestStartTime[i]; t <= latestStartTime[i]; t++) {
-                activityStart.addTerm(1.0, startingTimeVars[i][t]);
+                if (t >= 0 && t < data.horizon && startingTimeVars[i][t] != null) {
+                    activityStart.addTerm(1.0, startingTimeVars[i][t]);
+                }
             }
             model.addConstr(activityStart, GRB.EQUAL, 1.0, "activity_start_once_" + i);
         }
 
         // (7) Dummy start activity constraint: x_{00} = 1 (activity 0 starts at time 0)
-        if (data.numberJob > 0) {
+        if (data.numberJob > 0 && startingTimeVars[0][0] != null) {
             model.addConstr(startingTimeVars[0][0], GRB.EQUAL, 1.0, "dummy_start");
         }
 
@@ -132,9 +142,35 @@ public class DiscreteTimeModel2 {
         // apply serial SGS start Solution to model
         applySolutionWithGurobi(model, data.numberJob, data.jobDuration, HeuristicSerialSGS.serialSGS(data));
 
-        // Write model to file and optimize
+        // Set optimization parameters for better solution quality
+        model.set(GRB.DoubleParam.MIPGap, 0.0);        // Require optimal solution
+        model.set(GRB.DoubleParam.TimeLimit, 300.0);   // 5 minutes time limit
+        model.set(GRB.IntParam.Threads, 4);            // Use multiple threads
+        model.set(GRB.IntParam.Method, 2);             // Use barrier method
+        model.set(GRB.IntParam.OutputFlag, 1);         // Enable output
+
+        // Update model and write to file
+        model.update();
         model.write("linear_model.lp");
+        
+        // Optimize and check solution quality
         model.optimize();
+        
+        // Print solution information
+        if (model.get(GRB.IntAttr.Status) == GRB.Status.OPTIMAL) {
+            System.out.println("Optimal solution found!");
+            System.out.println("Objective value: " + model.get(GRB.DoubleAttr.ObjVal));
+        } else if (model.get(GRB.IntAttr.Status) == GRB.Status.TIME_LIMIT) {
+            System.out.println("Time limit reached. Best solution: " + model.get(GRB.DoubleAttr.ObjVal));
+            System.out.println("MIP Gap: " + model.get(GRB.DoubleAttr.MIPGap));
+        } else {
+            System.out.println("Solution status: " + model.get(GRB.IntAttr.Status));
+        }
+
+        // Debug: Check if we're using correct heuristic solution
+        List<Integer> heuristicSolution = HeuristicSerialSGS.serialSGS(data);
+        System.out.println("Heuristic solution makespan: " + Collections.max(heuristicSolution));
+        System.out.println("Heuristic start times: " + heuristicSolution);
 
         Result.ScheduleIntegerResult scheduleIntegerResult = fillListsToReturn(model, data.jobDuration, data.numberJob);
 
