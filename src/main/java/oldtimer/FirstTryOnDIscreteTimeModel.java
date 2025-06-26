@@ -1,6 +1,13 @@
-package model;
+package oldtimer;
 
 import com.gurobi.gurobi.*;
+
+import model.FileReader;
+import model.HeuristicSerialSGS;
+import model.Result;
+import model.FileReader.JobData;
+import model.Result.ScheduleIntegerResult;
+
 import java.util.*;
 
 public class FirstTryOnDIscreteTimeModel {
