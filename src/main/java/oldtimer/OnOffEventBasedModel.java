@@ -1,6 +1,13 @@
-package model;
+package oldtimer;
 
 import com.gurobi.gurobi.*;
+
+import model.DAGLongestPath;
+import model.FileReader;
+import model.Result;
+import model.FileReader.JobData;
+import model.Result.ScheduleDoubleResult;
+
 import java.util.*;
 
 /**
@@ -10,8 +17,6 @@ import java.util.*;
  * Variables: 
  * - S_i: continuous start time of activity i
  * - y_{it}: binary variable = 1 if activity i is active at time t, 0 otherwise
- * 
- * Objective: minimize makespan (start time of dummy end activity)
  * 
  */
 public class OnOffEventBasedModel {
@@ -69,14 +74,14 @@ public class OnOffEventBasedModel {
         System.out.println("Created variables: " + data.numberJob + " start time vars, " + 
                           onOffVarCount + " on-off vars (excluding dummy activities)");
 
-        // Objective function: minimize makespan (start time of last activity)
+        // Objective function (41): minimize makespan (start time of dummy end activity)
         GRBLinExpr obj = new GRBLinExpr();
         obj.addTerm(1, startingTimeVars[data.numberJob - 1]);
         model.setObjective(obj, GRB.MINIMIZE);
 
         // Constraints
 
-        // (25) Precedence constraints: S_j >= S_i + p_i for all (i,j) in E
+        // Precedence constraints: S_j >= S_i + p_i for all (i,j) in E
         System.out.println("Adding precedence constraints...");
         int precedenceCount = 0;
         for (int j = 0; j < data.numberJob; j++) {
@@ -90,14 +95,14 @@ public class OnOffEventBasedModel {
                     rhs.addTerm(1, startingTimeVars[i]);
                     rhs.addConstant(data.jobDuration.get(i));
                     
-                    model.addConstr(lhs, GRB.GREATER_EQUAL, rhs, "precedence_" + i + "_" + j + " (C25)");
+                    model.addConstr(lhs, GRB.GREATER_EQUAL, rhs, "precedence_" + i + "_" + j);
                     precedenceCount++;
                 }
             }
         }
         System.out.println("Added " + precedenceCount + " precedence constraints");
 
-        // (26) On-off constraints: link start times to binary variables
+        // On-off constraints: link start times to binary variables
         // For each activity i: y_{it} = 1 if and only if S_i <= t < S_i + p_i
         // Skip dummy activities (duration 0)
         System.out.println("Adding on-off constraints...");
@@ -117,7 +122,7 @@ public class OnOffEventBasedModel {
                 // Use a larger Big-M value
                 int M = latestStartTime[i] + duration + data.horizon;
                 
-                // Constraint C26a: y_{it} = 1 implies S_i <= t
+                // y_{it} = 1 implies S_i <= t
                 // Reformulated as: S_i <= t + M * (1 - y_{it})
                 // If y_{it} = 1, then S_i <= t
                 // If y_{it} = 0, constraint is relaxed (S_i <= t + M)
@@ -130,9 +135,9 @@ public class OnOffEventBasedModel {
                 expr2.addConstant(M);
                 expr2.addTerm(-M, onOffVars[i][t]);
                 
-                model.addConstr(expr1, GRB.LESS_EQUAL, expr2, "on_off_start_" + i + "_" + t + " (C26a)");
+                model.addConstr(expr1, GRB.LESS_EQUAL, expr2, "on_off_start_" + i + "_" + t);
                 
-                // Constraint C26b: y_{it} = 1 implies t < S_i + p_i
+                // y_{it} = 1 implies t < S_i + p_i
                 // Reformulated as: t <= S_i + p_i - 1 + M * (1 - y_{it})
                 // If y_{it} = 1, then t <= S_i + p_i - 1 (so t < S_i + p_i)
                 // If y_{it} = 0, constraint is relaxed (t <= S_i + p_i - 1 + M)
@@ -146,7 +151,7 @@ public class OnOffEventBasedModel {
                 expr4.addConstant(M);
                 expr4.addTerm(-M, onOffVars[i][t]);
                 
-                model.addConstr(expr3, GRB.LESS_EQUAL, expr4, "on_off_end_" + i + "_" + t + " (C26b)");
+                model.addConstr(expr3, GRB.LESS_EQUAL, expr4, "on_off_end_" + i + "_" + t);
                 
                 onOffCount += 2;
             }
@@ -158,12 +163,12 @@ public class OnOffEventBasedModel {
                     activityDuration.addTerm(1, onOffVars[i][t]);
                 }
             }
-            model.addConstr(activityDuration, GRB.EQUAL, duration, "duration_" + i + " (C26c)");
+            model.addConstr(activityDuration, GRB.EQUAL, duration, "duration_" + i);
             onOffCount++;
         }
         System.out.println("Added " + onOffCount + " on-off constraints");
 
-        // (27) Resource constraints: sum_i b_{ik} * y_{it} <= B_k for all k, t
+        // Resource constraints: sum_i b_{ik} * y_{it} <= B_k for all k, t
         // Skip dummy activities (duration 0) as they don't use resources during execution
         System.out.println("Adding resource constraints...");
         int resourceCount = 0;
@@ -183,17 +188,17 @@ public class OnOffEventBasedModel {
                 }
                 
                 model.addConstr(resourceUsage, GRB.LESS_EQUAL, data.resourceCapacity.get(k),
-                               "resource_" + k + "_time_" + t + " (C27)");
+                               "resource_" + k + "_time_" + t);
                 resourceCount++;
             }
         }
         System.out.println("Added " + resourceCount + " resource constraints");
 
-        // (28) Set dummy start activity constraint: S_0 = 0
-        model.addConstr(startingTimeVars[0], GRB.EQUAL, 0.0, "dummy_start (C28)");
+        // Set dummy start activity constraint: S_0 = 0 (implicit in bounds)
+        model.addConstr(startingTimeVars[0], GRB.EQUAL, 0.0, "dummy_start");
 
-        // Apply heuristic solution as warm start (re-enabled with corrected constraints)
-        List<Integer> heuristicSolution = HeuristicSerialSGS.serialSGS(data);
+        // Apply heuristic solution as warm start
+        //List<Integer> heuristicSolution = HeuristicSerialSGS.serialSGS(data);
         //applySolutionWithGurobi(model, startingTimeVars, onOffVars, data.numberJob, data.jobDuration, heuristicSolution);
 
         return model;

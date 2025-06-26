@@ -12,18 +12,21 @@ import com.gurobi.gurobi.GRBException;
 import com.gurobi.gurobi.GRBModel;
 import com.gurobi.gurobi.GRBVar;
 
+import oldtimer.OnOffEventBasedModel;
+
 public class Manager {
     public static void runModels() {
         //File[] files = new File("/home/tobsi/university/kit/benchmarkSets").listFiles();
         //assert files != null;
         //String filename = "/home/tobsi/university/kit/benchmarkSets/" + files[0].getName();
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j3037_6.sm";
+        String filename = "/home/tobsi/university/kit/benchmarkSets/j303_6.sm";
+        String modelName = "";
 
         // enter Model name here
-        //String modelName = "FlowBasedContinuousTimeModel";
-        //String modelName = "DiscreteTimeModel";
-        String modelName = "OnOffEventBasedModel";
-        boolean heuristicUsed = true;
+        //modelName = "FlowBasedContinuousTimeModel";
+        modelName = "DiscreteTimeModel";
+        //modelName = "OnOffEventBasedModel";
+        boolean heuristicUsed = false;
 
         try {
 
