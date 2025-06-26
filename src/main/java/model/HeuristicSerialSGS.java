@@ -2,6 +2,10 @@ package model;
 
 import java.util.*;
 
+/*
+ * Heuristic Serial SGS (Serial Schedule Generation Scheme)
+ * https://www.hsba.de/fileadmin/user_upload/bereiche/_dokumente/6-forschung/profs-publikationen/Hartmann_1999_Heuristic_Algorithms_for_solving_the_resource-constrained_project_scheduling_problem.pdf
+ */
 
 public class HeuristicSerialSGS {
 
