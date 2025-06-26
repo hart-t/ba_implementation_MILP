@@ -18,7 +18,7 @@ import java.util.*;
         public final List<Integer> resourceCapacity;
  */
 
-public class ContinuousTimeModel {
+public class FlowBasedContinuousTimeModel {
 
     public static Result.ScheduleDoubleResult gurobiRcpspJ30(String file) throws Exception {
         // Create FileReader instance and get the data
