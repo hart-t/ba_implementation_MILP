@@ -4,33 +4,42 @@ import com.gurobi.gurobi.*;
 
 import java.util.*;
 
-/*
-        https://www.sciencedirect.com/science/article/pii/S0305054809003360
-        flow based continuous
-
-        public final int numberJob;
-        public final int horizon;
-        public final List<Integer> jobNumSuccessors;
-        public final List<List<Integer>> jobSuccessors;
-        public final List<List<Integer>> jobPredecessors;
-        public final List<Integer> jobDuration;
-        public final List<List<Integer>> jobResource;
-        public final List<Integer> resourceCapacity;
- */
+/**
+ * Flow-based continuous time model for the Resource-Constrained Project Scheduling Problem (RCPSP).
+ * This model uses Gurobi to solve the problem by defining variables, constraints, and an objective function.
+ * It is designed to handle precedence relations, resource constraints, and flow conservation.
+ * The model is based on the flow-based approach described in the literature.
+ *
+ * https://www.sciencedirect.com/science/article/pii/S0305054809003360
+ *      flow based continuous
+ *
+ *      public final int numberJob;
+ *      public final int horizon;
+ *      public final List<Integer> jobNumSuccessors;
+ *      public final List<List<Integer>> jobSuccessors;
+ *      public final List<List<Integer>> jobPredecessors;
+ *      public final List<Integer> jobDuration;
+ *      public final List<List<Integer>> jobResource;
+ *      public final List<Integer> resourceCapacity;
+ * */
 
 public class FlowBasedContinuousTimeModel {
 
-    public static Result.ScheduleDoubleResult gurobiRcpspJ30(String file) throws Exception {
-        // Create FileReader instance and get the data
-        FileReader fileReader = new FileReader();
-        FileReader.JobData data = fileReader.dataRead(file);
+    public static GRBModel gurobiRcpspJ30(GRBModel model,
+     FileReader.JobData data ) throws Exception {
 
-        // T=100 like its recommended for J30 instances (time to solve)
-        final int T = 100;
+        // generate TE matrix, This means that if there is a path from activity i to j in the precedence graph
+        // (even if not directly), then (i,j) element TE.
+        int[][] teMatrix = computeTEMatrix(data.numberJob, data.jobSuccessors, data.jobDuration);
 
-        // Initialize the Gurobi environment and model
-        GRBEnv env = new GRBEnv();
-        GRBModel model = new GRBModel(env);
+        /*for (int[] row : teMatrix) {
+            System.out.println(Arrays.toString(row));
+        }*/
+
+        // 
+        int[][] startTimes = generateEarliestAndLatestStartTimes(data.jobPredecessors, data.jobDuration, data.horizon);
+        int[] earliestStartTime = startTimes[0];
+        int[] latestStartTime = startTimes[1];
 
         // add starting time variables
         GRBVar[] startingTimeVars =new GRBVar[data.numberJob];
@@ -56,7 +65,7 @@ public class FlowBasedContinuousTimeModel {
             for (int j = 0; j < data.numberJob; j++) {
                 if (i == j) continue; // Skip self-transfer
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
-                    continuousFlowVars[i][j][k] = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.INTEGER,
+                    continuousFlowVars[i][j][k] = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS,
                             "quantity of resource " + k + "transferred from " + i + " to " + j);
                 }
             }
@@ -111,18 +120,6 @@ public class FlowBasedContinuousTimeModel {
                 }
             }
         }
-
-        // generate TE matrix, This means that if there is a path from activity i to j in the precedence graph
-        // (even if not directly), then (i,j) element TE.
-        int[][] teMatrix = computeTEMatrix(data.numberJob, data.jobSuccessors, data.jobDuration);
-
-        /*for (int[] row : teMatrix) {
-            System.out.println(Arrays.toString(row));
-        }*/
-
-        int[][] startTimes = generateEarliestAndLatestStartTimes(data.jobPredecessors, data.jobDuration, data.horizon);
-        int[] earliestStartTime = startTimes[0];
-        int[] latestStartTime = startTimes[1];
 
         // Constraints (14) are so-called disjunctive constraints linking the start time of i and j with respect to
         // variable xij.
@@ -184,7 +181,6 @@ public class FlowBasedContinuousTimeModel {
                     expr1.addTerm(1, continuousFlowVars[i][j][k]);
                 }
 
-                if (expr1 == null) continue;
                 expr2.addConstant(resourceDemands[i][k]);
 
                 model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 + " (C16)");
@@ -200,11 +196,10 @@ public class FlowBasedContinuousTimeModel {
                 GRBLinExpr expr2 = new GRBLinExpr();
 
                 for (int i = 0; i < data.numberJob; i++) {
-                    if (i == j) continue; // Skip self-
+                   if (i == j) continue; // Skip self-
                     expr1.addTerm(1, continuousFlowVars[i][j][k]);
                 }
 
-                if (expr1 == null) continue;
                 expr2.addConstant(resourceDemands[j][k]);
 
                 model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 + " (C17)");
@@ -311,30 +306,7 @@ public class FlowBasedContinuousTimeModel {
         obj.addTerm(1, startingTimeVars[data.numberJob - 1]);
         model.setObjective(obj, GRB.MINIMIZE);
 
-
-
-
-        //GRBVar[][] x = new GRBVar[data.numberJob][T];
-        //fillWithCVariables(model, startingTimeVars, precedenceVars, continuousFlowVars, resourceDemands);
-
-        // Write model to file and optimize
-        model.set(GRB.DoubleParam.TimeLimit, 60.0);
-        model.write("linear_model.lp");
-        model.optimize();
-
-        if (model.get(GRB.IntAttr.Status) == GRB.Status.INFEASIBLE) {
-            System.out.println("Model is infeasible.");
-            model.computeIIS();
-            model.write("model.ilp");
-        }
-
-        Result.ScheduleDoubleResult scheduleDoubleResult = fillListsToReturn(model, data.jobDuration, data.numberJob);
-
-        // Clean up Gurobi model and environment
-        model.dispose();
-        env.dispose();
-
-        return scheduleDoubleResult;
+        return model;
     }
 
     private static int[][] generateEarliestAndLatestStartTimes(List<List<Integer>> jobPredecessors,
@@ -376,32 +348,6 @@ public class FlowBasedContinuousTimeModel {
         startTimes[0] = earliestStartTimes;
         startTimes[1] = latestStartTimes;
         return startTimes;
-    }
-
-    private static int[][] generatePrecedenceActivityOnNodeGraph(List<List<Integer>> jobPredecessors,
-                                                                 List<Integer> jobDuration) {
-        int[][] precedenceActivityOnNodeGraph = new int[jobDuration.size()][jobDuration.size()];
-
-        for (int i = 0; i < jobDuration.size(); i++) {
-            for (int j = 0; j < jobDuration.size(); j++) {
-                precedenceActivityOnNodeGraph[i][j] = -1;
-            }
-        }
-
-        for (int i = 0; i < jobPredecessors.size(); i++) {
-            for (int predecessor : jobPredecessors.get(i)) {
-                precedenceActivityOnNodeGraph[predecessor - 1][i] = jobDuration.get(predecessor - 1);
-            }
-        }
-
-        return precedenceActivityOnNodeGraph;
-    }
-
-    private static void fillWithCVariables(GRBModel model, GRBVar[] startingTimeVars, GRBVar[][] precedenceVars,
-                                           GRBVar[][][] continuousFlowVars, int[][] resourceDemands) {
-
-
-
     }
 
     public static int[][] computeTEMatrix(int jobCount, List<List<Integer>> jobSuccessors, List<Integer> jobDuration) {
@@ -487,12 +433,12 @@ public class FlowBasedContinuousTimeModel {
             finish.set(i, start.get(i) + jobDuration.get(i));
         }
 
-        // Aggressive integer rounding for RCPSP (where solutions are typically integer)
+        // integer rounding
+        // TODO am i allowed? lol
         for (int i = 0; i < numJob; i++) {
             double startTime = start.get(i);
             double finishTime = finish.get(i);
 
-            // Aggressive integer rounding for RCPSP (where solutions are typically integer)
             if (Math.abs(startTime - Math.round(startTime)) < 0.01) {
                 startTime = Math.round(startTime);
             }

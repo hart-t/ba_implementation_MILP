@@ -3,11 +3,19 @@ package model;
 import com.gurobi.gurobi.*;
 import java.util.*;
 
-public class DiscreteTimeModel {
-
-    /**
-     * Implements the discrete-time formulation for RCPSP from Koné et al. 2011
-     * "Event-based MILP models for resource-constrained project scheduling problems"
+/*
+     * Solves the RCPSP problem using Gurobi with a discrete time model.
+     *  https://www.sciencedirect.com/science/article/pii/S0305054809003360
+     *  Basic discrete-time formulation (DT), 1969, Pritsker et al.
+     *
+     *  public final int numberJob;
+     *  public final int horizon;
+     *  public final List<Integer> jobNumSuccessors;
+     *  public final List<List<Integer>> jobSuccessors;
+     *  public final List<List<Integer>> jobPredecessors;
+     *  public final List<Integer> jobDuration;
+     *  public final List<List<Integer>> jobResource;
+     *  public final List<Integer> resourceCapacity;
      * 
      * Variables: x_{it} = 1 if activity i starts at time t, 0 otherwise
      * Objective: minimize makespan (start time of dummy end activity)
@@ -17,15 +25,13 @@ public class DiscreteTimeModel {
      * (6) Each activity starts exactly once
      * (7) Dummy start activity at time 0
      * (8)/(9) Variable bounds and binary constraints
+     * (8) is replaced by setting startingTimeVars[i][t] = null for t element H\{ESi,LSi}
+     * (9) is redundant by setting the Variable type to GRB.BINARY?
      */
-    public static Result.ScheduleIntegerResult gurobiRcpspJ30(String file) throws Exception {
-        // Create FileReader instance and get the data
-        FileReader fileReader = new FileReader();
-        FileReader.JobData data = fileReader.dataRead(file);
 
-        // Initialize the Gurobi environment and model
-        GRBEnv env = new GRBEnv();
-        GRBModel model = new GRBModel(env);
+public class DiscreteTimeModel {
+
+    public static GRBModel gurobiRcpspJ30(GRBModel model, FileReader.JobData data) throws Exception {
 
         int[][] startTimes = DAGLongestPath.generateEarliestAndLatestStartTimes
                 (data.jobPredecessors, data.jobDuration, data.horizon);
@@ -39,7 +45,7 @@ public class DiscreteTimeModel {
                     startingTimeVars[i][t] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "startingTime[" +
                             i + "] at [" + t + "]");
                 } else {
-                    startingTimeVars[i][t] = null; // Or handle appropriately in constraints
+                    startingTimeVars[i][t] = null; // replaces (8)? = 0?
                 }
             }
         }
@@ -57,28 +63,27 @@ public class DiscreteTimeModel {
         // (4) Precedence constraints: sum_{t=ESj}^{LSj} t*x_{jt} >= sum_{t=ESi}^{LSi} t*x_{it} + p_i for all (i,j) in E
         // translations of precedence constraints 
         for (int j = 0; j < data.numberJob; j++) {
-            for (int pred : data.jobPredecessors.get(j)) {
-                int i = pred - 1; // Convert to 0-based index if predecessors are 1-based
-                if (i < 0 || i >= data.numberJob) continue; // Safety check
+            for (int predecessor : data.jobPredecessors.get(j)) {
+                int i = predecessor - 1;
                 
-                GRBLinExpr left = new GRBLinExpr();
-                GRBLinExpr right = new GRBLinExpr();
+                GRBLinExpr expr1 = new GRBLinExpr();
+                GRBLinExpr expr2 = new GRBLinExpr();
 
                 // Left: sum_{t=ESj}^{LSj} t * x[j][t]
                 for (int t = earliestStartTime[j]; t <= latestStartTime[j]; t++) {
                     if (t >= 0 && t < data.horizon && startingTimeVars[j][t] != null) {
-                        left.addTerm(t, startingTimeVars[j][t]);
+                        expr1.addTerm(t, startingTimeVars[j][t]);
                     }
                 }
                 // Right: sum_{t=ESi}^{LSi} t * x[i][t] + p_i
                 for (int t = earliestStartTime[i]; t <= latestStartTime[i]; t++) {
                     if (t >= 0 && t < data.horizon && startingTimeVars[i][t] != null) {
-                        right.addTerm(t, startingTimeVars[i][t]);
+                        expr2.addTerm(t, startingTimeVars[i][t]);
                     }
                 }
-                right.addConstant(data.jobDuration.get(i));
+                expr2.addConstant(data.jobDuration.get(i));
 
-                model.addConstr(left, GRB.GREATER_EQUAL, right, "precedence_" + i + "_" + j);
+                model.addConstr(expr1, GRB.GREATER_EQUAL, expr2, "precedence_" + i + "_" + j);
             }
         }
 
@@ -94,7 +99,7 @@ public class DiscreteTimeModel {
                         int tauMin = Math.max(earliestStartTime[i], t - data.jobDuration.get(i) + 1);
                         int tauMax = Math.min(latestStartTime[i], t);
                         
-                        // Only add terms if the range is valid
+                        // check if range is valid
                         if (tauMin <= tauMax) {
                             for (int tau = tauMin; tau <= tauMax; tau++) {
                                 if (tau >= 0 && tau < data.horizon && startingTimeVars[i][tau] != null) {
@@ -110,7 +115,7 @@ public class DiscreteTimeModel {
             }
         }
 
-        // (6) Each activity must start exactly once: sum_{t=ESi}^{LSi} x_{it} = 1 for all i in A ∪ {n+1}
+        // (6) Each activity must start exactly once
         for (int i = 0; i < data.numberJob; i++) {
             GRBLinExpr activityStart = new GRBLinExpr();
             for (int t = earliestStartTime[i]; t <= latestStartTime[i]; t++) {
@@ -121,14 +126,12 @@ public class DiscreteTimeModel {
             model.addConstr(activityStart, GRB.EQUAL, 1.0, "activity_start_once_" + i);
         }
 
-        // (7) Dummy start activity constraint: x_{00} = 1 (activity 0 starts at time 0)
+        // (7) Dummy start activity constraint: x_{00} = 1
         if (data.numberJob > 0 && startingTimeVars[0][0] != null) {
             model.addConstr(startingTimeVars[0][0], GRB.EQUAL, 1.0, "dummy_start");
         }
 
         // (8) Variable bounds 
-        // This is already handled by the variable creation above, so no additional constraints needed here.
-        // Explicitly set variables to 0 for time periods outside valid windows
         /*for (int i = 0; i < data.numberJob; i++) {
             for (int t = 0; t < data.horizon; t++) {
                 if (t < earliestStartTime[i] || t > latestStartTime[i]) {
@@ -140,45 +143,9 @@ public class DiscreteTimeModel {
         // (9) Binary variables TODO not necessary cause vars are set to GRB.BINARY when creating variables
 
         // apply serial SGS start Solution to model
-        applySolutionWithGurobi(model, data.numberJob, data.jobDuration, HeuristicSerialSGS.serialSGS(data));
+        // applySolutionWithGurobi(model, data.numberJob, data.jobDuration, HeuristicSerialSGS.serialSGS(data));
 
-        // Set optimization parameters for better solution quality
-        model.set(GRB.DoubleParam.MIPGap, 0.0);        // Require optimal solution
-        model.set(GRB.DoubleParam.TimeLimit, 300.0);   // 5 minutes time limit
-        model.set(GRB.IntParam.Threads, 4);            // Use multiple threads
-        model.set(GRB.IntParam.Method, 2);             // Use barrier method
-        model.set(GRB.IntParam.OutputFlag, 1);         // Enable output
-
-        // Update model and write to file
-        model.update();
-        model.write("linear_model.lp");
-        
-        // Optimize and check solution quality
-        model.optimize();
-        
-        // Print solution information
-        if (model.get(GRB.IntAttr.Status) == GRB.Status.OPTIMAL) {
-            System.out.println("Optimal solution found!");
-            System.out.println("Objective value: " + model.get(GRB.DoubleAttr.ObjVal));
-        } else if (model.get(GRB.IntAttr.Status) == GRB.Status.TIME_LIMIT) {
-            System.out.println("Time limit reached. Best solution: " + model.get(GRB.DoubleAttr.ObjVal));
-            System.out.println("MIP Gap: " + model.get(GRB.DoubleAttr.MIPGap));
-        } else {
-            System.out.println("Solution status: " + model.get(GRB.IntAttr.Status));
-        }
-
-        // Debug: Check if we're using correct heuristic solution
-        List<Integer> heuristicSolution = HeuristicSerialSGS.serialSGS(data);
-        System.out.println("Heuristic solution makespan: " + Collections.max(heuristicSolution));
-        System.out.println("Heuristic start times: " + heuristicSolution);
-
-        Result.ScheduleIntegerResult scheduleIntegerResult = fillListsToReturn(model, data.jobDuration, data.numberJob);
-
-        // Clean up Gurobi model and environment
-        model.dispose();
-        env.dispose();
-
-        return scheduleIntegerResult;
+        return model;
     }
 
     private static void applySolutionWithGurobi(GRBModel model, int numberJob, List<Integer> jobDuration,
@@ -194,46 +161,5 @@ public class DiscreteTimeModel {
             }
         }
         model.update();
-    }
-
-    private static Result.ScheduleIntegerResult fillListsToReturn(GRBModel model, List<Integer> jobDuration, int numJob) throws GRBException {
-
-        // Safe solution in outputDict
-        Map<Integer, Integer> outputDict = new HashMap<>();
-        for (GRBVar var : model.getVars()) {
-            if (var.get(GRB.DoubleAttr.X) > 0.5) { // Use > 0.5 for binary variables
-                System.out.println(var.get(GRB.StringAttr.VarName) + " " + var.get(GRB.DoubleAttr.X));
-                String varName = var.get(GRB.StringAttr.VarName);
-                
-                // Parse variable name: "startingTime[i] at [t]"
-                if (varName.startsWith("startingTime[")) {
-                    String[] parts = varName.split("\\] at \\[");
-                    if (parts.length == 2) {
-                        int jobId = Integer.parseInt(parts[0].substring("startingTime[".length()));
-                        int startTime = Integer.parseInt(parts[1].substring(0, parts[1].length() - 1));
-                        outputDict.put(jobId, startTime);
-                    }
-                }
-            }
-        }
-
-        List<Integer> start = new ArrayList<>(numJob);
-        List<Integer> finish = new ArrayList<>(numJob);
-
-        for (int i = 0; i < numJob; i++) {
-            start.add(0);
-            finish.add(0);
-        }
-
-        // Fill start times
-        for (Map.Entry<Integer, Integer> entry : outputDict.entrySet()) {
-            start.set(entry.getKey(), entry.getValue());
-        }
-
-        // Fill finish times
-        for (int i = 0; i < numJob; i++) {
-            finish.set(i, start.get(i) + jobDuration.get(i));
-        }
-        return new Result.ScheduleIntegerResult(start, finish);
     }
 }
