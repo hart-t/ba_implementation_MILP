@@ -1,4 +1,4 @@
-package model;
+package models;
 
 import com.gurobi.gurobi.*;
 
@@ -135,8 +135,10 @@ public class FlowBasedContinuousTimeModel {
                 if i calculate Mij like its described as ESi - LSj and i precedes j then the Mij is negative?
                 but the same discription said to set Mij as a large enough constant
                  */
-                int Mij = earliestStartTime[i] - latestStartTime[j];
-                Mij = data.horizon;
+                //int Mij = earliestStartTime[i] - latestStartTime[j];
+                int Mij = latestStartTime[i] - earliestStartTime[j];
+                // latest start i -earliest start j
+                //Mij = data.horizon;
                 GRBLinExpr expr1 = new GRBLinExpr();
                 GRBLinExpr expr2 = new GRBLinExpr();
 
@@ -188,7 +190,6 @@ public class FlowBasedContinuousTimeModel {
         }
 
         // (17) i think there is a typo and it should be "for all j" instead of "for all i" like in C16
-        // TODO
         for (int j = 0; j < data.numberJob; j++) {
             for (int k = 0; k < data.resourceCapacity.size(); k++) {
 
@@ -282,22 +283,6 @@ public class FlowBasedContinuousTimeModel {
                     expr1 + "(23)");
             model.addConstr(expr1, GRB.LESS_EQUAL, expr3, expr1 + " latest possible start >= " +
                     expr3 + "(23)");
-        }
-
-        // TODO braucht man das wenn GRB.BINARY?
-        // (24) xij is binary
-        for (int i = 0; i < data.numberJob; i++) {
-            for (int j = 0; j < data.numberJob; j++) {
-                if (i == j) continue;
-
-                GRBLinExpr expr1 = new GRBLinExpr();
-                GRBQuadExpr qexpr2 = new GRBQuadExpr();
-
-                expr1.addTerm(1, precedenceVars[i][j]);
-                qexpr2.addTerm(1, precedenceVars[i][j], precedenceVars[i][j]);
-
-                model.addQConstr(expr1, GRB.EQUAL,qexpr2 , expr1 + " equals " + qexpr2 + " (xij is binary) (24)");
-            }
         }
 
         // Objective function: minimize the starting time of the last job
@@ -434,7 +419,6 @@ public class FlowBasedContinuousTimeModel {
         }
 
         // integer rounding
-        // TODO am i allowed? lol
         for (int i = 0; i < numJob; i++) {
             double startTime = start.get(i);
             double finishTime = finish.get(i);

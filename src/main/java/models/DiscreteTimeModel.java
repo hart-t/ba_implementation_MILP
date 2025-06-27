@@ -1,4 +1,4 @@
-package model;
+package models;
 
 import com.gurobi.gurobi.*;
 import java.util.*;

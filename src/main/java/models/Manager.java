@@ -1,4 +1,4 @@
-package model;
+package models;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,12 +19,12 @@ public class Manager {
         //File[] files = new File("/home/tobsi/university/kit/benchmarkSets").listFiles();
         //assert files != null;
         //String filename = "/home/tobsi/university/kit/benchmarkSets/" + files[0].getName();
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j303_6.sm";
+        String filename = "/home/tobsi/university/kit/benchmarkSets/j3037_2.sm";
         String modelName = "";
 
         // enter Model name here
-        //modelName = "FlowBasedContinuousTimeModel";
-        modelName = "DiscreteTimeModel";
+        modelName = "FlowBasedContinuousTimeModel";
+        //modelName = "DiscreteTimeModel";
         //modelName = "OnOffEventBasedModel";
         boolean heuristicUsed = false;
 

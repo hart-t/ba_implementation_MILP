@@ -1,6 +1,4 @@
-package model;
-
-import java.io.File;
+package models;
 
 
 public class Main {

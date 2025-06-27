@@ -1,4 +1,4 @@
-package model;
+package models;
 
 import java.util.List;
 
@@ -15,4 +15,7 @@ public class Result {
         System.out.println("Start times: " + result.start());
         System.out.println("Finish times: " + result.finish());
     }
+    //upper lower bound, time heuristic 
+
+    // 
 }
