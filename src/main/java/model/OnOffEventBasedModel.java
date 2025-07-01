@@ -2,11 +2,11 @@ package oldtimer;
 
 import com.gurobi.gurobi.*;
 
-import io.FileReader;
-import io.Result;
-import io.FileReader.JobData;
-import io.Result.ScheduleDoubleResult;
-import models.DAGLongestPath;
+import model.DAGLongestPath;
+import model.FileReader;
+import model.Result;
+import model.FileReader.JobData;
+import model.Result.ScheduleDoubleResult;
 
 import java.util.*;
 
@@ -242,7 +242,7 @@ public class OnOffEventBasedModel {
         System.out.println("Warm start applied successfully.");
     }
 
-    private static Result.ScheduleDoubleResult fillListsToReturn(GRBModel model, GRBVar[] startingTimeVars,
+    private static io.ScheduleDoubleResult fillListsToReturn(GRBModel model, GRBVar[] startingTimeVars,
                                                                 List<Integer> jobDuration, int numJob) throws GRBException {
         List<Double> start = new ArrayList<>(numJob);
         List<Double> finish = new ArrayList<>(numJob);

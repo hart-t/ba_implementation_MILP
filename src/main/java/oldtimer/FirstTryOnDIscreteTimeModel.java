@@ -2,9 +2,9 @@ package oldtimer;
 
 import com.gurobi.gurobi.*;
 
-import model.FileReader;
-import model.HeuristicSerialSGS;
-import model.Result;
+import io.FileReader;
+import io.Result;
+import models.HeuristicSerialSGS;
 
 import java.util.*;
 
