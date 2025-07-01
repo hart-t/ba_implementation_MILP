@@ -2,8 +2,8 @@ package models;
 
 import com.gurobi.gurobi.*;
 
-import io.FileReader;
-import io.Result;
+import io.JobDataInstance;
+import utility.DAGLongestPath;
 
 import java.util.*;
 
@@ -29,7 +29,7 @@ import java.util.*;
 public class FlowBasedContinuousTimeModel {
 
     public static GRBModel gurobiRcpspJ30(GRBModel model,
-     FileReader.JobData data ) throws Exception {
+     JobDataInstance data ) throws Exception {
 
         // generate TE matrix, This means that if there is a path from activity i to j in the precedence graph
         // (even if not directly), then (i,j) element TE.
@@ -133,7 +133,6 @@ public class FlowBasedContinuousTimeModel {
                 if (precedenceVars[i][j] == null) continue;
                 // Mij is some large enough constant, which can be set to any valid upper bound for Si - Sj
                 // (e.g., Mij = ESi - LSj)
-                // TODO make it make sense
                 /*
                 if i calculate Mij like its described as ESi - LSj and i precedes j then the Mij is negative?
                 but the same discription said to set Mij as a large enough constant
@@ -393,50 +392,4 @@ public class FlowBasedContinuousTimeModel {
         }
     }
 
-    private static Result.ScheduleDoubleResult fillListsToReturn(GRBModel model, List<Integer> jobDuration, int numJob) throws GRBException {
-
-        // Safe solution in outputDict
-        Map<Integer, Double> outputDict = new HashMap<>();
-        for (int i = 0; i < numJob; i++) {
-            GRBVar var = model.getVars()[i];
-            System.out.println(var.get(GRB.StringAttr.VarName) + " " + var.get(GRB.DoubleAttr.X));
-            outputDict.put(i, var.get(GRB.DoubleAttr.X));
-        }
-
-        List<Double> start = new ArrayList<>(numJob);
-        List<Double> finish = new ArrayList<>(numJob);
-
-        for (int i = 0; i < numJob; i++) {
-            start.add(0.0);
-            finish.add(0.0);
-        }
-
-        // Fill start times
-        for (Map.Entry<Integer, Double> entry : outputDict.entrySet()) {
-            start.set(entry.getKey(), entry.getValue());
-        }
-
-        // Fill finish times
-        for (int i = 0; i < numJob; i++) {
-            finish.set(i, start.get(i) + jobDuration.get(i));
-        }
-
-        // integer rounding
-        for (int i = 0; i < numJob; i++) {
-            double startTime = start.get(i);
-            double finishTime = finish.get(i);
-
-            if (Math.abs(startTime - Math.round(startTime)) < 0.01) {
-                startTime = Math.round(startTime);
-            }
-            if (Math.abs(finishTime - Math.round(finishTime)) < 0.01) {
-                finishTime = Math.round(finishTime);
-            }
-
-            start.set(i, startTime);
-            finish.set(i, finishTime);
-        }
-
-        return new Result.ScheduleDoubleResult(start, finish);
-    }
 }

@@ -1,4 +1,4 @@
-package models;
+package logic;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,8 +13,11 @@ import com.gurobi.gurobi.GRBModel;
 import com.gurobi.gurobi.GRBVar;
 
 import io.FileReader;
+import io.JobDataInstance;
 import io.Result;
-import oldtimer.OnOffEventBasedModel;
+import models.DiscreteTimeModel;
+import models.FlowBasedContinuousTimeModel;
+import models.HeuristicSerialSGS;
 
 public class Manager {
     public static void runModels() {
@@ -34,7 +37,7 @@ public class Manager {
 
             // Create FileReader instance and get the data
             FileReader fileReader = new FileReader();
-            FileReader.JobData data = fileReader.dataRead(filename);
+            JobDataInstance data = fileReader.dataRead(filename);
 
             // Initialize the Gurobi environment and model
             GRBEnv env = new GRBEnv();
@@ -53,8 +56,6 @@ public class Manager {
                 model = FlowBasedContinuousTimeModel.gurobiRcpspJ30(model, data);
             } else if (modelName.equals("DiscreteTimeModel")) {
                 model = DiscreteTimeModel.gurobiRcpspJ30(model, data);
-            } else if (modelName.equals("OnOffEventBasedModel")) {
-                model = OnOffEventBasedModel.gurobiRcpspJ30(model, data);
             } else {
                 throw new IllegalArgumentException("Unknown model name: " + modelName);  
             }

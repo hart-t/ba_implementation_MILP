@@ -1,4 +1,4 @@
-package oldtimer;
+/*package oldtimer;
 
 import com.gurobi.gurobi.*;
 
@@ -19,7 +19,7 @@ import java.util.*;
  * - y_{it}: binary variable = 1 if activity i is active at time t, 0 otherwise
  * 
  */
-public class OnOffEventBasedModel {
+/*public class OnOffEventBasedModel {
 
     public static GRBModel gurobiRcpspJ30(GRBModel model, FileReader.JobData data) throws Exception {
         // Calculate earliest and latest start times for variable bounds
@@ -266,3 +266,4 @@ public class OnOffEventBasedModel {
         return new Result.ScheduleDoubleResult(start, finish);
     }
 }
+*/

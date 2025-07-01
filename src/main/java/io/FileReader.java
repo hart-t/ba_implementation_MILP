@@ -8,33 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FileReader {
-    
-    public static class JobData {
-        public final int numberJob;
-        public final int horizon;
-        public final List<Integer> jobNumSuccessors;
-        public final List<List<Integer>> jobSuccessors;
-        public final List<List<Integer>> jobPredecessors;
-        public final List<Integer> jobDuration;
-        public final List<List<Integer>> jobResource;
-        public final List<Integer> resourceCapacity;
-        
-        public JobData(int numberJob, int horizon, List<Integer> jobNumSuccessors,
-                      List<List<Integer>> jobSuccessors, List<List<Integer>> jobPredecessors,
-                      List<Integer> jobDuration, List<List<Integer>> jobResource,
-                      List<Integer> resourceCapacity) {
-            this.numberJob = numberJob;
-            this.horizon = horizon;
-            this.jobNumSuccessors = jobNumSuccessors;
-            this.jobSuccessors = jobSuccessors;
-            this.jobPredecessors = jobPredecessors;
-            this.jobDuration = jobDuration;
-            this.jobResource = jobResource;
-            this.resourceCapacity = resourceCapacity;
-        }
-    }
 
-    public JobData dataRead(String file) throws Exception {
+    public JobDataInstance dataRead(String file) throws Exception {
         System.out.println("Reading file: " + file);
         List<String[]> data = new ArrayList<>();
         
@@ -92,7 +67,7 @@ public class FileReader {
             row++;
         }
 
-        return new JobData(numberJob, horizon, jobNumSuccessors, jobSuccessors,
+        return new JobDataInstance(numberJob, horizon, jobNumSuccessors, jobSuccessors,
                          jobPredecessors, jobDuration, jobResource, resourceCapacity);
     }
 }

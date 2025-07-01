@@ -2,7 +2,7 @@ package models;
 
 import java.util.*;
 
-import io.FileReader;
+import io.JobDataInstance;
 
 /*
  * Heuristic Serial SGS (Serial Schedule Generation Scheme)
@@ -11,7 +11,7 @@ import io.FileReader;
 
 public class HeuristicSerialSGS {
 
-    public static List<Integer> serialSGS(FileReader.JobData jobData) {
+    public static List<Integer> serialSGS(JobDataInstance jobData) {
         int numberJob = jobData.numberJob;
         int horizon = jobData.horizon;
         List<List<Integer>> jobPredecessors = jobData.jobPredecessors;

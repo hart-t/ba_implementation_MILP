@@ -2,9 +2,8 @@ package models;
 
 import com.gurobi.gurobi.*;
 
-import io.FileReader;
-
-import java.util.*;
+import io.JobDataInstance;
+import utility.DAGLongestPath;
 
 /*
      * Solves the RCPSP problem using Gurobi with a discrete time model.
@@ -34,7 +33,7 @@ import java.util.*;
 
 public class DiscreteTimeModel {
 
-    public static GRBModel gurobiRcpspJ30(GRBModel model, FileReader.JobData data) throws Exception {
+    public static GRBModel gurobiRcpspJ30(GRBModel model, JobDataInstance data) throws Exception {
 
         int[][] startTimes = DAGLongestPath.generateEarliestAndLatestStartTimes
                 (data.jobPredecessors, data.jobDuration, data.horizon);
@@ -143,7 +142,7 @@ public class DiscreteTimeModel {
             }
         }*/
 
-        // (9) Binary variables TODO not necessary cause vars are set to GRB.BINARY when creating variables
+        // (9) Binary variables constraint not necessary cause vars are set to GRB.BINARY when creating variables
 
         // apply serial SGS start Solution to model
         // applySolutionWithGurobi(model, data.numberJob, data.jobDuration, HeuristicSerialSGS.serialSGS(data));
@@ -151,6 +150,7 @@ public class DiscreteTimeModel {
         return model;
     }
 
+    /* 
     private static void applySolutionWithGurobi(GRBModel model, int numberJob, List<Integer> jobDuration,
                                                 List<Integer> startTimes) throws GRBException {
         model.update();
@@ -164,5 +164,5 @@ public class DiscreteTimeModel {
             }
         }
         model.update();
-    }
+    }*/
 }
