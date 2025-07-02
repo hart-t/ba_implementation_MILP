@@ -24,12 +24,12 @@ public class Manager {
         //File[] files = new File("/home/tobsi/university/kit/benchmarkSets").listFiles();
         //assert files != null;
         //String filename = "/home/tobsi/university/kit/benchmarkSets/" + files[0].getName();
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j3037_2.sm";
+        String filename = "/home/tobsi/university/kit/benchmarkSets/j303_3.sm";
         String modelName = "";
 
         // enter Model name here
-        modelName = "FlowBasedContinuousTimeModel";
-        //modelName = "DiscreteTimeModel";
+        //modelName = "FlowBasedContinuousTimeModel";
+        modelName = "DiscreteTimeModel";
         //modelName = "OnOffEventBasedModel";
         boolean heuristicUsed = false;
 
@@ -62,10 +62,10 @@ public class Manager {
 
             if (heuristicUsed == true) {
             // Apply heuristic solution to model
-            List<Integer> heuristicSolution = HeuristicSerialSGS.serialSGS(data);
+            Map<Integer, Integer> heuristicSolution = HeuristicSerialSGS.serialSGS(data);
             //applySolutionWithGurobi(model, data.numberJob, data.jobDuration, heuristicSolution);
             // Debug: Check if we're using correct heuristic solution
-            System.out.println("Heuristic solution makespan: " + Collections.max(heuristicSolution));
+            System.out.println("Heuristic solution makespan: " + heuristicSolution.get(data.numberJob - 1));
             System.out.println("Heuristic start times: " + heuristicSolution);
             }
             // Write model to file and optimize

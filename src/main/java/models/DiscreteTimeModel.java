@@ -4,6 +4,9 @@ import com.gurobi.gurobi.*;
 
 import io.JobDataInstance;
 import utility.DAGLongestPath;
+import java.util.List;
+import java.util.Map;
+import interfaces.ModelSolutionInterface;
 
 /*
      * Solves the RCPSP problem using Gurobi with a discrete time model.
@@ -40,6 +43,8 @@ public class DiscreteTimeModel {
         int[] earliestStartTime = startTimes[0];
         int[] latestStartTime = startTimes[1];
 
+
+        // if heuristic solution applied, skipp the next two lines, variables are already set
         GRBVar[][] startingTimeVars = new GRBVar[data.numberJob][data.horizon];
         for (int i = 0; i < data.numberJob; i++) {
             for (int t = 0; t < data.horizon; t++) {
@@ -145,12 +150,12 @@ public class DiscreteTimeModel {
         // (9) Binary variables constraint not necessary cause vars are set to GRB.BINARY when creating variables
 
         // apply serial SGS start Solution to model
-        // applySolutionWithGurobi(model, data.numberJob, data.jobDuration, HeuristicSerialSGS.serialSGS(data));
+        //applySolutionWithGurobi(model, data.numberJob, data.jobDuration, HeuristicSerialSGS.serialSGS(data));
 
         return model;
     }
 
-    /* 
+    
     private static void applySolutionWithGurobi(GRBModel model, int numberJob, List<Integer> jobDuration,
                                                 List<Integer> startTimes) throws GRBException {
         model.update();
@@ -164,5 +169,17 @@ public class DiscreteTimeModel {
             }
         }
         model.update();
-    }*/
+    }
+
+    public class DiscreteTimeModelSolution implements ModelSolutionInterface {
+        public GRBVar[][] startingTimeVars;
+        public GRBModel model;
+        public int[][] earliestLatestStartTimes;
+
+        public DiscreteTimeModelSolution(GRBVar[][] startingTimeVars, GRBModel model, int[][] earliestLatestStartTimes) {
+            this.startingTimeVars = startingTimeVars;
+            this.model = model;
+            this.earliestLatestStartTimes = earliestLatestStartTimes;
+        }
+    }
 }

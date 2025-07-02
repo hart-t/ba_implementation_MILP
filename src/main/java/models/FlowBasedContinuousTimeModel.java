@@ -6,6 +6,9 @@ import io.JobDataInstance;
 import utility.DAGLongestPath;
 
 import java.util.*;
+import interfaces.ModelInterface;
+import interfaces.ModelSolutionInterface;
+import io.Result;
 
 /**
  * Flow-based continuous time model for the Resource-Constrained Project Scheduling Problem (RCPSP).
@@ -26,7 +29,41 @@ import java.util.*;
  *      public final List<Integer> resourceCapacity;
  * */
 
-public class FlowBasedContinuousTimeModel {
+public class FlowBasedContinuousTimeModel implements ModelInterface {
+
+    public FlowBasedContinuousTimeModel() {}
+
+    public Result solve(ModelSolutionInterface initialSolution, JobDataInstance data) {
+        try {
+            GRBEnv env = new GRBEnv();
+            GRBModel model = new GRBModel(env);
+
+            // Call the method to build the model
+            //model = gurobiRcpspJ30(model, data);
+
+            // Optimize the model
+            model.optimize();
+
+            // Extract results
+            Map<Integer, Integer> startTimes = new HashMap<>();
+            for (int i = 0; i < data.numberJob; i++) {
+                startTimes.put(i, (int) model.getVarByName("startingTime[" + i + "]").get(GRB.DoubleAttr.X));
+            }
+
+            // Set the start times in the data instance
+            data.setStartTimes(startTimes);
+
+            // Dispose of the model and environment
+            model.dispose();
+            env.dispose();
+
+            return null;
+
+        } catch (GRBException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static GRBModel gurobiRcpspJ30(GRBModel model,
      JobDataInstance data ) throws Exception {
@@ -389,6 +426,26 @@ public class FlowBasedContinuousTimeModel {
             }
 
             collectCumulativeDurations(successorIndex, newCumulativeDuration, visited, teMatrix, jobSuccessors, jobDuration);
+        }
+    }
+
+    public class FlowBasedContinuousTimeModelSolution implements ModelSolutionInterface {
+        GRBVar[] startingTimeVars;// = new GRBVar[data.numberJob];
+        GRBVar[][] precedenceVars;// =new GRBVar[data.numberJob][data.numberJob];
+        GRBVar[][][] continuousFlowVars;// =new GRBVar[data.numberJob][data.numberJob][data.resourceCapacity.size()];
+
+
+        public GRBModel model;
+        public int[][] earliestLatestStartTimes;
+
+        public FlowBasedContinuousTimeModelSolution(GRBVar[] startingTimeVars, GRBVar[][] precedenceVars,
+                        GRBVar[][][] continuousFlowVars, GRBModel model, int[][] earliestLatestStartTimes) {
+            
+            this.startingTimeVars = startingTimeVars;
+            this.precedenceVars = precedenceVars;
+            this.continuousFlowVars = continuousFlowVars;
+            this.model = model;
+            this.earliestLatestStartTimes = earliestLatestStartTimes;
         }
     }
 

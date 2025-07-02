@@ -3,6 +3,7 @@ package oldtimer;
 import com.gurobi.gurobi.*;
 
 import io.FileReader;
+import io.JobDataInstance;
 import io.Result;
 import models.HeuristicSerialSGS;
 
@@ -13,7 +14,7 @@ public class FirstTryOnDIscreteTimeModel {
     public static Result.ScheduleIntegerResult gurobiRcpspJ30(String file) throws Exception {
         // Create FileReader instance and get the data
         FileReader fileReader = new FileReader();
-        FileReader.JobData data = fileReader.dataRead(file);
+        JobDataInstance data = fileReader.dataRead(file);
 
         // RcpspParser rcpspParser = new RcpspParser();
         // RcpspParser.dataInstance dataInstance = rcpspParser.readFile(file);

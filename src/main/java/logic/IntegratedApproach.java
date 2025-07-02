@@ -31,6 +31,6 @@ public class IntegratedApproach {
 
 
 
-        return new Result();
+        return null;
     }
 }

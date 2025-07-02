@@ -3,15 +3,22 @@ package models;
 import java.util.*;
 
 import io.JobDataInstance;
+import interfaces.HeuristicInterface;
 
 /*
  * Heuristic Serial SGS (Serial Schedule Generation Scheme)
  * https://www.hsba.de/fileadmin/user_upload/bereiche/_dokumente/6-forschung/profs-publikationen/Hartmann_1999_Heuristic_Algorithms_for_solving_the_resource-constrained_project_scheduling_problem.pdf
+ * priority rule: shortest processing time first
  */
 
-public class HeuristicSerialSGS {
+public class HeuristicSerialSGS implements HeuristicInterface {
 
-    public static List<Integer> serialSGS(JobDataInstance jobData) {
+    @Override
+    public Map<Integer, Integer> determineStartTimes(JobDataInstance data) {
+        return null;
+    }
+
+    public static Map<Integer, Integer> serialSGS(JobDataInstance jobData) {
         int numberJob = jobData.numberJob;
         int horizon = jobData.horizon;
         List<List<Integer>> jobPredecessors = jobData.jobPredecessors;
@@ -19,7 +26,11 @@ public class HeuristicSerialSGS {
         List<List<Integer>> jobResource = jobData.jobResource;
         List<Integer> resourceCapacity = jobData.resourceCapacity;
 
-        List<Integer> startTimes = new ArrayList<>(Collections.nCopies(numberJob, 0));
+        Map<Integer, Integer> startTimes = new HashMap<>();
+        // Initialize all start times to 0
+        for (int i = 0; i < numberJob; i++) {
+            startTimes.put(i, 0);
+        }
         boolean[] scheduled = new boolean[numberJob];
 
         int[][] resourceUsed = new int[resourceCapacity.size()][horizon];
@@ -89,7 +100,7 @@ public class HeuristicSerialSGS {
                                 }
                             }
                         }
-                        startTimes.set(i, t);
+                        startTimes.put(i, t);
                         scheduled[i] = true;
                         activityScheduled = true;
                         break;
@@ -116,6 +127,7 @@ public class HeuristicSerialSGS {
         if (!allScheduled(scheduled)) {
             throw new RuntimeException("SSGS failed to schedule all activities within iteration limit");
         }
+
         return startTimes;
     }
 
