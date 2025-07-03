@@ -7,9 +7,8 @@ import com.gurobi.gurobi.GRBVar;
 import interfaces.CompletionMethodInterface;
 import interfaces.ModelSolutionInterface;
 import io.JobDataInstance;
-import models.DiscreteTimeModel;
 import models.FlowBasedContinuousTimeModel;
-import models.DiscreteTimeModel.DiscreteTimeModelSolution;
+import models.FlowBasedContinuousTimeModel.FlowBasedContinuousTimeModelSolution;
 import utility.DAGLongestPath;
 
 import java.util.*;
@@ -19,31 +18,113 @@ public class BuildFlowSolution implements CompletionMethodInterface {
     public ModelSolutionInterface buildSolution(Map<Integer, Integer> startTimes, JobDataInstance data, 
     GRBModel model) {
 
-        DiscreteTimeModel discreteTimeModel = new DiscreteTimeModel();
-        FlowBasedContinuousTimeModelSolution solution = discreteTimeModel.new DiscreteTimeModelSolution(
-            new GRBVar[data.numberJob][data.horizon], model, DAGLongestPath.generateEarliestAndLatestStartTimes
-                (data.jobPredecessors, data.jobDuration, data.horizon));
+        GRBVar[] startingTimeVars = new GRBVar[data.numberJob];
+        GRBVar[][] precedenceVars =new GRBVar[data.numberJob][data.numberJob];
+        GRBVar[][][] continuousFlowVars =new GRBVar[data.numberJob][data.numberJob][data.resourceCapacity.size()];
 
+        int[][] earliestLatestStartTimes = DAGLongestPath.generateEarliestAndLatestStartTimes
+                (data.jobPredecessors, data.jobDuration, data.horizon);
 
-        int[] earliestStartTime = solution.earliestLatestStartTimes[0];
-        int[] latestStartTime = solution.earliestLatestStartTimes[1];
-
-        // TODO muss solution.model oder reicht model?
         try {
+            // add starting time variables
             for (int i = 0; i < data.numberJob; i++) {
-                for (int t = 0; t < data.horizon; t++) {
-                    if (t >= earliestStartTime[i] && t <= latestStartTime[i]) {
-                        solution.startingTimeVars[i][t] = solution.model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "startingTime[" +
-                                i + "] at [" + t + "]");
-                    } else {
-                        solution.startingTimeVars[i][t] = null; // replaces (8)? = 0?
+                startingTimeVars[i] = model.addVar(0.0, data.horizon, 0.0, GRB.CONTINUOUS, "startingTime[" +
+                        i + "]");
+            }
+
+            // indicate whether activity i is processed before activity j
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int j = 0; j < data.numberJob; j++) {
+                    if (i == j) continue; // Skip self-precedence
+                    precedenceVars[i][j] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "[" + i +
+                            "] precedes [" + j + "]");
+                }
+            }
+
+            // Finally, continuous flow variables are introduced to denote the quantity of resource k that is transferred
+            // from activity i (at the end of its processing) to activity j (at the start of its processing).
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int j = 0; j < data.numberJob; j++) {
+                    if (i == j) continue; // Skip self-transfer
+                    for (int k = 0; k < data.resourceCapacity.size(); k++) {
+                        continuousFlowVars[i][j][k] = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS,
+                                "quantity of resource " + k + "transferred from " + i + " to " + j);
                     }
                 }
             }
+
+            model.update(); // Ensure the model is updated after adding variables
+            if (!startTimes.isEmpty()) {
+                // Set the start values for the starting time variables based on the provided startTimes map
+                for (int i = 0; i < data.numberJob; i++) {
+                    int startTime = startTimes.get(i);
+                    GRBVar var = model.getVarByName("startingTime[" + i + "]");
+                    if (var != null) {
+                        // Set the start value for the variable (job i starts at startTime)
+                        var.set(GRB.DoubleAttr.Start, startTime);
+                    } else {
+                        System.err.println("Variable for job " + i + " at time " + startTime + " not found.");
+                    }   
+                }
+
+                // Set the precedence variables based on the starting times
+                for (int i = 0; i < data.numberJob; i++) {
+                    for (int j = 0; j < data.numberJob; j++) {
+                        if (i == j) continue; // Skip self-precedence
+                        GRBVar var1 = model.getVarByName("[" + i + "] precedes [" + j + "]");
+                        GRBVar var2 = model.getVarByName("[" + j + "] precedes [" + i + "]");
+
+                        if (startTimes.get(i) < startTimes.get(j)) {
+                            // Set the precedence value for the precedence variable
+                            var1.set(GRB.DoubleAttr.Start, 1.0);
+                        }
+                        else if (startTimes.get(i) > startTimes.get(j)) {
+                            // Set the precedence value for the precedence variable
+                            var2.set(GRB.DoubleAttr.Start, 1.0);
+                        }
+                    }
+                }
+
+                // Set flow variables when job j starts directly after job i and they use the same resource
+                for (int i = 0; i < data.numberJob; i++) {
+                    for (int j = 0; j < data.numberJob; j++) {
+                        if (i == j) continue; // Skip self-transfer
+                        
+                        // Check if job j starts directly after job i
+                        int jobIEndTime = startTimes.get(i) + data.jobDuration.get(i);
+                        int jobJStartTime = startTimes.get(j);
+                        
+                        if (jobIEndTime == jobJStartTime) {
+                            // Jobs are consecutive, check for shared resources
+                            for (int k = 0; k < data.resourceCapacity.size(); k++) {
+                                int resourceDemandI = data.jobResource.get(i).get(k);
+                                int resourceDemandJ = data.jobResource.get(j).get(k);
+                                
+                                // If both jobs use the same resource
+                                if (resourceDemandI > 0 && resourceDemandJ > 0) {
+                                    GRBVar flowVar = model.getVarByName("quantity of resource " + k + "transferred from " + i + " to " + j);
+                                    if (flowVar != null) {
+                                        // Set flow to the minimum of what i releases and j needs
+                                        double flowAmount = Math.min(resourceDemandI, resourceDemandJ);
+                                        flowVar.set(GRB.DoubleAttr.Start, flowAmount);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            model.update(); // Ensure the model is updated after modifying variables
         } catch (Exception e) {
             System.err.println("Error while creating starting time variables: " + e.getMessage());
             return null;
         }
+
+        FlowBasedContinuousTimeModel flowBasedContinuousTimeModel = new FlowBasedContinuousTimeModel();
+        FlowBasedContinuousTimeModelSolution solution = flowBasedContinuousTimeModel.new 
+                                        FlowBasedContinuousTimeModelSolution(startingTimeVars, precedenceVars,
+                                         continuousFlowVars, model, earliestLatestStartTimes);
+
         return solution;
     }
 }
