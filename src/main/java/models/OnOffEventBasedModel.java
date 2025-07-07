@@ -120,8 +120,9 @@ public class OnOffEventBasedModel implements ModelInterface {
             //  variables te, and ensure that, if activity i starts immediately after event e and ends at event 
             // f, then the date of event f is at least equal to the date of event e plus the processing time of
             // activity i (tf >= te + pi)
-            for (int e = 0; e < startOfEventEVars.length; e++) {
-                for (int f = 0; f < startOfEventEVars.length; f++) {
+            // start at 1 or 0 TODO
+            for (int e = 1; e < startOfEventEVars.length; e++) {
+                for (int f = 1; f < startOfEventEVars.length; f++) {
                     if (f <= e) {
                         continue;
                     }
@@ -221,8 +222,9 @@ public class OnOffEventBasedModel implements ModelInterface {
 
             // (51) Constraints (51) and (52) set the start time of any activity i between its earliest start 
             // time ESi and its latest start time LSi.
-            for (int e = 0; e < startOfEventEVars.length; e++) {
-                for (int i = 0; i < data.numberJob; i++) {
+            // TODO e and i start at 0 or 1?
+            for (int e = 1; e < startOfEventEVars.length; e++) {
+                for (int i = 1; i < data.numberJob; i++) {
                     GRBLinExpr expr1 = new GRBLinExpr();
                     GRBLinExpr expr2 = new GRBLinExpr();
                     GRBLinExpr expr3 = new GRBLinExpr();
