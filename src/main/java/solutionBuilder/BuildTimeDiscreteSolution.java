@@ -53,7 +53,7 @@ public class BuildTimeDiscreteSolution implements CompletionMethodInterface {
             }
             model.update(); // Ensure the model is updated after modifying variables
         } catch (Exception e) {
-            System.err.println("Error while creating starting time variables: " + e.getMessage());
+            System.err.println("Error while creating a start solution from given start times: " + e.getMessage());
             return null;
         }
 

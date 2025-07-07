@@ -1,4 +1,4 @@
-package logic;
+package oldtimer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,12 +12,12 @@ import com.gurobi.gurobi.GRBException;
 import com.gurobi.gurobi.GRBModel;
 import com.gurobi.gurobi.GRBVar;
 
+import heuristics.HeuristicSerialSGS;
 import io.FileReader;
 import io.JobDataInstance;
 import io.Result;
 import models.DiscreteTimeModel;
 import models.FlowBasedContinuousTimeModel;
-import models.HeuristicSerialSGS;
 
 public class Manager {
     public static void runModels() {

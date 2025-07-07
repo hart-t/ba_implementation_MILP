@@ -6,6 +6,8 @@ import io.JobDataInstance;
 import io.Result;
 import interfaces.ModelInterface;
 import interfaces.ModelSolutionInterface;
+import interfaces.CompletionMethodInterface;
+import solutionBuilder.BuildOnOffEventSolution;
 
 /**
  * On off Event-Based Model 2
@@ -27,10 +29,20 @@ import interfaces.ModelSolutionInterface;
  * */
 
 public class OnOffEventBasedModel implements ModelInterface {
+    private final CompletionMethodInterface completionMethod;
+
+    public OnOffEventBasedModel() {
+        // Constructor
+        this.completionMethod = new BuildOnOffEventSolution();
+    }
+
+    @Override
+    public CompletionMethodInterface getCompletionMethod() {
+        return completionMethod;
+    }
     
     public GRBModel completeModel(ModelSolutionInterface initialSolution, JobDataInstance data) {
         try {
-            // TODO DELETE DUMMYS
             GRBModel model = initialSolution.getModel();
 
             // Cast to access the Variables
@@ -250,6 +262,12 @@ public class OnOffEventBasedModel implements ModelInterface {
             System.err.println("Error while solving the model: " + e.getMessage());
             return null;
         }
+    }
+
+    @Override
+    public boolean usesDummyJobs() {
+        // This model does not use dummy jobs
+        return false;
     }
 
     public class OnOffEventBasedModelSolution implements ModelSolutionInterface {

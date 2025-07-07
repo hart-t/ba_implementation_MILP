@@ -7,6 +7,8 @@ import io.Result;
 import interfaces.ModelSolutionInterface;
 import interfaces.ModelInterface;
 import io.OptimizedSolution;
+import interfaces.CompletionMethodInterface;
+import solutionBuilder.BuildTimeDiscreteSolution;
 
 /*
      * Solves the RCPSP problem using Gurobi with a discrete time model.
@@ -36,12 +38,21 @@ import io.OptimizedSolution;
 
 public class DiscreteTimeModel implements ModelInterface {
 
+    private final CompletionMethodInterface completionMethod;
+
     public DiscreteTimeModel() {
         // Constructor
+        this.completionMethod = new BuildTimeDiscreteSolution();
     }
 
+    // getSolutionBuilder or getCompletionMethod
     @Override
-    public Result solve(ModelSolutionInterface initialSolution, JobDataInstance data) {
+    public CompletionMethodInterface getCompletionMethod() {
+        return completionMethod;
+    }
+    
+    @Override
+    public GRBModel completeModel(ModelSolutionInterface initialSolution, JobDataInstance data) {
         try {
             GRBModel model = initialSolution.getModel();
             
@@ -144,7 +155,7 @@ public class DiscreteTimeModel implements ModelInterface {
 
             OptimizedSolution optimizedSolution = new OptimizedSolution(model);
 
-            return new Result(optimizedSolution, null);
+            return model;
         } catch (GRBException e) {
             e.printStackTrace();
             return null;
@@ -152,6 +163,12 @@ public class DiscreteTimeModel implements ModelInterface {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public boolean usesDummyJobs() {
+        // This model uses dummy jobs (supersource and supersink)
+        return true;
     }
 
     public class DiscreteTimeModelSolution implements ModelSolutionInterface {

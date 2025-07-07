@@ -70,4 +70,13 @@ public class FileReader {
         return new JobDataInstance(numberJob, horizon, jobNumSuccessors, jobSuccessors,
                          jobPredecessors, jobDuration, jobResource, resourceCapacity);
     }
+
+    public SolverResults readResults(String file) throws Exception {
+        Double upperBound = null;
+        Double lowerBound = null;
+        Double objectiveValue = null;
+        Double timeInSeconds = null;
+
+        return new SolverResults(upperBound, lowerBound, objectiveValue, timeInSeconds);
+    }
 }

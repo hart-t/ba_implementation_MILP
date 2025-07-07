@@ -2,10 +2,10 @@ package oldtimer;
 
 import com.gurobi.gurobi.*;
 
+import heuristics.HeuristicSerialSGS;
 import io.FileReader;
 import io.JobDataInstance;
 import io.Result;
-import models.HeuristicSerialSGS;
 
 import java.util.*;
 

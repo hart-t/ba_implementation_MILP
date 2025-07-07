@@ -1,8 +1,11 @@
 package interfaces;
 
 import io.JobDataInstance;
+import com.gurobi.gurobi.*;
 import io.Result;
 
 public interface ModelInterface {
-    public Result solve(ModelSolutionInterface initialSolution, JobDataInstance data);
+    public GRBModel completeModel(ModelSolutionInterface initialSolution, JobDataInstance data);
+    public CompletionMethodInterface getCompletionMethod();
+    public boolean usesDummyJobs();
 }
