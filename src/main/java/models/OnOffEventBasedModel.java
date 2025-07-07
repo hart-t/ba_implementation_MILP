@@ -83,8 +83,8 @@ public class OnOffEventBasedModel implements ModelInterface {
             // (43) Constraints (43) link the makespan to the event dates: Cmax >= te + (zie - zi,e-1)pi
             // for all e in E, all i in A
             for (int i = 0; i < data.numberJob; i++) {
-                // start at e = 1
-                for (int e = 1; e < startOfEventEVars.length - 1; e++) {
+                // start at e = 1 to ensure e-1 >= 0
+                for (int e = 1; e < startOfEventEVars.length; e++) {
                     GRBLinExpr expr1 = new GRBLinExpr();
                     GRBLinExpr expr2 = new GRBLinExpr();
                     
@@ -169,8 +169,8 @@ public class OnOffEventBasedModel implements ModelInterface {
                 for (int e = 1; e < startOfEventEVars.length; e++) {
                     GRBLinExpr expr1 = new GRBLinExpr();
                     GRBLinExpr expr2 = new GRBLinExpr();
-                    // TODO paper says < n - 1?
-                    for (int ee = e; ee < data.numberJob - 1; ee++) {
+                    // Fix: ensure ee doesn't go out of bounds
+                    for (int ee = e; ee < Math.min(data.numberJob, startOfEventEVars.length); ee++) {
                         expr1.addTerm(1, jobActiveAtEventVars[i][ee]);
                     }
 
@@ -222,9 +222,8 @@ public class OnOffEventBasedModel implements ModelInterface {
 
             // (51) Constraints (51) and (52) set the start time of any activity i between its earliest start 
             // time ESi and its latest start time LSi.
-            // TODO e and i start at 0 or 1?
             for (int e = 1; e < startOfEventEVars.length; e++) {
-                for (int i = 1; i < data.numberJob; i++) {
+                for (int i = 0; i < data.numberJob; i++) {
                     GRBLinExpr expr1 = new GRBLinExpr();
                     GRBLinExpr expr2 = new GRBLinExpr();
                     GRBLinExpr expr3 = new GRBLinExpr();
@@ -234,10 +233,10 @@ public class OnOffEventBasedModel implements ModelInterface {
                     expr2.addTerm(1, startOfEventEVars[e]);
 
                     expr3.addTerm(latestStartTime[i], jobActiveAtEventVars[i][e]);
-                    expr3.addTerm(- latestStartTime[i], jobActiveAtEventVars[i][ - 1]);
-                    expr3.addConstant(latestStartTime[data.numberJob]);
-                    expr3.addTerm(- latestStartTime[data.numberJob], jobActiveAtEventVars[i][e]);
-                    expr3.addTerm(latestStartTime[data.numberJob], jobActiveAtEventVars[i][e - 1]);
+                    expr3.addTerm(- latestStartTime[i], jobActiveAtEventVars[i][e - 1]);
+                    expr3.addConstant(latestStartTime[latestStartTime.length - 1]);
+                    expr3.addTerm(- latestStartTime[latestStartTime.length - 1], jobActiveAtEventVars[i][e]);
+                    expr3.addTerm(latestStartTime[latestStartTime.length - 1], jobActiveAtEventVars[i][e - 1]);
 
                     model.addConstr(expr1, GRB.LESS_EQUAL, expr2, expr1 + " less equal " + expr2 + " (51)");
                     model.addConstr(expr2, GRB.LESS_EQUAL, expr3, expr2 + " less equal " + expr3 + " (51)");   
