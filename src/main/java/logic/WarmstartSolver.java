@@ -49,6 +49,8 @@ public class WarmstartSolver {
             // Optimize and check solution quality
             grbOptimizationModel.optimize();
 
+            grbOptimizationModel.write("logFile.lp"); // Write the model to a file for debugging
+
             SolverResults solverResults = buildSolverResults(grbOptimizationModel);
             Result result = new Result(new OptimizedSolution(grbOptimizationModel), solverResults);
                 

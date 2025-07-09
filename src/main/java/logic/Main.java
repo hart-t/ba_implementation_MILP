@@ -16,7 +16,7 @@ import utility.DeleteDummyJobs;
 
 public class Main {
     public static void main(String[] args) {
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j303_3.sm";
+        String filename = "/home/tobsi/university/kit/benchmarkSets/j303_5.sm";
 
         try {
 
@@ -39,12 +39,8 @@ public class Main {
         for (ModelInterface model : modelList) {
             IntegratedApproach integratedApproach = new IntegratedApproach(heuristicsList, new WarmstartSolver(model));
 
-            if (!model.usesDummyJobs()) {
-                JobDataInstance noDummyDataInstance = DeleteDummyJobs.deleteDummyJobs(data);
-                integratedApproach.solve(noDummyDataInstance).printResult();;
-            } else {
-                integratedApproach.solve(data).printResult();
-            }
+            integratedApproach.solve(data).printResult();
+            
         }
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());

@@ -8,6 +8,7 @@ import interfaces.CompletionMethodInterface;
 import interfaces.ModelSolutionInterface;
 import io.JobDataInstance;
 import utility.DAGLongestPath;
+import utility.DeleteDummyJobs;
 import models.OnOffEventBasedModel;
 import models.OnOffEventBasedModel.OnOffEventBasedModelSolution;
 
@@ -17,17 +18,20 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
 
     public ModelSolutionInterface buildSolution(Map<Integer, Integer> startTimes, JobDataInstance data, 
     GRBModel model) {
-
-        GRBVar[][] jobActiveAtEventVars = new GRBVar[data.numberJob][data.numberJob];
-        GRBVar[] startOfEventEVars = new GRBVar[data.numberJob];
-
         int[][] earliestLatestStartTimes = DAGLongestPath.generateEarliestAndLatestStartTimes
-                (data.jobPredecessors, data.jobDuration, data.horizon);
+                        (data.jobPredecessors, data.jobDuration, data.horizon);
+        
+        JobDataInstance noDummyData = DeleteDummyJobs.deleteDummyJobs(data);
 
+        GRBVar makespanVar;
+        GRBVar[] startOfEventEVars = new GRBVar[noDummyData.numberJob];
+        GRBVar[][] jobActiveAtEventVars = new GRBVar[noDummyData.numberJob][noDummyData.numberJob];
+        
         try {
+            makespanVar = model.addVar(0.0, noDummyData.horizon, 0.0, GRB.CONTINUOUS, "makespan");
             // add zie
-            for (int i = 0; i < data.numberJob; i++) {
-                for (int e = 0; e < data.numberJob; e++) {
+            for (int i = 0; i < noDummyData.numberJob; i++) {
+                for (int e = 0; e < noDummyData.numberJob; e++) {
                     jobActiveAtEventVars[i][e] = model.addVar(0.0, 1.0, 0.0, GRB.CONTINUOUS, "jobActiveAtEvent[" +
                         i + "][" + e + "]");
                 }
@@ -35,8 +39,10 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
 
             // represents the date of the start of the event e (te)
             for (int e = 0; e < startOfEventEVars.length; e++) {
-                startOfEventEVars[e] = model.addVar(0.0, data.horizon, 0.0, GRB.CONTINUOUS, "startOfEvent[" + e + "]");
+                startOfEventEVars[e] = model.addVar(0.0, noDummyData.horizon, 0.0, GRB.CONTINUOUS, "startOfEvent[" + e + "]");
             }
+
+
 
             model.update(); // Ensure the model is updated after adding variables
             if (!startTimes.isEmpty()) {
@@ -46,6 +52,7 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
                 sortedEntries.sort(Map.Entry.comparingByValue());
                 
                 int eventIndex = 0;
+                int makespan = 0;
                 for (Map.Entry<Integer, Integer> entry : sortedEntries) {
                     int job = entry.getKey();
                     int startTime = entry.getValue();
@@ -62,11 +69,16 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
                     var2.set(GRB.DoubleAttr.Start, 1.0);
                     
                     // Set jobActiveAtEvent[job][event] to 1 for subsequent events while job is active
-                    int jobDuration = data.jobDuration.get(job);
+                    int jobDuration = noDummyData.jobDuration.get(job);
                     int jobEndTime = startTime + jobDuration;
+
+                    if (makespan < jobEndTime) {
+                        makespan = jobEndTime;
+                        makespanVar.set(GRB.DoubleAttr.Start, makespan);
+                    }
                     
                     // Check all subsequent events to see if job is still active
-                    for (int e = eventIndex + 1; e < data.numberJob && e < sortedEntries.size(); e++) {
+                    for (int e = eventIndex + 1; e < noDummyData.numberJob && e < sortedEntries.size(); e++) {
                         int nextEventTime = sortedEntries.get(e).getValue();
                         // If the job is still active at this event, set variable to 1
                         if (nextEventTime < jobEndTime) {
@@ -91,7 +103,7 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
 
         OnOffEventBasedModel onOffEventBasedModel = new OnOffEventBasedModel();
         OnOffEventBasedModelSolution solution = onOffEventBasedModel.new 
-                                        OnOffEventBasedModelSolution(startOfEventEVars, jobActiveAtEventVars, model,
+                                        OnOffEventBasedModelSolution(makespanVar, startOfEventEVars, jobActiveAtEventVars, model,
                                          earliestLatestStartTimes);
 
         return solution;
