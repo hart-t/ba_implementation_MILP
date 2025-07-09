@@ -50,9 +50,10 @@ public class WarmstartSolver {
             grbOptimizationModel.optimize();
 
             grbOptimizationModel.write("logFile.lp"); // Write the model to a file for debugging
+            int[][] startAndFinishTimes = model.getStartAndFinishTimes(grbOptimizationModel, data);
 
             SolverResults solverResults = buildSolverResults(grbOptimizationModel);
-            Result result = new Result(new OptimizedSolution(grbOptimizationModel), solverResults);
+            Result result = new Result(new OptimizedSolution(grbOptimizationModel), solverResults, startAndFinishTimes);
                 
             // Clean up Gurobi model and environment
             grbOptimizationModel.dispose();

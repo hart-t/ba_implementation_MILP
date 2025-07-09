@@ -195,4 +195,47 @@ public class DiscreteTimeModel implements ModelInterface {
             return startingTimeVars;
         }
     }
+
+    @Override
+    public int[][] getStartAndFinishTimes(GRBModel model, JobDataInstance data) {
+        try {
+            int[] startTimes = new int[data.numberJob];
+            int[] finishTimes = new int[data.numberJob];
+            
+            // Initialize start times to -1 (not found)
+            for (int i = 0; i < data.numberJob; i++) {
+                startTimes[i] = -1;
+            }
+            
+            // Extract start times by checking variables with the naming pattern "startingTime[i] at [t]"
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int t = 0; t < data.horizon; t++) {
+                    try {
+                        GRBVar var = model.getVarByName("startingTime[" + i + "] at [" + t + "]");
+                        if (var != null && var.get(GRB.DoubleAttr.X) > 0.5) {
+                            startTimes[i] = t;
+                            break; // Found the start time for this job
+                        }
+                    } catch (GRBException e) {
+                        // Variable doesn't exist, continue
+                    }
+                }
+            }
+            
+            // Calculate finish times: startTime + duration
+            for (int i = 0; i < data.numberJob; i++) {
+                if (startTimes[i] >= 0) {
+                    finishTimes[i] = startTimes[i] + data.jobDuration.get(i);
+                } else {
+                    finishTimes[i] = -1; // Job not scheduled
+                }
+            }
+            
+            return new int[][]{startTimes, finishTimes};
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        return null;
+        }
+    }
 }

@@ -13,5 +13,5 @@ public class OptimizedSolution implements ModelSolutionInterface {
     @Override
     public GRBModel getModel() {
         return model;
-    }   
+    }
 }

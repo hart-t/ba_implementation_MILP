@@ -351,4 +351,45 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
             return continuousFlowVars;
         }
     }
+
+    @Override
+    public int[][] getStartAndFinishTimes(GRBModel model, JobDataInstance data) {
+        try {
+            int[] startTimes = new int[data.numberJob];
+            int[] finishTimes = new int[data.numberJob];
+            
+            // Initialize start times to 0
+            for (int i = 0; i < data.numberJob; i++) {
+                startTimes[i] = 0;
+            }
+            
+            // Extract start times from continuous variables
+            for (GRBVar var : model.getVars()) {
+                String varName = var.get(GRB.StringAttr.VarName);
+                if (varName.startsWith("startingTime[")) {
+                    // Extract job index from variable name "startingTime[i]"
+                    int jobIndex = Integer.parseInt(varName.substring("startingTime[".length(), varName.indexOf(']')));
+                    double startTime = var.get(GRB.DoubleAttr.X);
+                    
+                    // Round to nearest integer for discrete time representation
+                    if (Math.abs(startTime - Math.round(startTime)) < 0.01) {
+                        startTimes[jobIndex] = (int) Math.round(startTime);
+                    } else {
+                        startTimes[jobIndex] = (int) Math.ceil(startTime);
+                    }
+                }
+            }
+            
+            // Calculate finish times: startTime + duration
+            for (int i = 0; i < data.numberJob; i++) {
+                finishTimes[i] = startTimes[i] + data.jobDuration.get(i);
+            }
+            
+            return new int[][]{startTimes, finishTimes};
+            
+        } catch (GRBException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }        
 }

@@ -37,6 +37,7 @@ public class BuildTimeDiscreteSolution implements CompletionMethodInterface {
                     }
                 }
             }
+            
             model.update(); // Ensure the model is updated after adding variables
             if (!startTimes.isEmpty()) {
                 for (int i = 0; i < data.numberJob; i++) {

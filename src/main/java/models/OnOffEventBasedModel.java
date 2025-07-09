@@ -212,6 +212,7 @@ public class OnOffEventBasedModel implements ModelInterface {
                             expr1.addTerm(1, jobActiveAtEventVars[predecessor][ee]);
                         }
 
+                        expr2.addConstant((1));
                         expr2.addConstant((1 + e));
                         expr2.addTerm(- e, jobActiveAtEventVars[i][e]);
 
@@ -319,5 +320,80 @@ public class OnOffEventBasedModel implements ModelInterface {
         public GRBVar[][] getJobActiveAtEventVars() {
             return jobActiveAtEventVars;
         }
+    }
+
+    @Override
+    public int[][] getStartAndFinishTimes(GRBModel model, JobDataInstance data) {
+        try {
+            // This model doesn't use dummy jobs, so we need to adjust for the original data
+            JobDataInstance noDummyData = DeleteDummyJobs.deleteDummyJobs(data);
+            
+            int[] startTimes = new int[noDummyData.numberJob];
+            int[] finishTimes = new int[noDummyData.numberJob];
+            
+            // Initialize start times to -1 (not found)
+            for (int i = 0; i < noDummyData.numberJob; i++) {
+                startTimes[i] = -1;
+            }
+            
+            // Extract event times
+            double[] eventTimes = new double[noDummyData.numberJob];
+            for (int e = 0; e < noDummyData.numberJob; e++) {
+                GRBVar eventVar = model.getVarByName("startOfEvent[" + e + "]");
+                if (eventVar != null) {
+                    eventTimes[e] = eventVar.get(GRB.DoubleAttr.X);
+                }
+            }
+            
+            // Find start times by checking when jobs become active
+            for (int i = 0; i < noDummyData.numberJob; i++) {
+                for (int e = 1; e < noDummyData.numberJob; e++) {
+                    try {
+                        GRBVar currentVar = model.getVarByName("jobActiveAtEvent[" + i + "][" + e + "]");
+                        GRBVar previousVar = model.getVarByName("jobActiveAtEvent[" + i + "][" + (e-1) + "]");
+                        
+                        if (currentVar != null && previousVar != null) {
+                            double currentValue = currentVar.get(GRB.DoubleAttr.X);
+                            double previousValue = previousVar.get(GRB.DoubleAttr.X);
+                            
+                            // Job starts at event e if it becomes active (transitions from 0 to 1)
+                            if (currentValue > 0.5 && previousValue < 0.5) {
+                                startTimes[i] = (int) Math.round(eventTimes[e]);
+                                break;
+                            }
+                        }
+                    } catch (GRBException ex) {
+                        // Variable doesn't exist, continue
+                    }
+                }
+                
+                // If job is active at event 0, it starts at time 0
+                if (startTimes[i] == -1) {
+                    try {
+                        GRBVar var = model.getVarByName("jobActiveAtEvent[" + i + "][0]");
+                        if (var != null && var.get(GRB.DoubleAttr.X) > 0.5) {
+                            startTimes[i] = 0;
+                        }
+                    } catch (GRBException ex) {
+                        // Variable doesn't exist, continue
+                    }
+                }
+            }
+            
+            // Calculate finish times: startTime + duration
+            for (int i = 0; i < noDummyData.numberJob; i++) {
+                if (startTimes[i] >= 0) {
+                    finishTimes[i] = startTimes[i] + noDummyData.jobDuration.get(i);
+                } else {
+                    finishTimes[i] = -1; // Job not scheduled
+                }
+            }
+            
+            return new int[][]{startTimes, finishTimes};
+            
+        } catch (GRBException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
