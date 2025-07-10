@@ -32,7 +32,7 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
             // add zie
             for (int i = 0; i < noDummyData.numberJob; i++) {
                 for (int e = 0; e < noDummyData.numberJob; e++) {
-                    jobActiveAtEventVars[i][e] = model.addVar(0.0, 1.0, 0.0, GRB.CONTINUOUS, "jobActiveAtEvent[" +
+                    jobActiveAtEventVars[i][e] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "jobActiveAtEvent[" +
                         i + "][" + e + "]");
                 }
             }

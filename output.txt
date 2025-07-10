@@ -1,0 +1,169 @@
+Reading file: /home/tobsi/university/kit/benchmarkSets/j303_5.sm
+[12, 14, 13, 22]
+Set parameter WLSAccessID
+Set parameter WLSSecret
+Set parameter LicenseID to value 2623289
+Academic license 2623289 - for non-commercial use only - registered to ue___@student.kit.edu
+New job predecessors: [[], [1], [1], [1], [2], [2], [3], [4, 5], [8], [7], [8], [2], [8, 10], [12], [4], [7], [3], [6, 11, 15], [14, 18], [13], [11, 16], [16, 19], [16], [12], [4], [9], [7], [22, 24, 25], [9, 27, 28], [11, 20, 26], [17, 21, 23], [29, 30, 31]]
+New job predecessors: [[], [], [], [1], [1], [2], [3, 4], [7], [6], [7], [1], [7, 9], [11], [3], [6], [2], [5, 10, 14], [13, 17], [12], [10, 15], [15, 18], [15], [11], [3], [8], [6], [21, 23, 24], [8, 26, 27], [10, 19, 25], [16, 20, 22]]
+New job predecessors: [[], [1], [1], [1], [2], [2], [3], [4, 5], [8], [7], [8], [2], [8, 10], [12], [4], [7], [3], [6, 11, 15], [14, 18], [13], [11, 16], [16, 19], [16], [12], [4], [9], [7], [22, 24, 25], [9, 27, 28], [11, 20, 26], [17, 21, 23], [29, 30, 31]]
+New job predecessors: [[], [], [], [1], [1], [2], [3, 4], [7], [6], [7], [1], [7, 9], [11], [3], [6], [2], [5, 10, 14], [13, 17], [12], [10, 15], [15, 18], [15], [11], [3], [8], [6], [21, 23, 24], [8, 26, 27], [10, 19, 25], [16, 20, 22]]
+Adding precedence constraints (49)...
+Job 3 has predecessor 0
+Added constraint: precedence_job_3_pred_0_event_1_49
+  If job 3 starts at event 1, then predecessor 0 cannot be active at event 1 or later
+  Mathematical form: (z_3,1 - z_3,0) + sum(z_0,ee for ee>=1) <= 1
+Added constraint: precedence_job_3_pred_0_event_2_49
+  If job 3 starts at event 2, then predecessor 0 cannot be active at event 2 or later
+  Mathematical form: (z_3,2 - z_3,1) + sum(z_0,ee for ee>=2) <= 1
+Added constraint: precedence_job_3_pred_0_event_3_49
+  If job 3 starts at event 3, then predecessor 0 cannot be active at event 3 or later
+  Mathematical form: (z_3,3 - z_3,2) + sum(z_0,ee for ee>=3) <= 1
+Job 4 has predecessor 0
+Job 5 has predecessor 1
+Job 6 has predecessor 2
+Job 6 has predecessor 3
+Job 7 has predecessor 6
+Job 8 has predecessor 5
+Job 9 has predecessor 6
+Job 10 has predecessor 0
+Job 11 has predecessor 6
+Job 11 has predecessor 8
+Job 12 has predecessor 10
+Job 13 has predecessor 2
+Job 14 has predecessor 5
+Job 15 has predecessor 1
+Job 16 has predecessor 4
+Job 16 has predecessor 9
+Job 16 has predecessor 13
+Job 17 has predecessor 12
+Job 17 has predecessor 16
+Job 18 has predecessor 11
+Job 19 has predecessor 9
+Job 19 has predecessor 14
+Job 20 has predecessor 14
+Job 20 has predecessor 17
+Job 21 has predecessor 14
+Job 22 has predecessor 10
+Job 23 has predecessor 2
+Job 24 has predecessor 7
+Job 25 has predecessor 5
+Job 26 has predecessor 20
+Job 26 has predecessor 22
+Job 26 has predecessor 23
+Job 27 has predecessor 7
+Job 27 has predecessor 25
+Job 27 has predecessor 26
+Job 28 has predecessor 9
+Job 28 has predecessor 18
+Job 28 has predecessor 24
+Job 29 has predecessor 15
+Job 29 has predecessor 19
+Job 29 has predecessor 21
+Finished adding precedence constraints (49).
+Warning: constraint name "com.gurobi.gurobi.GRBLinExpr@4e50df2egreater equal 1 (42)" has a space
+Model written to debug_model.lp for inspection
+Set parameter MIPGap to value 0
+Set parameter TimeLimit to value 60
+Set parameter Threads to value 4
+Set parameter Method to value 2
+Set parameter OutputFlag to value 1
+Set parameter LogFile to value "linear_model.log"
+Gurobi Optimizer version 12.0.2 build v12.0.2rc0 (linux64 - "Ubuntu 22.04.5 LTS")
+
+CPU model: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 4 physical cores, 8 logical processors, using up to 4 threads
+
+Non-default parameters:
+TimeLimit  60
+MIPGap  0
+Method  2
+Threads  4
+
+Academic license 2623289 - for non-commercial use only - registered to ue___@student.kit.edu
+Optimize a model with 17928 rows, 931 columns and 130300 nonzeros
+Model fingerprint: 0xdef8bd82
+Variable types: 31 continuous, 900 integer (900 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 4e+01]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 2e+02]
+  RHS range        [1e+00, 2e+02]
+Presolve removed 529 rows and 1 columns
+Presolve time: 0.37s
+Presolved: 17399 rows, 930 columns, 129038 nonzeros
+Variable types: 0 continuous, 930 integer (900 binary)
+Root relaxation presolved: 930 rows, 18329 columns, 129968 nonzeros
+
+Root barrier log...
+
+Ordering time: 0.02s
+
+Barrier statistics:
+ AA' NZ     : 6.274e+04
+ Factor NZ  : 2.411e+05 (roughly 10 MB of memory)
+ Factor Ops : 7.696e+07 (less than 1 second per iteration)
+ Threads    : 3
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0  -1.97838627e+04 -0.00000000e+00  8.69e+01 1.60e+01  9.29e+00     1s
+   1  -1.08010846e+04  7.64474830e+01  2.42e+01 4.54e+01  3.47e+00     1s
+   2  -5.79616987e+03  1.79702087e+02  1.94e+00 1.13e+01  7.12e-01     1s
+   3  -2.43447809e+03  1.78991292e+02  3.12e-01 1.60e+00  1.76e-01     1s
+   4  -4.69765717e+02  1.67297697e+02  5.10e-02 2.56e-03  3.55e-02     1s
+   5  -2.44820155e+02  1.29248726e+02  2.85e-02 5.68e-14  2.05e-02     1s
+   6  -9.54959189e+01  2.90718377e+01  6.88e-03 5.68e-14  6.54e-03     1s
+   7  -3.22382785e+01  8.44248766e+00  1.74e-03 5.68e-14  2.12e-03     1s
+   8  -1.32735326e+01  2.72384911e+00  5.80e-04 5.68e-14  8.32e-04     1s
+   9  -9.99980071e+00  2.49706633e+00  4.23e-04 5.68e-14  6.50e-04     1s
+  10  -4.19164558e+00  1.15094676e+00  1.68e-04 5.68e-14  2.78e-04     1s
+  11  -2.55177594e+00  8.21034616e-01  1.04e-04 5.68e-14  1.75e-04     1s
+  12  -1.08273356e+00  5.96024750e-01  5.04e-05 5.68e-14  8.73e-05     1s
+  13  -4.78631393e-01  5.29345153e-01  3.00e-05 5.68e-14  5.24e-05     1s
+  14   8.78004171e-02  5.03625130e-01  1.16e-05 5.68e-14  2.16e-05     1s
+  15   2.65087951e-01  4.90926274e-01  6.17e-06 2.84e-14  1.17e-05     1s
+  16   3.85155830e-01  4.81397860e-01  2.56e-06 5.68e-14  5.00e-06     1s
+  17   4.59710446e-01  4.77188038e-01  3.62e-07 5.68e-14  9.09e-07     1s
+  18   4.71389846e-01  4.76362477e-01  1.04e-07 5.68e-14  2.59e-07     1s
+  19   4.76248134e-01  4.76286007e-01  7.16e-10 5.68e-14  1.97e-09     1s
+  20   4.76283868e-01  4.76283905e-01  3.67e-14 5.68e-14  1.97e-12     1s
+  21   4.76283903e-01  4.76283903e-01  3.69e-14 5.68e-14  1.97e-15     1s
+
+Barrier solved model in 21 iterations and 0.95 seconds (0.68 work units)
+Optimal objective 4.76283903e-01
+
+
+Root relaxation: objective 4.762839e-01, 693 iterations, 0.38 seconds (0.26 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0    0.47628    0  680          -    0.47628      -     -    3s
+H    0     0                      48.0000000    0.47628  99.0%     -    4s
+     0     0    1.81830    0  391   48.00000    1.81830  96.2%     -    6s
+H    0     0                      47.0000000    2.00000  95.7%     -    9s
+     0     0    2.00000    0  234   47.00000    2.00000  95.7%     -   10s
+H    0     0                      45.0000000    2.00000  95.6%     -   11s
+H    0     0                      44.0000000    2.00000  95.5%     -   11s
+     0     0   30.00000    0  290   44.00000   30.00000  31.8%     -   12s
+H    0     0                      41.0000000   30.00000  26.8%     -   12s
+     0     0   30.00000    0  387   41.00000   30.00000  26.8%     -   15s
+     0     0   30.00000    0  344   41.00000   30.00000  26.8%     -   15s
+     0     0   30.00000    0  310   41.00000   30.00000  26.8%     -   15s
+     0     0   30.00000    0  309   41.00000   30.00000  26.8%     -   15s
+H    0     0                      40.0000000   30.00000  25.0%     -   16s
+H    0     0                      39.0000000   30.00000  23.1%     -   16s
+     0     0   30.00000    0  329   39.00000   30.00000  23.1%     -   16s
+     0     0   30.00000    0  292   39.00000   30.00000  23.1%     -   17s
+     0     0   30.00000    0  305   39.00000   30.00000  23.1%     -   17s
+     0     0   30.00000    0  297   39.00000   30.00000  23.1%     -   17s
+     0     0   30.00000    0  297   39.00000   30.00000  23.1%     -   18s
+     0     0   30.00000    0  302   39.00000   30.00000  23.1%     -   18s
+     0     0   30.00000    0  145   39.00000   30.00000  23.1%     -   19s
+     0     0   30.00000    0  107   39.00000   30.00000  23.1%     -   19s
+     0     0   30.00000    0   64   39.00000   30.00000  23.1%     -   19s
+     0     0   30.00000    0   54   39.00000   30.00000  23.1%     -   20s
+     0     0   30.00000    0   43   39.00000   30.00000  23.1%     -   20s
+     0     0   30.00000    0   52   39.00000   30.00000  23.1%     -   20s
+     0     0   30.00000    0    9   39.00000   30.00000  23.1%     -   21s

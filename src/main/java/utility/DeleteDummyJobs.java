@@ -18,6 +18,9 @@ public class DeleteDummyJobs {
         if (data.numberJob < 2) {
             return data; // Return original data if not enough jobs to have dummy jobs
         }
+
+        System.out.println("New job predecessors: " + data.jobPredecessors);
+
         
         // Identify dummy jobs (jobs with duration 0)
         // Typically the first job (supersource) and last job (supersink) are dummy jobs
@@ -51,10 +54,7 @@ public class DeleteDummyJobs {
                 int successorIndex = successor - 1; // Convert to 0-based
                 // Skip if successor is a dummy job
                 if (successorIndex != supersourceIndex && successorIndex != supersinkIndex) {
-                    // Adjust index: subtract 1 because we removed the supersource (first job)
-                    // and add 1 to convert back to 1-based indexing
-                    int adjustedSuccessor = successorIndex - 1 + 1;
-                    newSuccessors.add(adjustedSuccessor);
+                    newSuccessors.add(successorIndex);
                     numSuccessors++;
                 }
             }
@@ -77,6 +77,8 @@ public class DeleteDummyJobs {
                 }
             }
         }
+
+        System.out.println("New job predecessors: " + newJobPredecessors);
         
         // Create and return new JobDataInstance with dummy jobs removed
         return new JobDataInstance(

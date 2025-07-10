@@ -196,30 +196,85 @@ public class OnOffEventBasedModel implements ModelInterface {
             }
 
             // Constraints (49) describe each precedence constraint (i,j) element E(precedence graph).
+            // According to Koné et al. 2011, the precedence constraint should ensure that 
+            // if job i starts at event e, then its predecessor j must have finished before event e.
+            // 
+            // CORRECT IMPLEMENTATION: For event-based models, we need to ensure that
+            // if job i starts at event e, then predecessor j must have completed its processing
+            // 
+            // The correct constraint is: For each job i and predecessor j, for each event e:
+            // t_e >= t_e' + p_j * (z_i,e - z_i,e-1) for all e' where predecessor j finishes
+            // 
+            // But in practice, we can use a simpler formulation:
+            // For each event e, if job i starts at event e (z_i,e - z_i,e-1 = 1), 
+            // then predecessor j cannot be active at event e or later
+            System.out.println("Adding precedence constraints (49)...");
+            System.out.println("DEBUG: Checking precedence relationships for jobs 7 and 8...");
             for (int i = 0; i < noDummyData.numberJob; i++) {
+                if (i == 7 || i == 8) {
+                    System.out.println("Job " + i + " has " + noDummyData.jobPredecessors.get(i).size() + " predecessors: " + noDummyData.jobPredecessors.get(i));
+                }
                 for (int j = 0; j < noDummyData.jobPredecessors.get(i).size(); j++) {
                     int predecessor = noDummyData.jobPredecessors.get(i).get(j);
-                    // predecessor is 1-indexed, so we need to subtract 1 TODO maybe not necessary
-                    predecessor -= 1;
+                    // Adjust for 0-based indexing if needed
+                    if (predecessor > 0) {
+                        predecessor = predecessor - 1; // Convert to 0-based indexing
+                    }
 
-                    // if activity i starts at event e, then it cannot be processed before event f
-                    for (int e = 0; e < startOfEventEVars.length; e++) {
-                        GRBLinExpr expr1 = new GRBLinExpr();
-                        GRBLinExpr expr2 = new GRBLinExpr();
-
-                        expr1.addTerm(1, jobActiveAtEventVars[i][e]);
-                        for (int ee = 0; ee < e; ee++) {
-                            expr1.addTerm(1, jobActiveAtEventVars[predecessor][ee]);
+                    if (i == 8) {
+                        System.out.println(j + "  -------------------" + predecessor);
+                    }
+                    
+                    if (i <= 8) { // Print debug for first few jobs including job 8
+                        System.out.println("Job " + i + " has predecessor " + predecessor);
+                    }
+                    
+                    // Alternative formulation: precedence through event ordering
+                    // For each event e, if job i starts at event e, then predecessor j must not be active at e or later
+                    for (int e = 0; e < startOfEventEVars.length; e++) { // Changed: start from event 0
+                        GRBLinExpr leftSide = new GRBLinExpr();
+                        GRBLinExpr rightSide = new GRBLinExpr();
+                        
+                        if (e == 0) {
+                            // Special case for event 0: if job i is active at event 0, predecessor must not be active at any event
+                            leftSide.addTerm(1, jobActiveAtEventVars[i][e]);
+                            
+                            // Right side: predecessor j should not be active at any event if job i is active at event 0
+                            for (int ee = 0; ee < startOfEventEVars.length; ee++) {
+                                rightSide.addTerm(1, jobActiveAtEventVars[predecessor][ee]);
+                            }
+                        } else {
+                            // For e >= 1: job i starts at event e
+                            leftSide.addTerm(1, jobActiveAtEventVars[i][e]);
+                            leftSide.addTerm(-1, jobActiveAtEventVars[i][e-1]);
+                            
+                            // Right side: predecessor j should not be active at event e or later
+                            for (int ee = e; ee < startOfEventEVars.length; ee++) {
+                                rightSide.addTerm(1, jobActiveAtEventVars[predecessor][ee]);
+                            }
                         }
-
-                        expr2.addConstant((1));
-                        expr2.addConstant((1 + e));
-                        expr2.addTerm(- e, jobActiveAtEventVars[i][e]);
-
-                        model.addConstr(expr1, GRB.LESS_EQUAL, expr2, expr1 + " less equal " + expr2 + i + " predecessor: " + predecessor + " (49) ");
+                        
+                        // Constraint: leftSide + rightSide <= 1
+                        // This ensures proper precedence ordering
+                        GRBLinExpr totalExpr = new GRBLinExpr();
+                        totalExpr.add(leftSide);
+                        totalExpr.add(rightSide);
+                        
+                        String constraintName = "precedence_job_" + i + "_pred_" + predecessor + "_event_" + e + "_49";
+                        model.addConstr(totalExpr, GRB.LESS_EQUAL, 1, constraintName);
+                        
+                        if ((e <= 3 && i <= 3) || (i == 7 && e == 0) || (i == 8 && e == 0)) { // Add debug for jobs 7,8 at event 0
+                            System.out.println("Added constraint: " + constraintName);
+                            if (e == 0) {
+                                System.out.println("  If job " + i + " is active at event 0, then predecessor " + predecessor + " cannot be active at any event");
+                            } else {
+                                System.out.println("  If job " + i + " starts at event " + e + ", then predecessor " + predecessor + " cannot be active at event " + e + " or later");
+                            }
+                        }
                     }
                 }
             }
+            System.out.println("Finished adding precedence constraints (49).");
 
             // (50) the resource constraints limiting the total demand of activities in process at each event.
             for (int e = 0; e < startOfEventEVars.length; e++) {
@@ -249,13 +304,17 @@ public class OnOffEventBasedModel implements ModelInterface {
                     expr3.addTerm(newLatestStartTime[i], jobActiveAtEventVars[i][e]);
                     expr3.addTerm(- newLatestStartTime[i], jobActiveAtEventVars[i][e - 1]);
                     expr3.addConstant(newLatestStartTime[newLatestStartTime.length - 1]);
+                    expr3.addTerm(- newLatestStartTime[newLatestStartTime.length - 1], jobActiveAtEventVars[i][e]);
+                    expr3.addTerm(newLatestStartTime[newLatestStartTime.length - 1], jobActiveAtEventVars[i][e - 1]);
+
 
                     model.addConstr(expr1, GRB.LESS_EQUAL, expr2, expr1 + " less equal " + expr2 + " (51)");
                     model.addConstr(expr2, GRB.LESS_EQUAL, expr3, expr2 + " less equal " + expr3 + " (51)");   
                 }
             }
 
-            // (52) TODO für alle e und für alle i?
+            /*
+             * // (52) TODO für alle e und für alle i?
             // ESi <= makespanVar <= LSi
             GRBLinExpr expr02 = new GRBLinExpr();
             expr02.addTerm(1, makespanVar);
@@ -263,11 +322,20 @@ public class OnOffEventBasedModel implements ModelInterface {
                 "ESn+1 less equal makespanVar (52)");
             model.addConstr(expr02, GRB.LESS_EQUAL, newLatestStartTime[newLatestStartTime.length - 1],
                 "makespanVar less equal LSn+1 (52)");
+             */
 
             // (53) te >= 0 for all e in E, unnessesary as we set the lower bound to 0 when creating the 
             // variable
             // (54) zie element {0,1} for all i in A, e in E, unnessesary as we set the type to binary when
             // creating the variable
+
+            // Write model to file for debugging
+            try {
+                model.write("debug_model.lp");
+                System.out.println("Model written to debug_model.lp for inspection");
+            } catch (GRBException ex) {
+                System.err.println("Could not write model to file: " + ex.getMessage());
+            }
 
             return model;
 

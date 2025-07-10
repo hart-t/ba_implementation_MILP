@@ -9,7 +9,6 @@ import interfaces.HeuristicInterface;
 import interfaces.ModelInterface;
 import io.JobDataInstance;
 import models.*;
-import oldtimer.Manager;
 import heuristics.*;
 import io.Result;
 import utility.DeleteDummyJobs;
