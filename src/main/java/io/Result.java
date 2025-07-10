@@ -1,7 +1,5 @@
 package io;
 
-import java.util.List;
-
 import interfaces.ModelSolutionInterface;
 
 public class Result {

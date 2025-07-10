@@ -3,10 +3,8 @@ package models;
 import com.gurobi.gurobi.*;
 
 import io.JobDataInstance;
-import io.Result;
 import interfaces.ModelSolutionInterface;
 import interfaces.ModelInterface;
-import io.OptimizedSolution;
 import interfaces.CompletionMethodInterface;
 import solutionBuilder.BuildTimeDiscreteSolution;
 
@@ -152,8 +150,6 @@ public class DiscreteTimeModel implements ModelInterface {
 
             model.update(); // Ensure the model is updated after adding constraints
             model.optimize(); // Optimize the model
-
-            OptimizedSolution optimizedSolution = new OptimizedSolution(model);
 
             return model;
         } catch (GRBException e) {

@@ -4,7 +4,6 @@ import interfaces.HeuristicInterface;
 import io.JobDataInstance;
 import io.Result;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class IntegratedApproach {

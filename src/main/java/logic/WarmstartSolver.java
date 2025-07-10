@@ -1,10 +1,8 @@
 package logic;
 
-import io.FileReader;
 import java.util.Map;
 
 import com.gurobi.gurobi.GRB;
-import com.gurobi.gurobi.GRBConstr;
 import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBModel;
 
@@ -41,41 +39,12 @@ public class WarmstartSolver {
 
             // Configure Gurobi parameters and logging
             grbOptimizationModel.set(GRB.DoubleParam.MIPGap, 0.0);        // Require optimal solution
-            grbOptimizationModel.set(GRB.DoubleParam.TimeLimit, 180.0);   // 15 seconds time limit for testing
+            grbOptimizationModel.set(GRB.DoubleParam.TimeLimit, 30.0);    // Set time limit
             grbOptimizationModel.set(GRB.IntParam.Threads, 4);            // Use multiple threads
             grbOptimizationModel.set(GRB.IntParam.Method, 2);             // Use barrier method
             grbOptimizationModel.set(GRB.IntParam.OutputFlag, 1);         // Enable output
             grbOptimizationModel.set(GRB.StringParam.LogFile, logFile);   // Write log to file
         
-
-
-
-            // Add this right before model.optimize() in your solving code
-            try {
-                grbOptimizationModel.optimize();
-                
-                if (grbOptimizationModel.get(GRB.IntAttr.Status) == GRB.INFEASIBLE) {
-                    System.out.println("Model is infeasible. Computing IIS...");
-                    grbOptimizationModel.computeIIS();
-                    grbOptimizationModel.write("model_iis.ilp");
-                    System.out.println("IIS written to model_iis.ilp");
-                    
-                    // Print conflicting constraints
-                    GRBConstr[] constrs = grbOptimizationModel.getConstrs();
-                    for (GRBConstr constr : constrs) {
-                        if (constr.get(GRB.IntAttr.IISConstr) > 0) {
-                            System.out.println("Conflicting constraint: " + constr.get(GRB.StringAttr.ConstrName));
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-
-
-
             // Optimize and check solution quality
             grbOptimizationModel.optimize();
 

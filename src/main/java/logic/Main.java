@@ -1,17 +1,12 @@
 package logic;
 
-import java.io.File;
 import io.FileReader;
 import java.util.ArrayList;
-import java.util.List;
 
 import interfaces.HeuristicInterface;
 import interfaces.ModelInterface;
 import io.JobDataInstance;
 import models.*;
-import heuristics.*;
-import io.Result;
-import utility.DeleteDummyJobs;
 
 public class Main {
     public static void main(String[] args) {
@@ -31,8 +26,8 @@ public class Main {
 
         // Please add your models here
         //modelList.add(new FlowBasedContinuousTimeModel());
-        //modelList.add(new DiscreteTimeModel());
-        modelList.add(new OnOffEventBasedModel());
+        modelList.add(new DiscreteTimeModel());
+        //modelList.add(new OnOffEventBasedModel());
 
         // Create the integrated approach with the heuristics and a solver
         for (ModelInterface model : modelList) {

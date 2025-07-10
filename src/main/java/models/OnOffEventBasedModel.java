@@ -3,7 +3,6 @@ package models;
 import com.gurobi.gurobi.*;
 
 import io.JobDataInstance;
-import io.Result;
 import interfaces.ModelInterface;
 import interfaces.ModelSolutionInterface;
 import interfaces.CompletionMethodInterface;

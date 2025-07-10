@@ -1,11 +1,6 @@
 package interfaces;
 
-import java.util.Map;
-
 import com.gurobi.gurobi.GRBModel;
-
-import io.JobDataInstance;
-import io.Result;
 
 public interface ModelSolutionInterface {
     public GRBModel getModel();
