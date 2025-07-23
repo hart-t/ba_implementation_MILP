@@ -31,9 +31,6 @@ public class WarmstartSolver {
             GRBEnv env = new GRBEnv();
             GRBModel grbOptimizationModel = new GRBModel(env);
 
-            System.out.println("=== STARTING WARMSTART SOLVER ===");
-            System.out.println("Number of start times: " + startTimes.size());
-
             // Build the solution using the completion method
             ModelSolutionInterface initialSolution = completionMethod.buildSolution(startTimes, data, grbOptimizationModel);
 

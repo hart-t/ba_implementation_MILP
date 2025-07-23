@@ -89,26 +89,6 @@ public class BuildFlowSolution implements CompletionMethodInterface {
                 utility.NetworkFlowProblem networkFlow = new utility.NetworkFlowProblem();
                 int[][][] flowVars = networkFlow.findFlowVariables(data, startTimes);
                 
-                // Debug output: Print start times
-                System.out.println("=== START TIMES ===");
-                for (int i = 0; i < data.numberJob; i++) {
-                    System.out.println("Job " + i + ": starts at time " + startTimes.get(i));
-                }
-                
-                // Debug output: Print flow for each resource
-                System.out.println("\n=== FLOW VARIABLES ===");
-                for (int k = 0; k < data.resourceCapacity.size(); k++) {
-                    System.out.println("Resource " + k + " (capacity: " + data.resourceCapacity.get(k) + "):");
-                    for (int i = 0; i < data.numberJob; i++) {
-                        for (int j = 0; j < data.numberJob; j++) {
-                            if (i != j && flowVars[i][j][k] > 0) {
-                                System.out.println("  Flow from job " + i + " to job " + j + ": " + flowVars[i][j][k]);
-                            }
-                        }
-                    }
-                    System.out.println();
-                }
-                
                 // Set the flow variables in the Gurobi model
                 for (int i = 0; i < data.numberJob; i++) {
                     for (int j = 0; j < data.numberJob; j++) {

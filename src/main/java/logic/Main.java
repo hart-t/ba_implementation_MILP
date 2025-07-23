@@ -8,8 +8,9 @@ import interfaces.HeuristicInterface;
 import interfaces.ModelInterface;
 import io.JobDataInstance;
 import models.*;
+import priorityRules.MostResourceUsageRule;
+import priorityRules.ShortestProcessingTimeRule;
 import heuristics.*;
-import heuristics.priorityRules.ShortestProcessingTimeRule;
 import solutionBuilder.BuildFlowSolution;
 import logic.IntegratedApproach;
 import logic.WarmstartSolver;
@@ -29,6 +30,7 @@ public class Main {
         // Please add your heuristics here
         // Start with the opening heuristic, then add improvement heuristics
         heuristicsList.add(new HeuristicSerialSGS(new ShortestProcessingTimeRule()));
+        //heuristicsList.add(new HeuristicSerialSGS(new MostResourceUsageRule()));
 
         // Please add your models here
         modelList.add(new FlowBasedContinuousTimeModel());

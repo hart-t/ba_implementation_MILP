@@ -15,10 +15,6 @@ public class NetworkFlowProblem {
      * - Constraint (1): Sum of flows from source equals resource capacity
      * - Constraint (2): Flow conservation for each node (inflow = outflow = demand)
      * - Constraint (3): Sum of flows to sink equals resource capacity
-     * 
-     * @param data Job data instance containing resource demands and precedence constraints
-     * @param startTimes Start times of jobs to determine valid edges
-     * @return 3D array [i][j][k] representing flow from job i to job j for resource k
      */
     public int[][][] findFlowVariables(JobDataInstance data, Map<Integer, Integer> startTimes) {
         int numJobs = data.numberJob;
@@ -37,7 +33,7 @@ public class NetworkFlowProblem {
         }
         
         for (int resourceId = 0; resourceId < numResources; resourceId++) {
-            System.out.println("\n=== Processing Resource " + resourceId + " ===");
+            // System.out.println("\n=== Processing Resource " + resourceId + " ===");
             
             // Step 1: Collect jobs that need this resource
             List<Integer> jobsNeedingResource = new ArrayList<>();
@@ -51,7 +47,7 @@ public class NetworkFlowProblem {
                 }
             }
             
-            System.out.println("Jobs needing resource " + resourceId + ": " + jobsNeedingResource);
+            //System.out.println("Jobs needing resource " + resourceId + ": " + jobsNeedingResource);
             
             // Step 2: Create and fill matrix
             int[][] resourceMatrix = new int[numJobs][maxTime];
@@ -66,7 +62,8 @@ public class NetworkFlowProblem {
                 }
             }
             
-            // Print matrix
+            /*
+             * // Print matrix
             System.out.println("Resource usage matrix for resource " + resourceId + ":");
             System.out.print("Job\\Time: ");
             for (int t = 0; t < maxTime; t++) {
@@ -81,19 +78,20 @@ public class NetworkFlowProblem {
                 }
                 System.out.println();
             }
+             */
             
             // Step 3: Initialize availability map with job 0 (source)
             Map<Integer, Integer> availableResources = new HashMap<>();
             availableResources.put(0, data.resourceCapacity.get(resourceId));
             
-            System.out.println("Initial availability: " + availableResources);
+            // System.out.println("Initial availability: " + availableResources);
             
             // Step 4: Process each time point
             Set<Integer> processedJobs = new HashSet<>();
             processedJobs.add(0); // Job 0 is the source, already processed
             
             for (int currentTime = 0; currentTime < maxTime; currentTime++) {
-                System.out.println("\nTime " + currentTime + ":");
+                // System.out.println("\nTime " + currentTime + ":");
                 
                 // Check which jobs start at this time and need resources
                 for (int jobId : jobsNeedingResource) {
@@ -102,7 +100,7 @@ public class NetworkFlowProblem {
                     int jobStartTime = startTimes.get(jobId);
                     if (jobStartTime == currentTime) {
                         int requiredAmount = jobResourceDemand.get(jobId);
-                        System.out.println("  Job " + jobId + " starts and needs " + requiredAmount + " units");
+                        // System.out.println("  Job " + jobId + " starts and needs " + requiredAmount + " units");
                         
                         // Create flow variables from available jobs to this job
                         int remainingDemand = requiredAmount;
@@ -117,7 +115,7 @@ public class NetworkFlowProblem {
                             
                             if (flowAmount > 0) {
                                 flowVariables[sourceJob][jobId][resourceId] = flowAmount;
-                                System.out.println("    Flow: " + flowAmount + " units from job " + sourceJob + " to job " + jobId);
+                                // System.out.println("    Flow: " + flowAmount + " units from job " + sourceJob + " to job " + jobId);
                                 
                                 // Update availability
                                 availableResources.put(sourceJob, availableAmount - flowAmount);
@@ -152,29 +150,30 @@ public class NetworkFlowProblem {
                     if (jobEndTime == currentTime + 1 && processedJobs.contains(jobId)) {
                         int usedAmount = jobResourceDemand.get(jobId);
                         availableResources.put(jobId, usedAmount);
-                        System.out.println("  Job " + jobId + " ends, adding " + usedAmount + " units to availability");
+                        // System.out.println("  Job " + jobId + " ends, adding " + usedAmount + " units to availability");
                     }
                 }
                 
-                System.out.println("  Current availability: " + availableResources);
+                // System.out.println("  Current availability: " + availableResources);
             }
             
             // Step 5: Handle the last job (sink)
             int lastJobId = numJobs - 1;
             if (availableResources.size() > 0) {
-                System.out.println("\nTransferring remaining resources to sink (job " + lastJobId + "):");
+                // System.out.println("\nTransferring remaining resources to sink (job " + lastJobId + "):");
                 for (Map.Entry<Integer, Integer> entry : availableResources.entrySet()) {
                     int sourceJob = entry.getKey();
                     int availableAmount = entry.getValue();
                     if (availableAmount > 0) {
                         flowVariables[sourceJob][lastJobId][resourceId] = availableAmount;
-                        System.out.println("  Flow: " + availableAmount + " units from job " + sourceJob + " to sink");
+                        // System.out.println("  Flow: " + availableAmount + " units from job " + sourceJob + " to sink");
                     }
                 }
             }
         }
         
-        // Print all flow variables
+        /*
+         * // Print all flow variables
         System.out.println("\n=== ALL FLOW VARIABLES ===");
         for (int resourceId = 0; resourceId < numResources; resourceId++) {
             System.out.println("\nResource " + resourceId + " flows:");
@@ -191,11 +190,12 @@ public class NetworkFlowProblem {
                 System.out.println("  No flows for this resource");
             }
         }
+         */
         
         // Validation checks
-        System.out.println("\n=== FLOW VALIDATION ===");
+        // System.out.println("\n=== FLOW VALIDATION ===");
         for (int resourceId = 0; resourceId < numResources; resourceId++) {
-            System.out.println("\nValidating resource " + resourceId + ":");
+            // System.out.println("\nValidating resource " + resourceId + ":");
             
             // Check 1: Source output equals resource capacity
             int sourceOutput = 0;
@@ -208,7 +208,7 @@ public class NetworkFlowProblem {
                 System.out.println("  WARNING: Constraint 1 violated! Source output (" + sourceOutput + 
                                  ") != resource capacity (" + capacity + ")");
             } else {
-                System.out.println("  ✓ Constraint 1 satisfied: Source output = " + sourceOutput);
+                // System.out.println("  ✓ Constraint 1 satisfied: Source output = " + sourceOutput);
             }
             
             // Check 2: Flow conservation for each node
@@ -234,8 +234,8 @@ public class NetworkFlowProblem {
                                      "! Input (" + inputFlow + ") != Output (" + outputFlow + 
                                      ") != Demand (" + demand + ")");
                 } else if (demand > 0) {
-                    System.out.println("  ✓ Constraint 2 satisfied for node " + nodeId + 
-                                     ": Input = Output = Demand = " + demand);
+                    // System.out.println("  ✓ Constraint 2 satisfied for node " + nodeId + 
+                                     // ": Input = Output = Demand = " + demand);
                 }
             }
             
@@ -250,7 +250,7 @@ public class NetworkFlowProblem {
                 System.out.println("  WARNING: Constraint 3 violated! Sink input (" + sinkInput + 
                                  ") != resource capacity (" + capacity + ")");
             } else {
-                System.out.println("  ✓ Constraint 3 satisfied: Sink input = " + sinkInput);
+                // System.out.println("  ✓ Constraint 3 satisfied: Sink input = " + sinkInput);
             }
         }
         

@@ -132,15 +132,20 @@ public class HeuristicSerialSGS implements HeuristicInterface {
         }
 
         // After scheduling, check total resource usage
-        System.out.println("=== HEURISTIC RESOURCE CHECK ===");
+        boolean hasViolations = false;
         for (int r = 0; r < resourceCapacity.size(); r++) {
             int maxUsage = 0;
             for (int t = 0; t < horizon; t++) {
                 maxUsage = Math.max(maxUsage, resourceUsed[r][t]);
             }
-            System.out.println("Resource " + r + ": max usage=" + maxUsage + 
-                             ", capacity=" + resourceCapacity.get(r) + 
-                             (maxUsage <= resourceCapacity.get(r) ? " ✓" : " ✗ VIOLATED"));
+            if (maxUsage > resourceCapacity.get(r)) {
+                if (!hasViolations) {
+                    System.out.println("=== HEURISTIC RESOURCE VIOLATIONS ===");
+                    hasViolations = true;
+                }
+                System.out.println("Resource " + r + ": max usage=" + maxUsage + 
+                                 ", capacity=" + resourceCapacity.get(r) + " ✗ VIOLATED");
+            }
         }
 
         return startTimes;
