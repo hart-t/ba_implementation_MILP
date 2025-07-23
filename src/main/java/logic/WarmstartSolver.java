@@ -31,6 +31,9 @@ public class WarmstartSolver {
             GRBEnv env = new GRBEnv();
             GRBModel grbOptimizationModel = new GRBModel(env);
 
+            System.out.println("=== STARTING WARMSTART SOLVER ===");
+            System.out.println("Number of start times: " + startTimes.size());
+
             // Build the solution using the completion method
             ModelSolutionInterface initialSolution = completionMethod.buildSolution(startTimes, data, grbOptimizationModel);
 
@@ -74,8 +77,8 @@ public class WarmstartSolver {
         double timeInSeconds = 0;
 
         try {
+            // upper lower bound
             lowerBound = model.get(GRB.DoubleAttr.ObjBound);
-            upperBound = model.get(GRB.DoubleAttr.ObjBoundC);
             objectiveValue = model.get(GRB.DoubleAttr.ObjVal);
             timeInSeconds = model.get(GRB.DoubleAttr.Runtime);
         } catch (Exception e) {

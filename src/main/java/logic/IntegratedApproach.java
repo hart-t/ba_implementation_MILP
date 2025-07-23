@@ -17,6 +17,7 @@ public class IntegratedApproach {
         if (!heuristics.isEmpty()) {
             this.openingHeuristic = heuristics.get(0);
             this.improvementHeuristics = heuristics.subList(1, heuristics.size());
+            this.usesHeuristics = true;
         }
         this.solver = solver;   
     }

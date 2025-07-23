@@ -70,13 +70,34 @@ public class FileReader {
         return new JobDataInstance(numberJob, horizon, jobNumSuccessors, jobSuccessors,
                          jobPredecessors, jobDuration, jobResource, resourceCapacity);
     }
-
-    public SolverResults readResults(String file) throws Exception {
+    /*
+     * This method is not used in the current implementation, but can be used to read results from a file.
+     * It is commented out to avoid confusion, but can be uncommented if needed.
+     * It reads a file containing solver results and returns a SolverResults object.
+     *
+    /*
+     * public SolverResults readResults(String file) throws Exception {
         Double upperBound = null;
         Double lowerBound = null;
         Double objectiveValue = null;
         Double timeInSeconds = null;
 
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("Upper bound:")) {
+                    upperBound = Double.parseDouble(line.split(":")[1].trim());
+                } else if (line.startsWith("Lower bound:")) {
+                    lowerBound = Double.parseDouble(line.split(":")[1].trim());
+                } else if (line.startsWith("Objective value:")) {
+                    objectiveValue = Double.parseDouble(line.split(":")[1].trim());
+                } else if (line.startsWith("Time in seconds:")) {
+                    timeInSeconds = Double.parseDouble(line.split(":")[1].trim());
+                }
+            }
+        }
+
         return new SolverResults(upperBound, lowerBound, objectiveValue, timeInSeconds);
     }
+     */
 }

@@ -4,6 +4,8 @@ import java.util.*;
 
 import io.JobDataInstance;
 import interfaces.HeuristicInterface;
+import interfaces.PriorityRuleInterface;
+import solutionBuilder.BuildFlowSolution;
 
 /*
  * Heuristic Serial SGS (Serial Schedule Generation Scheme)
@@ -12,9 +14,11 @@ import interfaces.HeuristicInterface;
  */
 
 public class HeuristicSerialSGS implements HeuristicInterface {
+    
+    private final PriorityRuleInterface priorityStrategy;
 
-    public HeuristicSerialSGS() {
-        // Constructor
+    public HeuristicSerialSGS(PriorityRuleInterface priorityStrategy) {
+        this.priorityStrategy = priorityStrategy;
     }
 
     @Override
@@ -61,8 +65,8 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                 }
             }
             
-            // Apply priority rule (shortest processing time first)
-            eligibleActivities.sort(Comparator.comparingInt(i -> jobDuration.get(i)));
+            // Apply priority rule
+            eligibleActivities.sort(priorityStrategy.getComparator(data));
             
             // Schedule the highest priority eligible activity
             for (int i : eligibleActivities) {
@@ -72,27 +76,26 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                 }
 
                 boolean activityScheduled = false;
+                // Current logic only checks if resources fit at time t
                 for (int t = earliestStart; t < horizon && !activityScheduled; t++) {
                     boolean canSchedule = true;
-                    
-                    // Check resource feasibility for entire duration
                     for (int t2 = 0; t2 < jobDuration.get(i); t2++) {
-                        if (t + t2 >= horizon) {
-                            canSchedule = false;
-                            break;
-                        }
-                        
                         for (int r = 0; r < resourceCapacity.size(); r++) {
-                            if (resourceUsed[r][t + t2] + jobResource.get(i).get(r) > resourceCapacity.get(r)) {
-                                canSchedule = false;
-                                break;
+                            if (t + t2 < horizon) {
+                                // BUG: This checks if adding this job exceeds capacity
+                                // But it should prevent scheduling if it would exceed capacity
+                                if (resourceUsed[r][t + t2] + jobResource.get(i).get(r) > resourceCapacity.get(r)) {
+                                    canSchedule = false;
+                                    break;
+                                }
                             }
                         }
                         if (!canSchedule) break;
                     }
-
+                    
+                    // Only schedule if resource constraints are satisfied
                     if (canSchedule) {
-                        // Update resource usage for entire duration
+                        // Update resource usage
                         for (int t2 = 0; t2 < jobDuration.get(i); t2++) {
                             for (int r = 0; r < resourceCapacity.size(); r++) {
                                 if (t + t2 < horizon) {
@@ -128,6 +131,18 @@ public class HeuristicSerialSGS implements HeuristicInterface {
             throw new RuntimeException("SSGS failed to schedule all activities within iteration limit");
         }
 
+        // After scheduling, check total resource usage
+        System.out.println("=== HEURISTIC RESOURCE CHECK ===");
+        for (int r = 0; r < resourceCapacity.size(); r++) {
+            int maxUsage = 0;
+            for (int t = 0; t < horizon; t++) {
+                maxUsage = Math.max(maxUsage, resourceUsed[r][t]);
+            }
+            System.out.println("Resource " + r + ": max usage=" + maxUsage + 
+                             ", capacity=" + resourceCapacity.get(r) + 
+                             (maxUsage <= resourceCapacity.get(r) ? " ✓" : " ✗ VIOLATED"));
+        }
+
         return startTimes;
     }
 
@@ -144,3 +159,4 @@ public class HeuristicSerialSGS implements HeuristicInterface {
         throw new UnsupportedOperationException("This heuristic does not support initial start times.");
     }
 }
+

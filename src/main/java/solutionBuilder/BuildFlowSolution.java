@@ -85,34 +85,46 @@ public class BuildFlowSolution implements CompletionMethodInterface {
                     }
                 }
 
-                // Set flow variables when job j starts directly after job i and they use the same resource
+                // Set flow variables using NetworkFlowProblem utility
+                utility.NetworkFlowProblem networkFlow = new utility.NetworkFlowProblem();
+                int[][][] flowVars = networkFlow.findFlowVariables(data, startTimes);
+                
+                // Debug output: Print start times
+                System.out.println("=== START TIMES ===");
+                for (int i = 0; i < data.numberJob; i++) {
+                    System.out.println("Job " + i + ": starts at time " + startTimes.get(i));
+                }
+                
+                // Debug output: Print flow for each resource
+                System.out.println("\n=== FLOW VARIABLES ===");
+                for (int k = 0; k < data.resourceCapacity.size(); k++) {
+                    System.out.println("Resource " + k + " (capacity: " + data.resourceCapacity.get(k) + "):");
+                    for (int i = 0; i < data.numberJob; i++) {
+                        for (int j = 0; j < data.numberJob; j++) {
+                            if (i != j && flowVars[i][j][k] > 0) {
+                                System.out.println("  Flow from job " + i + " to job " + j + ": " + flowVars[i][j][k]);
+                            }
+                        }
+                    }
+                    System.out.println();
+                }
+                
+                // Set the flow variables in the Gurobi model
                 for (int i = 0; i < data.numberJob; i++) {
                     for (int j = 0; j < data.numberJob; j++) {
                         if (i == j) continue; // Skip self-transfer
                         
-                        // Check if job j starts directly after job i
-                        int jobIEndTime = startTimes.get(i) + data.jobDuration.get(i);
-                        int jobJStartTime = startTimes.get(j);
-                        
-                        if (jobIEndTime == jobJStartTime) {
-                            // Jobs are consecutive, check for shared resources
-                            for (int k = 0; k < data.resourceCapacity.size(); k++) {
-                                int resourceDemandI = data.jobResource.get(i).get(k);
-                                int resourceDemandJ = data.jobResource.get(j).get(k);
-                                
-                                // If both jobs use the same resource
-                                if (resourceDemandI > 0 && resourceDemandJ > 0) {
-                                    GRBVar flowVar = model.getVarByName("quantity of resource " + k + "transferred from " + i + " to " + j);
-                                    if (flowVar != null) {
-                                        // Set flow to the minimum of what i releases and j needs
-                                        double flowAmount = Math.min(resourceDemandI, resourceDemandJ);
-                                        flowVar.set(GRB.DoubleAttr.Start, flowAmount);
-                                    }
-                                }
+                        for (int k = 0; k < data.resourceCapacity.size(); k++) {
+                            GRBVar flowVar = model.getVarByName("quantity of resource " + k + "transferred from " + i + " to " + j);
+                            if (flowVar != null) {
+                                double flowAmount = flowVars[i][j][k];
+                                flowVar.set(GRB.DoubleAttr.Start, flowAmount);
                             }
                         }
                     }
                 }
+            } else {
+                System.out.println("No start times provided, using default values.");
             }
             model.update(); // Ensure the model is updated after modifying variables
         } catch (Exception e) {

@@ -3,10 +3,16 @@ package logic;
 import io.FileReader;
 import java.util.ArrayList;
 
+
 import interfaces.HeuristicInterface;
 import interfaces.ModelInterface;
 import io.JobDataInstance;
 import models.*;
+import heuristics.*;
+import heuristics.priorityRules.ShortestProcessingTimeRule;
+import solutionBuilder.BuildFlowSolution;
+import logic.IntegratedApproach;
+import logic.WarmstartSolver;
 
 public class Main {
     public static void main(String[] args) {
@@ -22,11 +28,11 @@ public class Main {
         
         // Please add your heuristics here
         // Start with the opening heuristic, then add improvement heuristics
-        //heuristicsList.add(new HeuristicSerialSGS());
+        heuristicsList.add(new HeuristicSerialSGS(new ShortestProcessingTimeRule()));
 
         // Please add your models here
-        //modelList.add(new FlowBasedContinuousTimeModel());
-        modelList.add(new DiscreteTimeModel());
+        modelList.add(new FlowBasedContinuousTimeModel());
+        //modelList.add(new DiscreteTimeModel());
         //modelList.add(new OnOffEventBasedModel());
 
         // Create the integrated approach with the heuristics and a solver
