@@ -5,7 +5,7 @@ import java.util.*;
 import io.JobDataInstance;
 import interfaces.HeuristicInterface;
 import interfaces.PriorityRuleInterface;
-import solutionBuilder.BuildFlowSolution;
+import io.ScheduleResult;
 
 /*
  * Heuristic Serial SGS (Serial Schedule Generation Scheme)
@@ -22,7 +22,7 @@ public class HeuristicSerialSGS implements HeuristicInterface {
     }
 
     @Override
-    public Map<Integer, Integer> determineStartTimes(JobDataInstance data) {
+    public ScheduleResult determineStartTimes(JobDataInstance data) {
         int numberJob = data.numberJob;
         int horizon = data.horizon;
         List<List<Integer>> jobPredecessors = data.jobPredecessors;
@@ -147,8 +147,10 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                                  ", capacity=" + resourceCapacity.get(r) + " ✗ VIOLATED");
             }
         }
+        List<String> usedHeuristics = new ArrayList<>();
+        usedHeuristics.add(getHeuristicCode());
 
-        return startTimes;
+        return new ScheduleResult(usedHeuristics, startTimes);
     }
 
     private static boolean allScheduled(boolean[] scheduled) {
@@ -159,9 +161,42 @@ public class HeuristicSerialSGS implements HeuristicInterface {
     }
 
     @Override
-    public Map<Integer, Integer> determineStartTimes(JobDataInstance data, Map<Integer, Integer> initialStartTimes) {
-        // This method is not implemented in this heuristic
-        throw new UnsupportedOperationException("This heuristic does not support initial start times.");
+    public boolean isOpeningHeuristic() {
+        return true;
+    }
+
+    @Override
+    public ScheduleResult determineStartTimes(JobDataInstance data, ScheduleResult initialScheduleResult) {
+        // Calculate new start times using this heuristic
+        ScheduleResult newSchedule = determineStartTimes(data);
+        Map<Integer, Integer> newStartTimes = newSchedule.getStartTimes();
+        
+        // Find the last job (highest index)
+        int lastJob = data.numberJob - 1;
+        
+        // Calculate completion time of last job for both schedules
+        int newMakespan = newStartTimes.get(lastJob);
+        int existingMakespan = initialScheduleResult.getStartTimes().get(lastJob);
+        
+        // Get current heuristic identifier
+        String currentHeuristicCode = getHeuristicCode();
+        
+        if (newMakespan < existingMakespan) {
+            return newSchedule;
+        } else if (newMakespan == existingMakespan) {
+            initialScheduleResult.getUsedHeuristics().add(currentHeuristicCode);
+            return initialScheduleResult;
+        } else {
+            return initialScheduleResult;
+        }
+    }
+        
+
+    private String getHeuristicCode() {
+        // TODO
+        // i need to store the priority rule type or extract it from the priorityStrategy
+        // For now, this is a placeholder - i might need to modify the constructor
+        return "SGS-" + priorityStrategy.getClass().getSimpleName().replace("Rule", "").toUpperCase();
     }
 }
 
