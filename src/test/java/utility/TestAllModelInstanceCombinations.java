@@ -3,16 +3,10 @@ package utility;
 import io.FileReader;
 import io.JobDataInstance;
 import logic.IntegratedApproach;
-import logic.WarmstartSolver;
-import models.OnOffEventBasedModel;
-import models.DiscreteTimeModel;
-import models.FlowBasedContinuousTimeModel;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.io.File;
-
-import interfaces.HeuristicInterface;
-import interfaces.ModelInterface;
 
 public class TestAllModelInstanceCombinations {
     
@@ -20,41 +14,42 @@ public class TestAllModelInstanceCombinations {
 
         File[] files = new File("/home/tobsi/university/kit/benchmarkSets").listFiles();
         assert files != null;
-        String filename = "";
 
+        // Configure all heuristics to test
+        List<String> heuristicConfigs = Arrays.asList(
+            "SGS-SPT",  // Serial SGS with Shortest Processing Time
+            "SGS-RPW",  // Serial SGS with Rank Positional Weight
+            "SGS-MRU"   // Serial SGS with Most Resource Usage
+        );
+        
+        // Configure all models to test
+        List<String> modelConfigs = Arrays.asList(
+            "FLOW",     // Flow-Based Continuous Time Model
+            "DISC",     // Discrete Time Model
+            "EVENT"     // On-Off Event Based Model
+        );
 
         for (File file : files) {
-            filename = "/home/tobsi/university/kit/benchmarkSets/" + file.getName();
+            String filename = "/home/tobsi/university/kit/benchmarkSets/" + file.getName();
             
-
             try {
-
                 FileReader fileReader = new FileReader();
                 JobDataInstance data = fileReader.dataRead(filename);
                 
-                ArrayList<HeuristicInterface> heuristicsList = new ArrayList<HeuristicInterface>();
-                ArrayList<ModelInterface> modelList = new ArrayList<ModelInterface>();
+                System.out.println("\n=== Testing file: " + file.getName() + " ===");
                 
-                // Please add your heuristics here
-                // Start with the opening heuristic, then add improvement heuristics
-                // insert the priority rule for the SGS heuristic, default is shortest processing time first
-                // heuristicsList.add(new HeuristicSerialSGS());
-
-                // Please add your models here
-                modelList.add(new FlowBasedContinuousTimeModel());
-                modelList.add(new DiscreteTimeModel());
-                modelList.add(new OnOffEventBasedModel());
-
-                // Create the integrated approach with the heuristics and a solver
-                for (ModelInterface model : modelList) {
-                    IntegratedApproach integratedApproach = new IntegratedApproach(heuristicsList, new WarmstartSolver(model));
-
-                    integratedApproach.solve(data).printResult();
+                // Test each model
+                for (String modelConfig : modelConfigs) {
+                    System.out.println("\n--- Model: " + modelConfig + " ---");
                     
-            }
+                    IntegratedApproach integratedApproach = new IntegratedApproach(heuristicConfigs, modelConfig);
+                    integratedApproach.solve(data).printResult();
+                }
+                
             } catch (Exception e) {
-                System.err.println("Error: " + e.getMessage());
-                return;
+                System.err.println("Error processing file " + file.getName() + ": " + e.getMessage());
+                // Continue with next file instead of returning
+                continue;
             }
         }
     }
