@@ -1,7 +1,5 @@
 package logic;
 
-import java.util.Map;
-
 import com.gurobi.gurobi.GRB;
 import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBModel;
@@ -12,6 +10,7 @@ import interfaces.ModelSolutionInterface;
 import io.JobDataInstance;
 import io.OptimizedSolution;
 import io.Result;
+import io.ScheduleResult;
 import io.SolverResults;
 
 public class WarmstartSolver {
@@ -23,7 +22,7 @@ public class WarmstartSolver {
         this.model = model;
     }
 
-    public Result solve(Map<Integer, Integer> startTimes, JobDataInstance data) {
+    public Result solve(JobDataInstance data, ScheduleResult scheduleResult) {
         try {
             String logFile = "linear_model.log";
             completionMethod = model.getCompletionMethod();
@@ -32,14 +31,14 @@ public class WarmstartSolver {
             GRBModel grbOptimizationModel = new GRBModel(env);
 
             // Build the solution using the completion method
-            ModelSolutionInterface initialSolution = completionMethod.buildSolution(startTimes, data, grbOptimizationModel);
+            ModelSolutionInterface initialSolution = completionMethod.buildSolution(scheduleResult.getStartTimes(), data, grbOptimizationModel);
 
             // Complete the model with the initial solution
             grbOptimizationModel = model.completeModel(initialSolution, data);
 
             // Configure Gurobi parameters and logging
             grbOptimizationModel.set(GRB.DoubleParam.MIPGap, 0.0);        // Require optimal solution
-            grbOptimizationModel.set(GRB.DoubleParam.TimeLimit, 30.0);    // Set time limit
+            grbOptimizationModel.set(GRB.DoubleParam.TimeLimit, 180.0);    // Set time limit
             grbOptimizationModel.set(GRB.IntParam.Threads, 4);            // Use multiple threads
             grbOptimizationModel.set(GRB.IntParam.Method, 2);             // Use barrier method
             grbOptimizationModel.set(GRB.IntParam.OutputFlag, 1);         // Enable output

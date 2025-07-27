@@ -4,7 +4,7 @@ import interfaces.HeuristicInterface;
 import heuristics.*;
 
 public enum HeuristicType {
-    SGS("SGS", "Serial Schedule Generation Scheme", true),
+    SGS("SSGS", "Serial Schedule Generation Scheme", true),
     // Add improvement heuristics here with false flag
     ;
     

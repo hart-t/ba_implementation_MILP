@@ -6,8 +6,13 @@ import priorityRules.*;
 public enum PriorityRuleType {
     SPT("SPT", "Shortest Processing Time", ShortestProcessingTimeRule::new),
     MRU("MRU", "Most Resource Usage", MostResourceUsageRule::new),
-    RPW("RPW", "Rank Positional Weight", GreatestRankPositionalWeightRule::new);
-    
+    RPW("GRPW", "Greatest Rank Positional Weight", GreatestRankPositionalWeightRule::new),
+    RSM("RSM", "Resource Scheduling Method", ResourceSchedulingMethodRule::new),
+    MTS("MTS", "Most Total Successors", MostTotalSuccessorsRule::new),
+    MLST("MLST", "Minimum Latest Start Time", MinimumLatestStartTimeRule::new),
+    MLFT("MLFT", "Minimum Latest Finish Time", MinimumLatestFinishTimeRule::new),
+    MJS("MJS", "Minimum Job Slack", MinimumJobSlackRule::new);
+
     private final String code;
     private final String description;
     private final PriorityRuleSupplier supplier;

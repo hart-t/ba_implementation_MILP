@@ -43,7 +43,7 @@ public class TestAllModelInstanceCombinations {
                     System.out.println("\n--- Model: " + modelConfig + " ---");
                     
                     IntegratedApproach integratedApproach = new IntegratedApproach(heuristicConfigs, modelConfig);
-                    integratedApproach.solve(data).printResult();
+                    integratedApproach.solve(data);
                 }
                 
             } catch (Exception e) {

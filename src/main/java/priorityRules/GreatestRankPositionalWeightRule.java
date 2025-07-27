@@ -6,7 +6,6 @@ import interfaces.PriorityRuleInterface;
 
 /*
  * Alvarez-Valdes and Tamarit 1993
- * TODO
  * https://www.sciencedirect.com/science/article/pii/037722179400272X
  * https://www.sciencedirect.com/science/article/pii/0377221787902402
  */
@@ -42,17 +41,6 @@ public class GreatestRankPositionalWeightRule implements PriorityRuleInterface {
                     int successorId = successor - 1; // Convert to 0-based indexing
                     maxSuccessorRPW = Math.max(maxSuccessorRPW, rpw.get(successorId));
                 }
-                
-                // Alternative: sum all successor RPWs for total remaining work
-                // Uncomment below and comment above for sum-based approach
-                /*
-                int sumSuccessorRPW = 0;
-                for (int successor : data.jobSuccessors.get(i)) {
-                    int successorId = successor - 1;
-                    sumSuccessorRPW += rpw.get(successorId);
-                }
-                currentRPW += sumSuccessorRPW;
-                */
                 
                 currentRPW += maxSuccessorRPW;
                 

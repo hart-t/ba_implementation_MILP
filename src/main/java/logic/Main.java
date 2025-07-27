@@ -6,32 +6,48 @@ import java.util.List;
 
 import io.JobDataInstance;
 
+/*
+ * TODO
+ * 
+ * ich habe zwei heuristisch ermittelte schedules mit gleicher makespan aber unterschiedlichen startzeiten
+ * wie vergleiche ich diese um die bessere zu finden?
+ */
+
 public class Main {
     public static void main(String[] args) {
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j303_5.sm";
+        String filename = "/home/tobsi/university/kit/benchmarkSets/j303_3.sm";
 
         try {
             FileReader fileReader = new FileReader();
             JobDataInstance data = fileReader.dataRead(filename);
             
-            // Configure heuristics using simple string codes
+            /*
+             * Configure heuristics using simple string codes
+             * If multiple heuristics/priority rules are selected, start times will be generated for each 
+             * heuristic and the schedule with the lowest makespan will be chosen.
+             */
             List<String> heuristicConfigs = Arrays.asList(
-                "SGS-SPT",  // Serial SGS with Shortest Processing Time
-                "SGS-RPW"   // Serial SGS with Rank Positional Weight
-                // "SGS-MRU"   // Serial SGS with Most Resource Usage
+                "SSGS-SPT",     // Serial SGS with Shortest Processing Time
+                "SSGS-GRPW",        // Serial SGS with Greatest Rank Positional Weight
+                "SSGS-MRU",         // Serial SGS with Most Resource Usage
+                "SSGS-RSM",         // Serial SGS with Resource Scheduling Method
+                "SSGS-MTS",         // Serial SGS with Most Total Successors
+                "SSGS-MLST",        // Serial SGS with Minimum Latest Start Time
+                "SSGS-MLFT",        // Serial SGS with Minimum Latest Finish Time
+                "SSGS-MJS"         // Serial SGS with Minimum Job Slack
             );
             
             // Configure models using simple string codes
             List<String> modelConfigs = Arrays.asList(
-                "FLOW"      // Flow-Based Continuous Time Model
+                // "FLOW"      // Flow-Based Continuous Time Model
                 // "DISC",     // Discrete Time Model
-                // "EVENT"     // On-Off Event Based Model
+                 "EVENT"     // On-Off Event Based Model
             );
 
             // Solve with each model
             for (String modelConfig : modelConfigs) {
                 IntegratedApproach integratedApproach = new IntegratedApproach(heuristicConfigs, modelConfig);
-                integratedApproach.solve(data).printResult();
+                integratedApproach.solve(data);
             }
             
         } catch (Exception e) {

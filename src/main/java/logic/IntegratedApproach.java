@@ -4,6 +4,7 @@ import interfaces.HeuristicInterface;
 import interfaces.ModelInterface;
 import io.JobDataInstance;
 import io.Result;
+import io.ScheduleResult;
 import enums.HeuristicType;
 import enums.PriorityRuleType;
 import enums.ModelType;
@@ -11,21 +12,12 @@ import enums.ModelType;
 import java.util.*;
 
 public class IntegratedApproach {
-    
-    private HeuristicInterface openingHeuristic = null;
-    private List<HeuristicInterface> improvementHeuristics = new ArrayList<>();
+    private List<HeuristicInterface> heuristics = new ArrayList<>();
     private WarmstartSolver solver;
-    private boolean usesHeuristics = false;
-    
+
     public IntegratedApproach(List<String> heuristicConfigs, String modelConfig) {
-        List<HeuristicInterface> heuristics = createHeuristics(heuristicConfigs);
+        this.heuristics = createHeuristics(heuristicConfigs);
         ModelInterface model = createModel(modelConfig);
-        
-        if (!heuristics.isEmpty()) {
-            this.openingHeuristic = heuristics.get(0);
-            this.improvementHeuristics = heuristics.subList(1, heuristics.size());
-            this.usesHeuristics = true;
-        }
         this.solver = new WarmstartSolver(model);   
     }
     
@@ -36,7 +28,7 @@ public class IntegratedApproach {
             String[] parts = config.split("-");
             if (parts.length != 2) {
                 throw new IllegalArgumentException("Invalid heuristic config: " + config + 
-                    ". Expected format: 'HEURISTIC-PRIORITYRULE' (e.g., 'SGS-SPT')");
+                    ". Expected format: 'HEURISTIC-PRIORITYRULE' (e.g., 'SSGS-SPT')");
             }
             
             HeuristicType heuristicType = HeuristicType.fromCode(parts[0]);
@@ -57,18 +49,37 @@ public class IntegratedApproach {
         return modelType.createModel();
     }
     
-    public Result solve(JobDataInstance data) {
-        Map<Integer, Integer> startTimes = new HashMap<>();
-        if (usesHeuristics) {
-            startTimes = openingHeuristic.determineStartTimes(data);        
-        }
+    public void solve(JobDataInstance data) {
+        ScheduleResult scheduleResult = new ScheduleResult(new ArrayList<>(), new HashMap<>());
+        Result result;
+        if (!heuristics.isEmpty()) {
+            List<HeuristicInterface> openingHeuristics = new ArrayList<>();
+            List<HeuristicInterface> improvementHeuristics = new ArrayList<>();
 
-        if (!improvementHeuristics.isEmpty()) {
-            for (HeuristicInterface heuristic : improvementHeuristics) {
-                startTimes = heuristic.determineStartTimes(data, startTimes);
+            for (HeuristicInterface heuristic : heuristics) {
+                if (heuristic.isOpeningHeuristic()) {
+                    openingHeuristics.add(heuristic);
+                } else {
+                    improvementHeuristics.add(heuristic);
+                }
             }
-        }
 
-        return solver.solve(startTimes, data);
+            if (openingHeuristics.isEmpty()) {
+                throw new IllegalStateException("No opening heuristics configured. " +
+                    "At least one heuristic must be an opening heuristic.");
+            }
+
+            for (HeuristicInterface heuristic : openingHeuristics) {
+                scheduleResult = heuristic.determineScheduleResult(data, scheduleResult);
+            }
+            for (HeuristicInterface heuristic : improvementHeuristics) {
+                scheduleResult = heuristic.determineScheduleResult(data, scheduleResult);
+            }
+            result = solver.solve(data, scheduleResult);
+        } else {
+            result = solver.solve(data, scheduleResult);
+        }
+        //TODO write in file
+        result.printResult();
     }
 }

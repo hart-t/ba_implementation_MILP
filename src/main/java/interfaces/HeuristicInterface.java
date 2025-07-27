@@ -1,12 +1,17 @@
 package interfaces;
 
-import java.util.Map;
-
 import io.JobDataInstance;
+import io.ScheduleResult;
 
 public interface HeuristicInterface {
 
-    public Map<Integer, Integer> determineStartTimes(JobDataInstance data);
+    /*
+     * returns true if the heuristic is an opening heuristic
+     */
+    public boolean isOpeningHeuristic();
 
-    public Map<Integer, Integer> determineStartTimes(JobDataInstance data, Map<Integer, Integer> initialStartTimes);
+    /*
+     * returns a ScheduleResult
+     */
+    public ScheduleResult determineScheduleResult(JobDataInstance data, ScheduleResult initialStartTimes);
 }

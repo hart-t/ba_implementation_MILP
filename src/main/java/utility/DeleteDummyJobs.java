@@ -3,6 +3,8 @@ package utility;
 import io.JobDataInstance;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class DeleteDummyJobs {
     
@@ -18,9 +20,6 @@ public class DeleteDummyJobs {
         if (data.numberJob < 2) {
             return data; // Return original data if not enough jobs to have dummy jobs
         }
-
-        System.out.println("New job predecessors: " + data.jobPredecessors);
-
         
         // Identify dummy jobs (jobs with duration 0)
         // Typically the first job (supersource) and last job (supersink) are dummy jobs
@@ -78,8 +77,6 @@ public class DeleteDummyJobs {
             }
         }
 
-        System.out.println("New job predecessors: " + newJobPredecessors);
-        
         // Create and return new JobDataInstance with dummy jobs removed
         return new JobDataInstance(
             newNumberJob,
@@ -91,5 +88,55 @@ public class DeleteDummyJobs {
             newJobResource,
             new ArrayList<>(data.resourceCapacity) // Copy resource capacity
         );
+    }
+
+    /**
+     * Deletes dummy jobs from a map of start times.
+     * 
+     * @param startTimes The original map of job start times.
+     * @return A new map with dummy jobs removed.
+     */
+    public static Map<Integer, Integer> deleteDummyJobsFromStartTimesMap(Map<Integer, Integer> startTimes) {
+        Map<Integer, Integer> modifiedStartTimes = new HashMap<>();
+        
+        // Find the maximum job index to identify supersink
+        int maxJobIndex = startTimes.keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
+        int supersourceIndex = 0; // First job is supersource
+        int supersinkIndex = maxJobIndex; // Last job is supersink
+        
+        // Copy all start times except for dummy jobs, and adjust indices
+        for (Map.Entry<Integer, Integer> entry : startTimes.entrySet()) {
+            int jobIndex = entry.getKey();
+            int startTime = entry.getValue();
+            
+            // Skip dummy jobs
+            if (jobIndex == supersourceIndex || jobIndex == supersinkIndex) {
+                continue;
+            }
+            
+            // Adjust job index (subtract 1 because we're removing supersource)
+            int newJobIndex = jobIndex > supersourceIndex ? jobIndex - 1 : jobIndex;
+            modifiedStartTimes.put(newJobIndex, startTime);
+        }
+        
+        return modifiedStartTimes;
+    }
+
+    public static int[][] deleteDummyJobsFromEarliestLatestStartTimes(int[][] earliestLatestStartTimes) {
+        // Remove the first and last elements from both earliest and latest start time arrays
+        int newLength = earliestLatestStartTimes[0].length - 2;
+        int[][] modifiedTimes = new int[2][newLength];
+        
+        // Copy earliest start times (skip first and last elements)
+        for (int i = 0; i < newLength; i++) {
+            modifiedTimes[0][i] = earliestLatestStartTimes[0][i + 1];
+        }
+        
+        // Copy latest start times (skip first and last elements)
+        for (int i = 0; i < newLength; i++) {
+            modifiedTimes[1][i] = earliestLatestStartTimes[1][i + 1];
+        }
+        
+        return modifiedTimes;
     }
 }
