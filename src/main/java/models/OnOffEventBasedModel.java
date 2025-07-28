@@ -89,7 +89,7 @@ public class OnOffEventBasedModel implements ModelInterface {
                 for (int e = 0; e < startOfEventEVars.length; e++) {
                     expr1.addTerm(1, jobActiveAtEventVars[i][e]);
                 }
-                model.addConstr(expr1, GRB.GREATER_EQUAL, 1, expr1 + "greater equal 1 (42)");
+                model.addConstr(expr1, GRB.GREATER_EQUAL, 1, "all " + i + "greater equal 1 (42)");
             }
 
             // (43) Constraints (43) link the makespan to the event dates: Cmax >= te + (zie - zi,e-1)pi
@@ -258,8 +258,8 @@ public class OnOffEventBasedModel implements ModelInterface {
                         GRBLinExpr totalExpr = new GRBLinExpr();
                         totalExpr.add(leftSide);
                         totalExpr.add(rightSide);
-                        
-                        String constraintName = "precedence_job_" + i + "_pred_" + predecessor + "_event_" + e + "_49";
+
+                        String constraintName = "precedence_job_" + i + "_pred_" + predecessor + "_event_" + e + "_(49)";
                         model.addConstr(totalExpr, GRB.LESS_EQUAL, 1, constraintName);
                         
                         if ((e <= 3 && i <= 3) || (i == 7 && e == 0) || (i == 8 && e == 0)) { // Add debug for jobs 7,8 at event 0

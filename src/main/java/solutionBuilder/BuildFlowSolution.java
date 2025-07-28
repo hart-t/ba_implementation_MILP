@@ -69,16 +69,16 @@ public class BuildFlowSolution implements CompletionMethodInterface {
 
                 // Set the precedence variables based on the starting times
                 for (int i = 0; i < data.numberJob; i++) {
-                    for (int j = 0; j < data.numberJob; j++) {
-                        if (i == j) continue; // Skip self-precedence
+                    for (int j = i + 1; j < data.numberJob; j++) {
+                        //if (i == j) continue; // Skip self-precedence
                         GRBVar var1 = model.getVarByName("[" + i + "] precedes [" + j + "]");
                         GRBVar var2 = model.getVarByName("[" + j + "] precedes [" + i + "]");
 
-                        if (startTimes.get(i) < startTimes.get(j)) {
+                        if (startTimes.get(i) + data.jobDuration.get(i) <= startTimes.get(j)) {
                             // Set the precedence value for the precedence variable
                             var1.set(GRB.DoubleAttr.Start, 1.0);
                         }
-                        else if (startTimes.get(i) > startTimes.get(j)) {
+                        else if (startTimes.get(i) >= startTimes.get(j) + data.jobDuration.get(j)) {
                             // Set the precedence value for the precedence variable
                             var2.set(GRB.DoubleAttr.Start, 1.0);
                         }
@@ -96,13 +96,23 @@ public class BuildFlowSolution implements CompletionMethodInterface {
                         
                         for (int k = 0; k < data.resourceCapacity.size(); k++) {
                             GRBVar flowVar = model.getVarByName("quantity of resource " + k + "transferred from " + i + " to " + j);
-                            if (flowVar != null) {
-                                double flowAmount = flowVars[i][j][k];
-                                flowVar.set(GRB.DoubleAttr.Start, flowAmount);
-                            }
+                            double flowAmount = flowVars[i][j][k];
+                            flowVar.set(GRB.DoubleAttr.Start, flowAmount);
                         }
                     }
                 }
+
+                // Set flow variables from supersink (last job) to supersource (first job) to resource 
+                // capacity for Constraint (18)
+                int supersource = 0;
+                int supersink = data.numberJob - 1;
+
+                for (int k = 0; k < data.resourceCapacity.size(); k++) {
+                    GRBVar flowVar = model.getVarByName("quantity of resource " + k + "transferred from " + supersink + " to " + supersource);
+                    double resourceCapacity = data.resourceCapacity.get(k);
+                        flowVar.set(GRB.DoubleAttr.Start, resourceCapacity);
+                }
+
             } else {
                 System.out.println("No start times provided, using default values.");
             }

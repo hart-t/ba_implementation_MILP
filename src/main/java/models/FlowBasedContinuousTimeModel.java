@@ -128,7 +128,6 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
             for (int i = 0; i < data.numberJob; i++) {
                 for (int j = 0; j < data.numberJob; j++) {
                     if (i == j) continue;
-                    if (precedenceVars[i][j] == null) continue;
                     // Mij is some large enough constant, which can be set to any valid upper bound for Si - Sj
                     // (e.g., Mij = ESi - LSj)
                     /*
@@ -148,7 +147,9 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
                     expr2.addConstant(-Mij);
                     expr2.addTerm((data.jobDuration.get(i) + Mij), precedenceVars[i][j]);
 
-                    model.addConstr(expr1, GRB.GREATER_EQUAL, expr2, expr1 + "greater equal to " + expr2 + " (C14)");
+                    model.addConstr(expr1, GRB.GREATER_EQUAL, expr2, startingTimeVars[j].get(GRB.StringAttr.VarName) 
+                    + "-" + startingTimeVars[i].get(GRB.StringAttr.VarName) + "greater equal to " + 
+                    -Mij + " + " + "job duration of job " + i + " " + (data.jobDuration.get(i) + " + " + Mij) + "    precedenceVars i j " + precedenceVars[i][j].get(GRB.DoubleAttr.Obj) + " (C14)");
                 }
             }
 
@@ -172,7 +173,8 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
             }
 
             // Constraints (16), (17), (18) are resource flow conservation constraints.
-            for (int i = 0; i < data.numberJob; i++) {
+            // the last job (supersink) has no outgoing flow, so it is not included in this loop.
+            for (int i = 0; i < data.numberJob - 1; i++) {
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
 
                     GRBLinExpr expr1 = new GRBLinExpr();
@@ -185,12 +187,16 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
 
                     expr2.addConstant(resourceDemands[i][k]);
 
-                    model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 + " (C16)");
+                    model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 
+                    + " (C16) flow from " + i + " to all j for resource " + k 
+                    + " must equal demand of resource " + k + " for job " + i 
+                    + " that is " + resourceDemands[i][k] + " (C16)");
                 }
             }
 
             // (17) i think there is a typo and it should be "for all j" instead of "for all i" like in C16
-            for (int j = 0; j < data.numberJob; j++) {
+            // Job 0 does not have any incoming flow, so it is not included in this loop.
+            for (int j = 1; j < data.numberJob; j++) {
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
 
                     GRBLinExpr expr1 = new GRBLinExpr();
@@ -386,5 +392,5 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
             e.printStackTrace();
         }
         return null;
-    }        
+    }
 }

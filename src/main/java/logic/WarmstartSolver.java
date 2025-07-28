@@ -33,6 +33,10 @@ public class WarmstartSolver {
             // Build the solution using the completion method
             ModelSolutionInterface initialSolution = completionMethod.buildSolution(scheduleResult.getStartTimes(), data, grbOptimizationModel);
 
+            // print the start times used to build the initial solution
+            //System.out.println("Initial start times used to build the solution: " + scheduleResult.getStartTimes());
+
+            System.out.println(scheduleResult.getUsedHeuristics() + " used to build the initial solution.");
             // Complete the model with the initial solution
             grbOptimizationModel = model.completeModel(initialSolution, data);
 

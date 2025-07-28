@@ -41,15 +41,18 @@ public class BuildTimeDiscreteSolution implements CompletionMethodInterface {
             model.update(); // Ensure the model is updated after adding variables
             if (!startTimes.isEmpty()) {
                 for (int i = 0; i < data.numberJob; i++) {
-                    int startTime = startTimes.get(i); // Start time for job i
-                    // Get the variable corresponding to job i starting at startTime
-                    GRBVar var = model.getVarByName("startingTime[" + i + "] at [" + startTime + "]");
-                    if (var != null) {
-                        // Set the start value for the variable to 1 (job i starts at startTime)
-                        var.set(GRB.DoubleAttr.Start, 1.0);
-                    } else {
-                        System.err.println("Variable for job " + i + " at time " + startTime + " not found.");
-                    }   
+                    for (int j = earliestStartTime[i]; j < latestStartTime[i]; j++) {
+                        GRBVar var = model.getVarByName("startingTime[" + i + "] at [" + j + "]");
+                        if (var != null) {
+                            if (startTimes.get(i).equals(j)) {
+                            var.set(GRB.DoubleAttr.Start, 1.0);
+                            } else {
+                                var.set(GRB.DoubleAttr.Start, 0.0);
+                            }
+                        } else {
+                            System.err.println("Variable for job " + i + " at time " + j + " not found.");
+                        }   
+                    }  
                 }
             }
             model.update(); // Ensure the model is updated after modifying variables

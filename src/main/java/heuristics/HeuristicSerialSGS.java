@@ -167,7 +167,10 @@ public class HeuristicSerialSGS implements HeuristicInterface {
     @Override
     public ScheduleResult determineScheduleResult(JobDataInstance data, ScheduleResult initialScheduleResult) {
         if (initialScheduleResult.getUsedHeuristics().isEmpty()) {
-            return determineStartTimes(data);
+            ScheduleResult scheduleResult = determineStartTimes(data);
+            System.out.println("SSGS-" + getHeuristicCode() + " found a schedule with makespan " 
+                + scheduleResult.getStartTimes().get(data.numberJob - 1));
+            return scheduleResult;
         } else {
             // Calculate new start times using this heuristic
             ScheduleResult newSchedule = determineStartTimes(data);
@@ -177,9 +180,11 @@ public class HeuristicSerialSGS implements HeuristicInterface {
             int existingMakespan = initialScheduleResult.getStartTimes().get(data.numberJob - 1);
             
             if (newMakespan < existingMakespan) {
+                System.out.println("SSGS-" + getHeuristicCode() + " found a better schedule with makespan " + newMakespan + " (was " + existingMakespan + ")");
                 return newSchedule;
             } else if (newMakespan == existingMakespan) {
                 initialScheduleResult.getUsedHeuristics().add(getHeuristicCode());
+                System.out.println("SSGS-" + getHeuristicCode() + " found an equivalent schedule with makespan " + newMakespan);
                 return initialScheduleResult;
             } else {
                 return initialScheduleResult;
