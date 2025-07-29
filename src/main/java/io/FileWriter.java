@@ -22,14 +22,34 @@ public class FileWriter {
     
     private void loadOptimalValues() {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                new FileInputStream("/home/tobsi/university/kit/RCPSP_Benchmark_Solutions/j30opt.sm")))) {
+                new FileInputStream("/home/tobsi/university/kit/RCPSP_Benchmark_Solutions/j30opt.sm/j30opt.sm")))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] parts = line.trim().split("\\s+");
-                if (parts.length >= 2) {
-                    String instanceName = parts[0];
-                    int optimalMakespan = Integer.parseInt(parts[1]);
-                    optimalValues.put(instanceName, optimalMakespan);
+                line = line.trim();
+                // Skip empty lines and header lines
+                if (line.isEmpty() || line.startsWith("=") || line.startsWith("Authors") || 
+                    line.startsWith("Instance") || line.startsWith("Type") || line.startsWith("Date") ||
+                    line.startsWith("Research") || line.startsWith("Computer") || line.startsWith("Processor") ||
+                    line.startsWith("Clockpulse") || line.startsWith("Operating") || line.startsWith("Memory") ||
+                    line.startsWith("Language") || line.startsWith("Average") || line.startsWith("Paramter") ||
+                    line.startsWith("--") || line.contains("benchmark") || line.contains("resource-constrained")) {
+                    continue;
+                }
+                
+                String[] parts = line.split("\\s+");
+                if (parts.length >= 3) {
+                    try {
+                        int parameter = Integer.parseInt(parts[0]);
+                        int instance = Integer.parseInt(parts[1]);
+                        int makespan = Integer.parseInt(parts[2]);
+                        
+                        // Create key in format j30{parameter}_{instance}
+                        String key = String.format("j30%d_%d", parameter, instance);
+                        optimalValues.put(key, makespan);
+                    } catch (NumberFormatException e) {
+                        // Skip lines that don't have valid numbers
+                        continue;
+                    }
                 }
             }
         } catch (Exception e) {

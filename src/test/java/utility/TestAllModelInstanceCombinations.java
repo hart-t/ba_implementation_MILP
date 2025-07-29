@@ -43,7 +43,7 @@ public class TestAllModelInstanceCombinations {
         );
 
         for (File file : files) {
-            String filename = "/home/tobsi/university/kit/benchmarkSets2/" + file.getName();
+            String filename = "/home/tobsi/university/kit/benchmarkSets/" + file.getName();
             
             try {
                 FileReader fileReader = new FileReader();
