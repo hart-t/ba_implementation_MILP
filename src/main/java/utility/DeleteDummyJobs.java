@@ -53,7 +53,9 @@ public class DeleteDummyJobs {
                 int successorIndex = successor - 1; // Convert to 0-based
                 // Skip if successor is a dummy job
                 if (successorIndex != supersourceIndex && successorIndex != supersinkIndex) {
-                    newSuccessors.add(successorIndex);
+                    // Adjust for removed supersource and convert to 0-based indexing
+                    int adjustedSuccessor = successorIndex - 1; // Reduce by 1 for supersource removal
+                    newSuccessors.add(adjustedSuccessor);
                     numSuccessors++;
                 }
             }
@@ -70,12 +72,15 @@ public class DeleteDummyJobs {
         // Build predecessor relationships from successor relationships
         for (int job = 0; job < newNumberJob; job++) {
             for (int successor : newJobSuccessors.get(job)) {
-                int successorIndex = successor - 1; // Convert to 0-based
-                if (successorIndex >= 0 && successorIndex < newNumberJob) {
-                    newJobPredecessors.get(successorIndex).add(job + 1); // Convert back to 1-based
+                // successor is already 0-based and adjusted for removed dummy jobs
+                if (successor >= 0 && successor < newNumberJob) {
+                    newJobPredecessors.get(successor).add(job); // Use 0-based indexing
                 }
             }
         }
+
+
+        
 
         // Create and return new JobDataInstance with dummy jobs removed
         return new JobDataInstance(

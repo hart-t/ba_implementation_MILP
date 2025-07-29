@@ -53,13 +53,15 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
                 // print start times for debugging
                 System.out.println("Start times from heuristic: " + startTimes);
                 
-                Map<Integer, List<Integer>> timeToJobs = new TreeMap<>();
-                
                 // Set the start values for the starting time variables based on the provided startTimes map
                 // Sort start times to assign events in chronological order
                 List<Map.Entry<Integer, Integer>> sortedEntries = new ArrayList<>(startTimes.entrySet());
                 sortedEntries.sort(Map.Entry.comparingByValue());
-                
+                System.out.println("Sorted start times: " + sortedEntries);
+
+                // Update the model
+                model.update();
+
                 // Event counter starting at 0
                 int event = 0;
                 
@@ -73,7 +75,6 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
                     // Job is set to be active at one (the corresponding) event
                     jobActiveAtEventVars[job][event].set(GRB.DoubleAttr.Start, 1.0);
                     var1.set(GRB.DoubleAttr.Start, 1.0);
-                    System.out.println("Setting jobActiveAtEvent[" + job + "][" + event + "] to 1");
 
                     // The start time of the event is set to the start time of the job given by the heuristic
                     GRBVar var2 = model.getVarByName("startOfEvent[" + event + "]");
@@ -82,6 +83,8 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
                     
                     event++;
                 }
+
+                model.update(); // Ensure the model is updated after setting start values
 
                 // For each job, check all events and set jobActiveAtEventVars accordingly
                 for (Map.Entry<Integer, Integer> jobEntry : startTimes.entrySet()) {
@@ -125,23 +128,6 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
                         }
                     }
                 }
-
-                // Print all events where job 0 is active
-                System.out.println("Events where job 0 is active:");
-                for (int e = 0; e < noDummyData.numberJob; e++) {
-                    try {
-                        double isActive = jobActiveAtEventVars[0][e].get(GRB.DoubleAttr.Start);
-                        if (isActive > 0.5) { // Check if job is active (value close to 1)
-                            double eventTime = startOfEventEVars[e].get(GRB.DoubleAttr.Start);
-                            System.out.println("  Job 0 is active at event " + e + " (time: " + eventTime + ")");
-                        }
-                    } catch (Exception ex) {
-                        System.err.println("Error checking job 0 at event " + e + ": " + ex.getMessage());
-                    }
-                }
-
-
-
             }
             model.update(); // Ensure the model is updated after modifying variables
         } catch (Exception e) {
