@@ -2,6 +2,7 @@ package models;
 
 import com.gurobi.gurobi.*;
 
+import enums.ModelType;
 import io.JobDataInstance;
 import utility.TEMatrix;
 
@@ -350,6 +351,11 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
 
         public GRBVar[][][] getContinuousFlowVars() {
             return continuousFlowVars;
+        }
+
+        @Override
+        public ModelType getModelType() {
+            return ModelType.FLOW;
         }
     }
 

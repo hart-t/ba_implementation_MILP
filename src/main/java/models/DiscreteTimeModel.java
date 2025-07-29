@@ -7,6 +7,7 @@ import interfaces.ModelSolutionInterface;
 import interfaces.ModelInterface;
 import interfaces.CompletionMethodInterface;
 import solutionBuilder.BuildTimeDiscreteSolution;
+import enums.ModelType;
 
 /*
      * Solves the RCPSP problem using Gurobi with a discrete time model.
@@ -189,6 +190,11 @@ public class DiscreteTimeModel implements ModelInterface {
 
         public GRBVar[][] getStartingTimeVars() {
             return startingTimeVars;
+        }
+        
+        @Override
+        public ModelType getModelType() {
+            return ModelType.DISC;
         }
     }
 

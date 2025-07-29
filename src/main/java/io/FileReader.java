@@ -67,7 +67,9 @@ public class FileReader {
             row++;
         }
 
-        return new JobDataInstance(numberJob, horizon, jobNumSuccessors, jobSuccessors,
+        String instanceName = file.substring(file.lastIndexOf('/') + 1, file.lastIndexOf('.'));
+
+        return new JobDataInstance(instanceName, numberJob, horizon, jobNumSuccessors, jobSuccessors,
                          jobPredecessors, jobDuration, jobResource, resourceCapacity);
     }
     /*

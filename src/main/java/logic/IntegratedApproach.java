@@ -48,8 +48,8 @@ public class IntegratedApproach {
         System.out.println("Using model: " + modelType.getDescription());
         return modelType.createModel();
     }
-    
-    public void solve(JobDataInstance data) {
+
+    public Result solve(JobDataInstance data) {
         ScheduleResult scheduleResult = new ScheduleResult(new ArrayList<>(), new HashMap<>());
         Result result;
         if (!heuristics.isEmpty()) {
@@ -79,7 +79,7 @@ public class IntegratedApproach {
         } else {
             result = solver.solve(data, scheduleResult);
         }
-        //TODO write in file
-        result.printResult();
+        
+        return result;
     }
 }

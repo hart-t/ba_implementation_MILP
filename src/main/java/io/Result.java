@@ -1,16 +1,23 @@
 package io;
 
+import java.util.List;
+
+import enums.ModelType;
 import interfaces.ModelSolutionInterface;
 
 public class Result {
     ModelSolutionInterface modelSolution;
     SolverResults solverResults;
     int[][] startAndFinishTimes;
+    ScheduleResult scheduleResult;
+    String instanceName;
 
-    public Result(ModelSolutionInterface modelSolution, SolverResults solverResults, int[][] startAndFinishTimes) {
+    public Result(ModelSolutionInterface modelSolution, SolverResults solverResults, int[][] startAndFinishTimes, ScheduleResult scheduleResult, String instanceName) {
         this.modelSolution = modelSolution;
         this.solverResults = solverResults;
         this.startAndFinishTimes = startAndFinishTimes;
+        this.scheduleResult = scheduleResult;
+        this.instanceName = instanceName;
     }
 
 
@@ -41,5 +48,17 @@ public class Result {
         } else {
             System.out.println("No start and finish times available.");
         }
+    }
+
+    public List<String> getUsedHeuristics() {
+            return scheduleResult.getUsedHeuristics();
+    }
+
+    public int getBestHeuristicMakespan() {
+        return scheduleResult.getStartTimes().get(scheduleResult.getStartTimes().size() - 1);
+    }
+
+    public ModelType getModelType() {
+        return modelSolution.getModelType();
     }
 }

@@ -84,6 +84,7 @@ public class DeleteDummyJobs {
 
         // Create and return new JobDataInstance with dummy jobs removed
         return new JobDataInstance(
+            data.instanceName, // Keep the same instance name
             newNumberJob,
             data.horizon, // Keep the same horizon
             newJobNumSuccessors,

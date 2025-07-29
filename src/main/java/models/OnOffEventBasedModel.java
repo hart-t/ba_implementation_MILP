@@ -2,6 +2,7 @@ package models;
 
 import com.gurobi.gurobi.*;
 
+import enums.ModelType;
 import io.JobDataInstance;
 import interfaces.ModelInterface;
 import interfaces.ModelSolutionInterface;
@@ -89,7 +90,7 @@ public class OnOffEventBasedModel implements ModelInterface {
                 for (int e = 0; e < startOfEventEVars.length; e++) {
                     expr1.addTerm(1, jobActiveAtEventVars[i][e]);
                 }
-                model.addConstr(expr1, GRB.GREATER_EQUAL, 1, "all " + i + "greater equal 1 (42)");
+                model.addConstr(expr1, GRB.GREATER_EQUAL, 1, "(42)");
             }
 
             // (43) Constraints (43) link the makespan to the event dates: Cmax >= te + (zie - zi,e-1)pi
@@ -223,7 +224,6 @@ public class OnOffEventBasedModel implements ModelInterface {
             for (int e = 0; e < startOfEventEVars.length; e++) {
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
                     GRBLinExpr expr1 = new GRBLinExpr();
-                    // TODO wieder nur bis n - 1?
                     for (int i = 0; i < data.numberJob; i++) {
                         expr1.addTerm(data.jobResource.get(i).get(k), jobActiveAtEventVars[i][e]);
                     }
@@ -363,6 +363,11 @@ public class OnOffEventBasedModel implements ModelInterface {
 
         public GRBVar[][] getJobActiveAtEventVars() {
             return jobActiveAtEventVars;
+        }
+
+        @Override
+        public ModelType getModelType() {
+            return ModelType.EVENT;
         }
     }
 

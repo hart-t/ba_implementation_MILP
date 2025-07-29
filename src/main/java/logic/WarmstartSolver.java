@@ -42,7 +42,7 @@ public class WarmstartSolver {
 
             // Configure Gurobi parameters and logging
             grbOptimizationModel.set(GRB.DoubleParam.MIPGap, 0.0);        // Require optimal solution
-            grbOptimizationModel.set(GRB.DoubleParam.TimeLimit, 180.0);    // Set time limit
+            grbOptimizationModel.set(GRB.DoubleParam.TimeLimit, 30.0);    // Set time limit
             grbOptimizationModel.set(GRB.IntParam.Threads, 4);            // Use multiple threads
             grbOptimizationModel.set(GRB.IntParam.Method, 2);             // Use barrier method
             grbOptimizationModel.set(GRB.IntParam.OutputFlag, 1);         // Enable output
@@ -55,8 +55,8 @@ public class WarmstartSolver {
             int[][] startAndFinishTimes = model.getStartAndFinishTimes(grbOptimizationModel, data);
 
             SolverResults solverResults = buildSolverResults(grbOptimizationModel);
-            Result result = new Result(new OptimizedSolution(grbOptimizationModel), solverResults, startAndFinishTimes);
-                
+            Result result = new Result(new OptimizedSolution(grbOptimizationModel, initialSolution.getModelType()), solverResults, startAndFinishTimes, scheduleResult, data.instanceName);
+
             // Clean up Gurobi model and environment
             grbOptimizationModel.dispose();
             env.dispose();
@@ -79,6 +79,7 @@ public class WarmstartSolver {
         try {
             // upper lower bound
             lowerBound = model.get(GRB.DoubleAttr.ObjBound);
+            upperBound = model.get(GRB.DoubleAttr.ObjVal);
             objectiveValue = model.get(GRB.DoubleAttr.ObjVal);
             timeInSeconds = model.get(GRB.DoubleAttr.Runtime);
         } catch (Exception e) {

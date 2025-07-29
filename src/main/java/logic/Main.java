@@ -15,7 +15,7 @@ import io.JobDataInstance;
 
 public class Main {
     public static void main(String[] args) {
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j303_3.sm";
+        String filename = "/home/tobsi/university/kit/benchmarkSets/j301_1.sm";
 
         try {
             FileReader fileReader = new FileReader();

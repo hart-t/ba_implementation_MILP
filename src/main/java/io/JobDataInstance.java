@@ -5,6 +5,7 @@ import java.util.*;
 
 
 public class JobDataInstance {
+    final public String instanceName;
     final public int numberJob;
     final public int horizon;
     final public List<Integer> jobNumSuccessors;
@@ -13,12 +14,13 @@ public class JobDataInstance {
     final public List<Integer> jobDuration;
     final public List<List<Integer>> jobResource;
     final public List<Integer> resourceCapacity;
-    
-    public JobDataInstance(int numberJob, int horizon, List<Integer> jobNumSuccessors, 
-                                List<List<Integer>> jobSuccessors, List<List<Integer>> jobPredecessors,
-                                List<Integer> jobDuration, List<List<Integer>> jobResource,
-                                List<Integer> resourceCapacity) {
 
+    public JobDataInstance(String instanceName, int numberJob, int horizon, List<Integer> jobNumSuccessors,
+                            List<List<Integer>> jobSuccessors, List<List<Integer>> jobPredecessors,
+                            List<Integer> jobDuration, List<List<Integer>> jobResource,
+                            List<Integer> resourceCapacity) {
+
+        this.instanceName = instanceName;
         this.numberJob = numberJob;
         this.horizon = horizon;
         this.jobNumSuccessors = jobNumSuccessors;
