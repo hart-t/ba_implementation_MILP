@@ -3,6 +3,7 @@ package logic;
 import com.gurobi.gurobi.GRB;
 import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBModel;
+import com.gurobi.gurobi.GRBVar;
 
 import interfaces.CompletionMethodInterface;
 import interfaces.ModelInterface;
@@ -34,7 +35,7 @@ public class WarmstartSolver {
             ModelSolutionInterface initialSolution = completionMethod.buildSolution(scheduleResult.getStartTimes(), data, grbOptimizationModel);
 
             // print the start times used to build the initial solution
-            //System.out.println("Initial start times used to build the solution: " + scheduleResult.getStartTimes());
+            System.out.println("Initial start times used to build the solution: " + scheduleResult.getStartTimes());
 
             System.out.println(scheduleResult.getUsedHeuristics() + " used to build the initial solution.");
             // Complete the model with the initial solution
@@ -50,6 +51,9 @@ public class WarmstartSolver {
         
             // Optimize and check solution quality
             grbOptimizationModel.optimize();
+
+            // Print all flow variables
+            // printFlowVariables(grbOptimizationModel, data);
 
             grbOptimizationModel.write("logFile.lp"); // Write the model to a file for debugging
             int[][] startAndFinishTimes = model.getStartAndFinishTimes(grbOptimizationModel, data);
@@ -87,5 +91,34 @@ public class WarmstartSolver {
             e.printStackTrace();
         }
         return new SolverResults(lowerBound, upperBound, objectiveValue, timeInSeconds);
+    }
+
+    private void printFlowVariables(GRBModel model, JobDataInstance data) {
+        try {
+            System.out.println("\n=== FLOW VARIABLES (Resource 1 only) ===");
+            
+            // Get all variables from the model
+            GRBVar[] allVars = model.getVars();
+            
+            for (GRBVar var : allVars) {
+                String varName = var.get(GRB.StringAttr.VarName);
+                
+                // Check if this is a flow variable for resource 1 specifically
+                if (varName.contains("quantity of resource 1") && varName.contains("transferred from")) {
+                    double value = var.get(GRB.DoubleAttr.X);
+                    
+                    // Only print non-zero flow variables for clarity
+                    if (Math.abs(value) > 1e-6) {
+                        System.out.printf("%-80s = %.6f%n", varName, value);
+                    }
+                }
+            }
+            
+            System.out.println("=== END FLOW VARIABLES ===\n");
+            
+        } catch (Exception e) {
+            System.err.println("Error while printing flow variables: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

@@ -79,7 +79,7 @@ public class IntegratedApproach {
         } else {
             result = solver.solve(data, scheduleResult);
         }
-        
+        result.printResult();
         return result;
     }
 }

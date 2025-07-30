@@ -11,6 +11,8 @@ import io.JobDataInstance;
  * 
  * ich habe zwei heuristisch ermittelte schedules mit gleicher makespan aber unterschiedlichen startzeiten
  * wie vergleiche ich diese um die bessere zu finden?
+ * 
+ * Intervall Based Model mistake zief = 1 either way
  */
 
 public class Main {
@@ -39,9 +41,10 @@ public class Main {
             
             // Configure models using simple string codes
             List<String> modelConfigs = Arrays.asList(
-                 //"FLOW"      // Flow-Based Continuous Time Model
+                 "FLOW"      // Flow-Based Continuous Time Model
                  //"DISC"     // Discrete Time Model
-                 "EVENT"     // On-Off Event Based Model
+                 //"EVENT"     // On-Off Event Based Model
+                 // "IEE"     // Interval Event Based Model
             );
 
             // Solve with each model

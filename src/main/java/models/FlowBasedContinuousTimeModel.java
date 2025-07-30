@@ -139,18 +139,23 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
                     int Mij = latestStartTime[i] - earliestStartTime[j];
                     // latest start i -earliest start j
                     //Mij = data.horizon;
-                    GRBLinExpr expr1 = new GRBLinExpr();
-                    GRBLinExpr expr2 = new GRBLinExpr();
+                    GRBLinExpr leftSide = new GRBLinExpr();
+                    GRBLinExpr rightSide = new GRBLinExpr();
 
-                    expr1.addTerm(1, startingTimeVars[j]);
-                    expr1.addTerm(-1, startingTimeVars[i]);
+                    leftSide.addTerm(1, startingTimeVars[j]);
+                    leftSide.addTerm(-1, startingTimeVars[i]);
 
-                    expr2.addConstant(-Mij);
-                    expr2.addTerm((data.jobDuration.get(i) + Mij), precedenceVars[i][j]);
-
-                    model.addConstr(expr1, GRB.GREATER_EQUAL, expr2, startingTimeVars[j].get(GRB.StringAttr.VarName) 
+                    rightSide.addConstant(-Mij);
+                    rightSide.addTerm((data.jobDuration.get(i) + Mij), precedenceVars[i][j]);
+                    System.out.println(startingTimeVars[j].get(GRB.StringAttr.VarName) 
                     + "-" + startingTimeVars[i].get(GRB.StringAttr.VarName) + "greater equal to " + 
-                    -Mij + " + " + "job duration of job " + i + " " + (data.jobDuration.get(i) + " + " + Mij) + "    precedenceVars i j " + precedenceVars[i][j].get(GRB.DoubleAttr.Obj) + " (C14)");
+                    -Mij + " + " + "job duration of job " + i + " " + (data.jobDuration.get(i) + " + " + Mij) 
+                    + "    precedenceVars i j " + precedenceVars[i][j].get(GRB.DoubleAttr.Obj) + " (C14)");
+
+                    model.addConstr(leftSide, GRB.GREATER_EQUAL, rightSide, startingTimeVars[j].get(GRB.StringAttr.VarName) 
+                    + "-" + startingTimeVars[i].get(GRB.StringAttr.VarName) + "greater equal to " + 
+                    -Mij + " + " + "job duration of job " + i + " " + (data.jobDuration.get(i) + " + " + Mij) 
+                    + "    precedenceVars i j " + precedenceVars[i][j].get(GRB.DoubleAttr.Obj) + " (C14)");
                 }
             }
 
@@ -175,7 +180,7 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
 
             // Constraints (16), (17), (18) are resource flow conservation constraints.
             // the last job (supersink) has no outgoing flow, so it is not included in this loop.
-            for (int i = 0; i < data.numberJob - 1; i++) {
+            for (int i = 0; i < data.numberJob; i++) {
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
 
                     GRBLinExpr expr1 = new GRBLinExpr();
@@ -197,7 +202,7 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
 
             // (17) i think there is a typo and it should be "for all j" instead of "for all i" like in C16
             // Job 0 does not have any incoming flow, so it is not included in this loop.
-            for (int j = 1; j < data.numberJob; j++) {
+            for (int j = 0; j < data.numberJob; j++) {
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
 
                     GRBLinExpr expr1 = new GRBLinExpr();

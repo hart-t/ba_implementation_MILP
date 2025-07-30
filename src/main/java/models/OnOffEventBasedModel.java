@@ -11,19 +11,10 @@ import solutionBuilder.BuildOnOffEventSolution;
 import utility.DeleteDummyJobs;
 
 /**
- * On off Event-Based Model 2
+ * On off Event-Based Model
  *
  * https://www.sciencedirect.com/science/article/pii/S0305054809003360
  *      on off event-based model
- *
- *      public final int numberJob;
- *      public final int horizon;
- *      public final List<Integer> jobNumSuccessors;
- *      public final List<List<Integer>> jobSuccessors;
- *      public final List<List<Integer>> jobPredecessors;
- *      public final List<Integer> jobDuration;
- *      public final List<List<Integer>> jobResource;
- *      public final List<Integer> resourceCapacity;
  * 
  *      In this model, the number of events is exactly equal to the number of activities, n.
  *      event-based formulations do not involve the use of dummy activities.
@@ -49,14 +40,14 @@ public class OnOffEventBasedModel implements ModelInterface {
 
             // Cast to access the Variables
             GRBVar makespanVar;
-            GRBVar[] startOfEventEVars;
+            GRBVar[] startOfEventVars;
             GRBVar[][] jobActiveAtEventVars;
             int[] earliestStartTime;
             int[] latestStartTime;
             if (initialSolution instanceof OnOffEventBasedModelSolution) {
                 makespanVar = ((OnOffEventBasedModelSolution) initialSolution)
                         .getMakespanVar();
-                startOfEventEVars = ((OnOffEventBasedModelSolution) initialSolution)
+                startOfEventVars = ((OnOffEventBasedModelSolution) initialSolution)
                         .getStartOfEventEVars();
                 jobActiveAtEventVars = ((OnOffEventBasedModelSolution) initialSolution)
                         .getJobActiveAtEventVars();
@@ -71,12 +62,14 @@ public class OnOffEventBasedModel implements ModelInterface {
 
             // delete dummy jobs from data and earliestLatestStartTimes
             data = DeleteDummyJobs.deleteDummyJobs(data);
-            int[] newEarliestStartTime = new int[data.numberJob];
-            int[] newLatestStartTime = new int[data.numberJob];
-            for (int i = 1; i < earliestStartTime.length - 1; i++) {
-                newEarliestStartTime[i - 1] = earliestStartTime[i];
-                newLatestStartTime[i - 1] = latestStartTime[i];
-            }
+            /*
+             * int[] newEarliestStartTime = new int[data.numberJob];
+                int[] newLatestStartTime = new int[data.numberJob];
+                for (int i = 1; i < earliestStartTime.length - 1; i++) {
+                    newEarliestStartTime[i - 1] = earliestStartTime[i];
+                    newLatestStartTime[i - 1] = latestStartTime[i];
+                }
+             */
             
             // (41) We also use one single extra continuous variable Cmax to represent the makespan of the 
             // schedule. Set the objective to minimize Cmax
@@ -87,7 +80,7 @@ public class OnOffEventBasedModel implements ModelInterface {
             // (42) Constraints (42) ensure that each activity is processed at least once during the project.
             for (int i = 0; i < data.numberJob; i++) {
                 GRBLinExpr expr1 = new GRBLinExpr();
-                for (int e = 0; e < startOfEventEVars.length; e++) {
+                for (int e = 0; e < startOfEventVars.length; e++) {
                     expr1.addTerm(1, jobActiveAtEventVars[i][e]);
                 }
                 model.addConstr(expr1, GRB.GREATER_EQUAL, 1, "(42)");
@@ -97,13 +90,13 @@ public class OnOffEventBasedModel implements ModelInterface {
             // for all e in E, all i in A
             for (int i = 0; i < data.numberJob; i++) {
                 // start at e = 1 to ensure e-1 >= 0
-                for (int e = 0; e < startOfEventEVars.length; e++) {
+                for (int e = 0; e < startOfEventVars.length; e++) {
                     GRBLinExpr expr1 = new GRBLinExpr();
                     GRBLinExpr expr2 = new GRBLinExpr();
                     
                     expr1.addTerm(1, makespanVar);
                     
-                    expr2.addTerm(1, startOfEventEVars[e]);
+                    expr2.addTerm(1, startOfEventVars[e]);
                     expr2.addTerm(data.jobDuration.get(i), jobActiveAtEventVars[i][e]);
 
                     if (e > 0) {
@@ -116,16 +109,16 @@ public class OnOffEventBasedModel implements ModelInterface {
 
             // (44), (45) Constraints (44), (45) ensure event sequencing.
             GRBLinExpr expr01 = new GRBLinExpr();
-            expr01.addTerm(1, startOfEventEVars[0]);
+            expr01.addTerm(1, startOfEventVars[0]);
             model.addConstr(expr01, GRB.EQUAL, 0, "event 0 starts at time dated 0 (44)");
 
             // skip event n
-            for (int e = 0; e < startOfEventEVars.length - 1; e++) {
+            for (int e = 0; e < startOfEventVars.length - 1; e++) {
                 GRBLinExpr expr1 = new GRBLinExpr();
                 GRBLinExpr expr2 = new GRBLinExpr();
 
-                expr1.addTerm(1, startOfEventEVars[e + 1]);
-                expr2.addTerm(1, startOfEventEVars[e]);
+                expr1.addTerm(1, startOfEventVars[e + 1]);
+                expr2.addTerm(1, startOfEventVars[e]);
 
                 model.addConstr(expr1, GRB.GREATER_EQUAL, expr2, expr1 + " starts after " + expr2 + "(45)");
             }
@@ -136,14 +129,14 @@ public class OnOffEventBasedModel implements ModelInterface {
             // activity i (tf >= te + pi)
 
             for (int i = 0; i < data.numberJob; i++) {
-                for (int e = 0; e < startOfEventEVars.length; e++) {
-                    for (int f = e + 1; f < startOfEventEVars.length; f++) {
+                for (int e = 0; e < startOfEventVars.length; e++) {
+                    for (int f = e + 1; f < startOfEventVars.length; f++) {
                         GRBLinExpr leftSide = new GRBLinExpr();
                         GRBLinExpr rightSide = new GRBLinExpr();
 
-                        leftSide.addTerm(1, startOfEventEVars[f]);
+                        leftSide.addTerm(1, startOfEventVars[f]);
 
-                        rightSide.addTerm(1, startOfEventEVars[e]);
+                        rightSide.addTerm(1, startOfEventVars[e]);
                         rightSide.addTerm(data.jobDuration.get(i), jobActiveAtEventVars[i][e]);
                         if (e > 0) {
                             rightSide.addTerm(- data.jobDuration.get(i), jobActiveAtEventVars[i][e - 1]);
@@ -163,7 +156,7 @@ public class OnOffEventBasedModel implements ModelInterface {
             // Constraints (47), (48), called contiguity constraints, ensure non-preemption 
             // (the events after which a given activity is being processed are adjacent).
             for (int i = 0; i < data.numberJob; i++) {
-                for (int e = 1; e < startOfEventEVars.length; e++) {
+                for (int e = 1; e < startOfEventVars.length; e++) {
                     GRBLinExpr expr1 = new GRBLinExpr();
                     GRBLinExpr expr2 = new GRBLinExpr();
                     for (int ee = 0; ee < e - 1; ee++) {
@@ -180,11 +173,11 @@ public class OnOffEventBasedModel implements ModelInterface {
 
             // (48) 
             for (int i = 0; i < data.numberJob; i++) {
-                for (int e = 1; e < startOfEventEVars.length; e++) {
+                for (int e = 1; e < startOfEventVars.length; e++) {
                     GRBLinExpr expr1 = new GRBLinExpr();
                     GRBLinExpr expr2 = new GRBLinExpr();
                     // Fix: ensure ee doesn't go out of bounds
-                    for (int ee = e; ee < Math.min(data.numberJob, startOfEventEVars.length); ee++) {
+                    for (int ee = e; ee < Math.min(data.numberJob, startOfEventVars.length); ee++) {
                         expr1.addTerm(1, jobActiveAtEventVars[i][ee]);
                     }
 
@@ -200,7 +193,7 @@ public class OnOffEventBasedModel implements ModelInterface {
             for (int jobIndex = 0; jobIndex < data.numberJob; jobIndex++) {
                 for (int predecessor : data.jobPredecessors.get(jobIndex)) {
 
-                    for (int eventIndex = 0; eventIndex < startOfEventEVars.length; eventIndex++) {
+                    for (int eventIndex = 0; eventIndex < startOfEventVars.length; eventIndex++) {
                         GRBLinExpr leftSide = new GRBLinExpr();
                         GRBLinExpr rightSide = new GRBLinExpr();
 
@@ -221,7 +214,7 @@ public class OnOffEventBasedModel implements ModelInterface {
             }
 
             // (50) the resource constraints limiting the total demand of activities in process at each event.
-            for (int e = 0; e < startOfEventEVars.length; e++) {
+            for (int e = 0; e < startOfEventVars.length; e++) {
                 for (int k = 0; k < data.resourceCapacity.size(); k++) {
                     GRBLinExpr expr1 = new GRBLinExpr();
                     for (int i = 0; i < data.numberJob; i++) {
@@ -242,7 +235,7 @@ public class OnOffEventBasedModel implements ModelInterface {
 
                     leftSide.addTerm(earliestStartTime[jobIndex], jobActiveAtEventVars[jobIndex][eventIndex]);
 
-                    middleSide.addTerm(1, startOfEventEVars[eventIndex]);
+                    middleSide.addTerm(1, startOfEventVars[eventIndex]);
 
                     rightSide.addTerm(latestStartTime[jobIndex], jobActiveAtEventVars[jobIndex][eventIndex]);
 
