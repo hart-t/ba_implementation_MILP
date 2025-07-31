@@ -6,6 +6,8 @@ import interfaces.CompletionMethodInterface;
 import interfaces.ModelInterface;
 import interfaces.ModelSolutionInterface;
 import enums.ModelType;
+import models.IntervalEventBasedModel.IntervalEventBasedModelSolution;
+import solutionBuilder.BuildIntervalEventSolution;
 
 import com.gurobi.gurobi.*;
 
@@ -18,10 +20,10 @@ import com.gurobi.gurobi.*;
  */
 
 public class IntervalEventBasedModel implements ModelInterface {
-    private CompletionMethodInterface completionMethod;
+    private final CompletionMethodInterface completionMethod;
 
-    public IntervalEventBasedModel(CompletionMethodInterface completionMethod) {
-        this.completionMethod = completionMethod;
+    public IntervalEventBasedModel() {
+        this.completionMethod = new BuildIntervalEventSolution();
     }
 
     @Override
@@ -38,13 +40,13 @@ public class IntervalEventBasedModel implements ModelInterface {
             // Cast to access the Variables
             GRBVar[] startOfEventVars;
             GRBVar[][][] ziefVars;
-            if (initialSolution instanceof IntervalEventBasedModel) {
-                startOfEventVars = ((IntervalEventBasedModel) initialSolution)
-                        .getStartOfEventEVars();
-                ziefVars = ((IntervalEventBasedModel) initialSolution)
+            if (initialSolution instanceof IntervalEventBasedModelSolution) {
+                startOfEventVars = ((IntervalEventBasedModelSolution) initialSolution)
+                        .getStartOfEventVars();
+                ziefVars = ((IntervalEventBasedModelSolution) initialSolution)
                         .getZiefVars();
             } else {
-                throw new IllegalArgumentException("Expected IntervalEventBasedModel but got " +
+                throw new IllegalArgumentException("Expected IntervalEventBasedModelSolution but got " +
                         initialSolution.getClass().getSimpleName());
             }
 
@@ -68,10 +70,17 @@ public class IntervalEventBasedModel implements ModelInterface {
             // (37) Event e must not exceed the resource capacities
             for (int k = 0; k < data.resourceCapacity.size(); k++) {
                 for (int e = 0; e < ziefVars.length; e++) {
+                    GRBLinExpr expr = new GRBLinExpr();
                     int rikSum = 0;
                     for (int i = 0; i < data.numberJob; i++) {
-                        rikSum += data.jobResource[i].get(k) * ziefVars[i][e][e];
+                        //rikSum += data.jobResource.get(i).get(k);
+                        expr.addTerm(data.jobResource.get(i).get(k), ziefVars[i][e][e]);
                     }
+
+                    for (int ee = e; ee < ziefVars.length; ee++) {
+                        expr.addTerm(data.jobResource.get(ee).get(k), ziefVars[ee][e][e]);
+                    }
+
                 }
             }
 
@@ -80,7 +89,11 @@ public class IntervalEventBasedModel implements ModelInterface {
 
 
 
-        return null; // Placeholder return, replace with actual GRBModel
+        return model; // Placeholder return, replace with actual GRBModel
+        } catch (GRBException e) {
+            System.err.println("Error while completing the model: " + e.getMessage());
+            return null;
+        }
     }
 
     @Override
@@ -88,19 +101,17 @@ public class IntervalEventBasedModel implements ModelInterface {
         return true;
     }
 
-    public class IntervallEventBasedModelSolution implements ModelSolutionInterface {
-        private GRBVar makespanVar;
-        private GRBVar[] startOfEventEVars;
-        private GRBVar[][] jobActiveAtEventVars;
+    public class IntervalEventBasedModelSolution implements ModelSolutionInterface {
+        private GRBVar[] startOfEventVars;
+        private GRBVar[][][] ziefVars;
         private GRBModel model;
         private int[][] earliestLatestStartTimes;
 
-        public IntervallEventBasedModelSolution(GRBVar makespanVar, GRBVar[] startOfEventEVars, 
-                                                GRBVar[][] jobActiveAtEventVars, GRBModel model, 
+        public IntervalEventBasedModelSolution(GRBVar[] startOfEventVars, 
+                                                GRBVar[][][] ziefVars, GRBModel model, 
                                                 int[][] earliestLatestStartTimes) {
-            this.makespanVar = makespanVar;
-            this.startOfEventEVars = startOfEventEVars;
-            this.jobActiveAtEventVars = jobActiveAtEventVars;
+            this.startOfEventVars = startOfEventVars;
+            this.ziefVars = ziefVars;
             this.model = model;
             this.earliestLatestStartTimes = earliestLatestStartTimes;
         }
@@ -113,6 +124,14 @@ public class IntervalEventBasedModel implements ModelInterface {
         @Override
         public GRBModel getModel() {
             return model;
+        }
+
+        public GRBVar[] getStartOfEventVars() {
+            return startOfEventVars;
+        }
+
+        public GRBVar[][][] getZiefVars() {
+            return ziefVars;
         }
     }
 

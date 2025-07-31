@@ -10,7 +10,7 @@ import io.JobDataInstance;
 import utility.DAGLongestPath;
 import utility.DeleteDummyJobs;
 import models.IntervalEventBasedModel;
-import models.IntervalEventBasedModel.IntervallEventBasedModelSolution;
+import models.IntervalEventBasedModel.IntervalEventBasedModelSolution;
 
 import java.util.*;
 
@@ -27,6 +27,9 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
         GRBVar makespanVar;
         GRBVar[] startOfEventEVars = new GRBVar[noDummyData.numberJob];
         GRBVar[][] jobActiveAtEventVars = new GRBVar[noDummyData.numberJob][noDummyData.numberJob];
+
+            GRBVar[] startOfEventVars = new GRBVar[startOfEventEVars.length];
+            GRBVar[][][] ziefVars = new GRBVar[noDummyData.numberJob][startOfEventEVars.length][startOfEventEVars.length];
         
         try {
             makespanVar = model.addVar(0.0, noDummyData.horizon, 0.0, GRB.CONTINUOUS, "makespan");
@@ -138,7 +141,7 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
 
         IntervalEventBasedModel intervalEventBasedModel = new IntervalEventBasedModel();
         IntervalEventBasedModelSolution solution = intervalEventBasedModel.new
-                                        IntervalEventBasedModelSolution(makespanVar, startOfEventEVars, jobActiveAtEventVars, model,
+                                        IntervalEventBasedModelSolution(startOfEventVars, ziefVars, model,
                                          earliestLatestStartTimes);
 
         return solution;

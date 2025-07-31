@@ -6,7 +6,8 @@ import models.*;
 public enum ModelType {
     FLOW("FLOW", "Flow-Based Continuous Time Model", FlowBasedContinuousTimeModel::new),
     DISC("DISC", "Discrete Time Model", DiscreteTimeModel::new),
-    EVENT("EVENT", "On-Off Event Based Model", OnOffEventBasedModel::new);
+    EVENT("EVENT", "On-Off Event Based Model", OnOffEventBasedModel::new),
+    IEE("IEE", "Interval Event Based Model", IntervalEventBasedModel::new);
     
     private final String code;
     private final String description;

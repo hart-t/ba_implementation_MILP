@@ -12,4 +12,8 @@ public class SolverResults {
         this.objectiveValue = objectiveValue;
         this.timeInSeconds = timeInSeconds;
     }
+
+    public boolean wasStoppedByTimeLimit() {
+        return false; // Placeholder for actual implementation
+    }
 }
