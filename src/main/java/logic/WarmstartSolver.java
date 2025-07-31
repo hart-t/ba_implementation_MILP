@@ -78,17 +78,22 @@ public class WarmstartSolver {
         double upperBound = 0;
         double objectiveValue = 0;
         double timeInSeconds = 0;
+        double mipGap = 0;
+        boolean timeLimitReached = false;
 
         try {
             // upper lower bound
-            lowerBound = model.get(GRB.DoubleAttr.ObjBound);
-            upperBound = model.get(GRB.DoubleAttr.ObjVal);
+            lowerBound = model.get(GRB.DoubleAttr.ObjBound); // best bound
+            upperBound = model.get(GRB.DoubleAttr.ObjVal); // incumbent
             objectiveValue = model.get(GRB.DoubleAttr.ObjVal);
             timeInSeconds = model.get(GRB.DoubleAttr.Runtime);
+            System.out.println("timeInSeconds=" + timeInSeconds);
+            mipGap = model.get(GRB.DoubleAttr.MIPGap);
+            timeLimitReached = model.get(GRB.IntAttr.Status) == GRB.Status.TIME_LIMIT;
         } catch (Exception e) {
             System.err.println("Error while retrieving solver results: " + e.getMessage());
             e.printStackTrace();
         }
-        return new SolverResults(lowerBound, upperBound, objectiveValue, timeInSeconds);
+        return new SolverResults(lowerBound, upperBound, objectiveValue, timeInSeconds, mipGap, timeLimitReached);
     }
 }

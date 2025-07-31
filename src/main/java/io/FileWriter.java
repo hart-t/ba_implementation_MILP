@@ -170,7 +170,7 @@ public class FileWriter {
         writer.newLine();
         writer.write("===================================================================================================================================================================================");
         writer.newLine();
-        writer.write("Paramter Instance Model\tModel-Makespan  UB  LB  Optimal-Makespan Time Heuristic-Makespan Stopped Error Heuristics");
+        writer.write("Paramter Instance Model\tModel-Makespan  UB  LB  MIP-Gap Optimal-Makespan Time Heuristic-Makespan Stopped Error Heuristics");
         writer.newLine();
         writer.write("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         writer.newLine();
@@ -229,10 +229,14 @@ public class FileWriter {
             error = computedMakespan < optimalMakespan.doubleValue();
         }
         
-        writer.write(String.format("%-6.0f\t%-3.0f %-3.0f\t   %-8s   %-6s\t      %-10s %-3s   %-7s %-4s",
+        // Get MIP-Gap from solver results
+        double mipGap = result.solverResults.getMipGap(); // Assuming this method exists
+        
+        writer.write(String.format("%-6.0f\t%-3.0f %-3.0f %-7.2f         %-8s         %-6s\t      %-10s %-7s %-7s %-4s",
             result.solverResults.objectiveValue,
             result.solverResults.upperBound,
             result.solverResults.lowerBound,
+            mipGap,
             optimalStr,
             formattedTime,
             heuristicMakespan,

@@ -13,11 +13,18 @@ import io.JobDataInstance;
  * wie vergleiche ich diese um die bessere zu finden?
  * 
  * Intervall Based Model mistake zief = 1 either way
+ * 
+ * Time limit is not working all the time, it sometimes runs until the end
+ * 
+ * example file: /home/tobsi/university/kit/benchmarkSets/j305_4.sm
+ * the time to compute is 0??
+ * 
+ * MIPGap to solution file
  */
 
 public class Main {
     public static void main(String[] args) {
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j301_1.sm";
+        String filename = "/home/tobsi/university/kit/benchmarkSets/j305_4.sm";
 
         try {
             FileReader fileReader = new FileReader();
@@ -41,8 +48,8 @@ public class Main {
             
             // Configure models using simple string codes
             List<String> modelConfigs = Arrays.asList(
-                 "FLOW"      // Flow-Based Continuous Time Model
-                 //"DISC"     // Discrete Time Model
+                 //"FLOW"      // Flow-Based Continuous Time Model
+                 "DISC"     // Discrete Time Model
                  //"EVENT"     // On-Off Event Based Model
                  // "IEE"     // Interval Event Based Model
             );

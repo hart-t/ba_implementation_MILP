@@ -150,7 +150,6 @@ public class DiscreteTimeModel implements ModelInterface {
             }
 
             model.update(); // Ensure the model is updated after adding constraints
-            model.optimize(); // Optimize the model
 
             return model;
         } catch (GRBException e) {
