@@ -1,0 +1,28 @@
+===================================================================================================================================================================================
+Instance Set            : j30
+Type                    : sm
+
+Parameter			: parameter number
+Instance			: instance number
+Model				: abbrevation of the used model
+H_M_Makespan		: the computed makespan of the model if at least one heuristic start solution is used
+noH_Makespan		: the computed makespan of the model if no heuristic start solution is used
+H_UB				: upper bound if at least one heuristic start solution is used
+H_LB				: lower bound if at least one heuristic start solution is used
+Optimal-Makespan	: the optimal makespan of the problem-instance from the official solution file
+H_Time				: the time it took the model to compute the problem instance if at least one heuristic start solution is used
+noH_Time			: the time it took the model to compute the problem instance if no heuristic start solution is used
+Time_Diff			: the time diffrence it took the model to compute with or without the use of a heuristic start solution (H-Time - noH-Time)
+H_Makespan			: the makespan of the heuristic start solution, if one is used
+time_limit_reached	: if the solver was stopped cause the given time limit to solve the problem instance is reached
+Error				: if the optimal makespan is not within the computed bounds by either the use of the model with or without the use of a heuristic start solution
+Heuristics			: a list of the abbrevations of the used heuristic start solutions
+===================================================================================================================================================================================
+Paramter	Instance	Model	H_M_Makespan	noH_M_Makespan	H_UB	H_LB	Optimal_Makespan	H_Time	noH_Time	Time_Diff	H_Makespan	time_limit_reached	Error	Heuristics
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1			2			DISC	47				47				47		47		47					0.17	0.31		-0.14		47			false				false	SSGS-MJS
+						FLOW	47				47				47		47		47					2.71	3.52		-0.81		47			false				false	SSGS-MJS
+						ONOFF	47				160				47		2		47					5.02	5.00		0.02		47			true				false	SSGS-MJS
+3			3			DISC	57				57				57		57		57					0.22	0.27		-0.05		57			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	57				57				57		57		57					0.30	0.50		-0.20		57			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	57				177				57		57		57					3.16	5.03		-1.87		57			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS

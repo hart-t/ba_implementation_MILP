@@ -20,6 +20,9 @@ public class TestAllModelInstanceCombinations {
         File[] files = new File("/home/tobsi/university/kit/benchmarkSets").listFiles();
         assert files != null;
         
+        // Limit to just the first 2 files for testing
+        files = Arrays.copyOf(files, Math.min(2, files.length));
+        
         // Sort files by numeric parameter and instance values
         Arrays.sort(files, (f1, f2) -> {
             String name1 = f1.getName();
@@ -55,7 +58,6 @@ public class TestAllModelInstanceCombinations {
             "EVENT"     // On-Off Event Based Model
         );
 
-
         FileWriter fileWriter = new FileWriter();
 
         for (File file : files) {
@@ -70,20 +72,32 @@ public class TestAllModelInstanceCombinations {
                 // Create a separate results list for this file's results
                 List<Result> fileResults = new ArrayList<>();
                 
-                // Test each model
+                // Test each model with heuristics
                 for (String modelConfig : modelConfigs) {
-                    System.out.println("--- Model: " + modelConfig + " ---");
+                    System.out.println("--- Model: " + modelConfig + " (with heuristics) ---");
                     
                     IntegratedApproach integratedApproach = new IntegratedApproach(heuristicConfigs, modelConfig);
                     fileResults.add(integratedApproach.solve(data));
                 }
-
-                // Write results for this file only
-                fileWriter.writeResults("/home/tobsi/university/kit/results", "test.txt", fileResults);
-                System.out.println("Results for " + file.getName() + " written to /home/tobsi/university/kit/results/test.txt");
                 
-                // Add to overall results list for potential future use
+                // Test each model without heuristics
+                for (String modelConfig : modelConfigs) {
+                    System.out.println("--- Model: " + modelConfig + " (without heuristics) ---");
+                    
+                    IntegratedApproach integratedApproach = new IntegratedApproach(Arrays.asList(), modelConfig); // Empty heuristics list
+                    fileResults.add(integratedApproach.solve(data));
+                }
+
+                // Add to overall results list
                 results.addAll(fileResults);
+                
+                // Write results to file immediately after processing this instance
+                try {
+                    fileWriter.writeResults(".", "test5.txt", results);
+                    System.out.println("Results updated in test5.txt (total results: " + results.size() + ")");
+                } catch (Exception e) {
+                    System.err.println("Error writing results after processing " + file.getName() + ": " + e.getMessage());
+                }
                 
             } catch (Exception e) {
                 System.err.println("Error processing file " + file.getName() + ": " + e.getMessage());
@@ -93,7 +107,7 @@ public class TestAllModelInstanceCombinations {
         }
         
         System.out.println("=== All files processed ===");
-        System.out.println("Total results collected: " + results.size());
+        System.out.println("Final total results: " + results.size());
     }
     
     private static int[] extractNumbers(String filename) {

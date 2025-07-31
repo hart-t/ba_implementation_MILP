@@ -12,14 +12,9 @@ import io.JobDataInstance;
  * ich habe zwei heuristisch ermittelte schedules mit gleicher makespan aber unterschiedlichen startzeiten
  * wie vergleiche ich diese um die bessere zu finden?
  * 
- * Intervall Based Model mistake zief = 1 either way
  * 
- * Time limit is not working all the time, it sometimes runs until the end
- * 
- * example file: /home/tobsi/university/kit/benchmarkSets/j305_4.sm
- * the time to compute is 0??
- * 
- * MIPGap to solution file
+ * https://www.sciencedirect.com/science/article/pii/S0377221724005162?via%3Dihub 4.0
+ * sequencing model
  */
 
 public class Main {
