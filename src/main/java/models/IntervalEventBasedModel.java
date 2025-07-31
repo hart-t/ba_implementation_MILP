@@ -1,12 +1,10 @@
 package models;
 
 import io.JobDataInstance;
-import models.OnOffEventBasedModel.OnOffEventBasedModelSolution;
 import interfaces.CompletionMethodInterface;
 import interfaces.ModelInterface;
 import interfaces.ModelSolutionInterface;
 import enums.ModelType;
-import models.IntervalEventBasedModel.IntervalEventBasedModelSolution;
 import solutionBuilder.BuildIntervalEventSolution;
 
 import com.gurobi.gurobi.*;
@@ -69,22 +67,35 @@ public class IntervalEventBasedModel implements ModelInterface {
 
             // (37) Event e must not exceed the resource capacities
             for (int k = 0; k < data.resourceCapacity.size(); k++) {
-                for (int e = 0; e < ziefVars.length; e++) {
+                for (int e = 0; e < data.numberJob; e++) {
                     GRBLinExpr expr = new GRBLinExpr();
-                    int rikSum = 0;
                     for (int i = 0; i < data.numberJob; i++) {
-                        //rikSum += data.jobResource.get(i).get(k);
                         expr.addTerm(data.jobResource.get(i).get(k), ziefVars[i][e][e]);
+                        for (int ee = 0; ee <= e; ee++) {
+                            for (int ff = e + 1; ff < data.numberJob; ff++) {
+                                expr.addTerm(data.jobResource.get(i).get(k), ziefVars[i][ee][ff]);
+                            }
+                        }
                     }
-
-                    for (int ee = e; ee < ziefVars.length; ee++) {
-                        expr.addTerm(data.jobResource.get(ee).get(k), ziefVars[ee][e][e]);
-                    }
-
+                    model.addConstr(expr, GRB.LESS_EQUAL, data.resourceCapacity.get(k), "resourceCap_" + k + "_event_" + e);
                 }
             }
 
+            // (38) Moreover, inequalities (38) say that if job j is assigned an event interval [e′, f ′ ] ⊆ [e, f ], then t e + p j ≤ t f musthold.
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int e = 0; e < startOfEventVars.length; e++) {
+                    for (int f = e + 1; f < startOfEventVars.length; f++) {
+                        GRBLinExpr leftSide = new GRBLinExpr();
+                        leftSide.addTerm(1, startOfEventVars[e]);
+                        leftSide.addTerm(data.jobDuration.get(i), ziefVars[i][e][f]);
 
+                        GRBLinExpr rightSide = new GRBLinExpr();
+                        rightSide.addTerm(1, startOfEventVars[f]);
+
+                        model.addConstr(leftSide, GRB.LESS_EQUAL, rightSide, "eventInterval_" + i + "_" + e + "_" + f);
+                    }
+                }
+            }
 
 
 

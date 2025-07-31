@@ -170,7 +170,7 @@ public class FileWriter {
         writer.newLine();
         writer.write("===================================================================================================================================================================================");
         writer.newLine();
-        writer.write("Paramter Instance Model\tModel-Makespan  UB  LB  Optimal-Makespan Time Heuristic-Makespan Heuristics\t\t\t\tStopped\t   Error");
+        writer.write("Paramter Instance Model\tModel-Makespan  UB  LB  Optimal-Makespan Time Heuristic-Makespan Stopped Error Heuristics");
         writer.newLine();
         writer.write("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         writer.newLine();
@@ -229,16 +229,17 @@ public class FileWriter {
             error = computedMakespan < optimalMakespan.doubleValue();
         }
         
-        writer.write(String.format("%-6.0f\t%-3.0f %-3.0f\t      %-8s %-6s\t      %-8s %-40s\t\t%-7s   %-7s",
+        writer.write(String.format("%-6.0f\t%-3.0f %-3.0f\t   %-8s   %-6s\t      %-10s %-3s   %-7s %-4s",
             result.solverResults.objectiveValue,
             result.solverResults.upperBound,
             result.solverResults.lowerBound,
             optimalStr,
             formattedTime,
             heuristicMakespan,
-            heuristics,
             stopped,
-            error));
+            error,
+            heuristics
+            ));
         writer.newLine();
     }
     
@@ -291,79 +292,4 @@ public class FileWriter {
         return fullHeuristicName; // fallback
     }
     
-    private void writeResult(BufferedWriter writer, Result result, String instanceName, String modelName) throws Exception {
-        writer.write("Instance Name: " + instanceName);
-        writer.newLine();
-        
-        writer.write("Model Name: " + modelName);
-        writer.newLine();
-        
-        // Write heuristics used (if any)
-        List<String> heuristics = result.getUsedHeuristics();
-        if (heuristics != null && !heuristics.isEmpty()) {
-            writer.write("Heuristics Used: " + String.join(", ", heuristics));
-            writer.newLine();
-            
-            writer.write("Best Heuristic Makespan: " + result.getBestHeuristicMakespan());
-            writer.newLine();
-        } else {
-            writer.write("Heuristics Used: None");
-            writer.newLine();
-            
-            writer.write("Best Heuristic Makespan: N/A");
-            writer.newLine();
-        }
-        
-        // Write solver results
-        writer.write("Computed Makespan (Objective Value): " + result.solverResults.objectiveValue);
-        writer.newLine();
-        
-        writer.write("Upper Bound: " + result.solverResults.upperBound);
-        writer.newLine();
-        
-        writer.write("Lower Bound: " + result.solverResults.lowerBound);
-        writer.newLine();
-        
-        writer.write("Computation Time (seconds): " + result.solverResults.timeInSeconds);
-        writer.newLine();
-        
-        // Validate against optimal values
-        validateResult(writer, result, instanceName);
-    }
-    
-    private void validateResult(BufferedWriter writer, Result result, String instanceName) throws Exception {
-        Integer optimalMakespan = optimalValues.get(instanceName);
-        if (optimalMakespan != null) {
-            double computedMakespan = result.solverResults.objectiveValue;
-            double lowerBound = result.solverResults.lowerBound;
-            double upperBound = result.solverResults.upperBound;
-            
-            writer.write("Optimal Makespan (from solution file): " + optimalMakespan);
-            writer.newLine();
-            
-            // Check for inconsistencies
-            if (computedMakespan < optimalMakespan) {
-                writer.write("WARNING: Computed makespan (" + computedMakespan + ") is below known optimal makespan (" + optimalMakespan + ")!");
-                writer.newLine();
-            }
-            
-            if (computedMakespan < lowerBound) {
-                writer.write("WARNING: Computed makespan (" + computedMakespan + ") is below lower bound (" + lowerBound + ")!");
-                writer.newLine();
-            }
-            
-            if (computedMakespan > upperBound && upperBound > 0) {
-                writer.write("WARNING: Computed makespan (" + computedMakespan + ") is above upper bound (" + upperBound + ")!");
-                writer.newLine();
-            }
-            
-            if (computedMakespan == optimalMakespan) {
-                writer.write("SUCCESS: Computed makespan matches optimal value!");
-                writer.newLine();
-            }
-        } else {
-            writer.write("WARNING: No optimal makespan found for instance " + instanceName + " in solution file!");
-            writer.newLine();
-        }
-    }
 }

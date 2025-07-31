@@ -21,29 +21,24 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
         int[][] earliestLatestStartTimes = DAGLongestPath.generateEarliestAndLatestStartTimes
                         (data.jobPredecessors, data.jobDuration, data.horizon);
         earliestLatestStartTimes = DeleteDummyJobs.deleteDummyJobsFromEarliestLatestStartTimes(earliestLatestStartTimes);
-        
-        JobDataInstance noDummyData = DeleteDummyJobs.deleteDummyJobs(data);
 
-        GRBVar makespanVar;
-        GRBVar[] startOfEventEVars = new GRBVar[noDummyData.numberJob];
-        GRBVar[][] jobActiveAtEventVars = new GRBVar[noDummyData.numberJob][noDummyData.numberJob];
+        GRBVar[] startOfEventVars = new GRBVar[data.numberJob];
+        GRBVar[][][] ziefVars = new GRBVar[data.numberJob][startOfEventVars.length][startOfEventVars.length];
 
-            GRBVar[] startOfEventVars = new GRBVar[startOfEventEVars.length];
-            GRBVar[][][] ziefVars = new GRBVar[noDummyData.numberJob][startOfEventEVars.length][startOfEventEVars.length];
-        
         try {
-            makespanVar = model.addVar(0.0, noDummyData.horizon, 0.0, GRB.CONTINUOUS, "makespan");
-            // add zie
-            for (int i = 0; i < noDummyData.numberJob; i++) {
-                for (int e = 0; e < noDummyData.numberJob; e++) {
-                    jobActiveAtEventVars[i][e] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "jobActiveAtEvent[" +
-                        i + "][" + e + "]");
-                }
+            // add startOfEvent variables
+            for (int e = 0; e < startOfEventVars.length; e++) {
+                startOfEventVars[e] = model.addVar(0.0, data.horizon, 0.0, GRB.CONTINUOUS, "startOfEvent[" + e + "]");
             }
 
-            // represents the date of the start of the event e (te)
-            for (int e = 0; e < startOfEventEVars.length; e++) {
-                startOfEventEVars[e] = model.addVar(0.0, noDummyData.horizon, 0.0, GRB.CONTINUOUS, "startOfEvent[" + e + "]");
+            // add zief variables
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int e = 0; e < startOfEventVars.length; e++) {
+                    for (int f = 0; f < startOfEventVars.length; f++) {
+                        ziefVars[i][e][f] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "zief[" +
+                            i + "][" + e + "][" + f + "]");
+                    }
+                }
             }
 
 
@@ -51,8 +46,6 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
             model.update(); // Ensure the model is updated after adding variables
             if (!startTimes.isEmpty()) {
                 
-                startTimes = DeleteDummyJobs.deleteDummyJobsFromStartTimesMap(startTimes);
-
                 // print start times for debugging
                 System.out.println("Start times from heuristic: " + startTimes);
                 
@@ -76,60 +69,15 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
                     GRBVar var1 = model.getVarByName("jobActiveAtEvent[" + job + "][" + event + "]");
                 
                     // Job is set to be active at one (the corresponding) event
-                    jobActiveAtEventVars[job][event].set(GRB.DoubleAttr.Start, 1.0);
+                    //jobActiveAtEventVars[job][event].set(GRB.DoubleAttr.Start, 1.0);
                     var1.set(GRB.DoubleAttr.Start, 1.0);
 
                     // The start time of the event is set to the start time of the job given by the heuristic
                     GRBVar var2 = model.getVarByName("startOfEvent[" + event + "]");
-                    startOfEventEVars[event].set(GRB.DoubleAttr.Start, startTime);
+                    //startOfEventEVars[event].set(GRB.DoubleAttr.Start, startTime);
                     var2.set(GRB.DoubleAttr.Start, startTime);
                     
                     event++;
-                }
-
-                model.update(); // Ensure the model is updated after setting start values
-
-                // For each job, check all events and set jobActiveAtEventVars accordingly
-                for (Map.Entry<Integer, Integer> jobEntry : startTimes.entrySet()) {
-                    int job = jobEntry.getKey();
-                    int jobStartTime = jobEntry.getValue();
-                    int jobEndTime = jobStartTime + noDummyData.jobDuration.get(job);
-                    
-                    System.out.println("Processing job " + job + ": start=" + jobStartTime + ", end=" + jobEndTime);
-                    
-                    // Check against all events
-                    for (int e = 0; e < noDummyData.numberJob; e++) {
-                        try {
-                            // Get the start time of this event
-                            double eventStartTime = startOfEventEVars[e].get(GRB.DoubleAttr.Start);
-                            
-                            GRBVar jobActiveVar = model.getVarByName("jobActiveAtEvent[" + job + "][" + e + "]");
-                            
-                            if (eventStartTime < jobStartTime) {
-                                // Event starts before job starts -> job not active
-                                jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 0.0);
-                                if (jobActiveVar != null) {
-                                    jobActiveVar.set(GRB.DoubleAttr.Start, 0.0);
-                                }
-                            } else if (eventStartTime >= jobStartTime && eventStartTime < jobEndTime) {
-                                // Event starts during job execution -> job active
-                                jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 1.0);
-                                if (jobActiveVar != null) {
-                                    jobActiveVar.set(GRB.DoubleAttr.Start, 1.0);
-                                }
-                            } else if (eventStartTime >= jobEndTime) {
-                                // Event starts after job ends -> job not active
-                                jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 0.0);
-                                if (jobActiveVar != null) {
-                                    jobActiveVar.set(GRB.DoubleAttr.Start, 0.0);
-                                }
-                            }
-
-                            
-                        } catch (Exception ex) {
-                            System.err.println("Error processing job " + job + " event " + e + ": " + ex.getMessage());
-                        }
-                    }
                 }
             }
             model.update(); // Ensure the model is updated after modifying variables

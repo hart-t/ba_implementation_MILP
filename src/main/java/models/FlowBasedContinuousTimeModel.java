@@ -147,11 +147,7 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
 
                     rightSide.addConstant(-Mij);
                     rightSide.addTerm((data.jobDuration.get(i) + Mij), precedenceVars[i][j]);
-                    System.out.println(startingTimeVars[j].get(GRB.StringAttr.VarName) 
-                    + "-" + startingTimeVars[i].get(GRB.StringAttr.VarName) + "greater equal to " + 
-                    -Mij + " + " + "job duration of job " + i + " " + (data.jobDuration.get(i) + " + " + Mij) 
-                    + "    precedenceVars i j " + precedenceVars[i][j].get(GRB.DoubleAttr.Obj) + " (C14)");
-
+                    
                     model.addConstr(leftSide, GRB.GREATER_EQUAL, rightSide, startingTimeVars[j].get(GRB.StringAttr.VarName) 
                     + "-" + startingTimeVars[i].get(GRB.StringAttr.VarName) + "greater equal to " + 
                     -Mij + " + " + "job duration of job " + i + " " + (data.jobDuration.get(i) + " + " + Mij) 

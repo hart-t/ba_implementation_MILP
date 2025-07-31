@@ -3,7 +3,6 @@ package logic;
 import com.gurobi.gurobi.GRB;
 import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBModel;
-import com.gurobi.gurobi.GRBVar;
 
 import interfaces.CompletionMethodInterface;
 import interfaces.ModelInterface;
@@ -43,7 +42,7 @@ public class WarmstartSolver {
 
             // Configure Gurobi parameters and logging
             grbOptimizationModel.set(GRB.DoubleParam.MIPGap, 0.0);        // Require optimal solution
-            grbOptimizationModel.set(GRB.DoubleParam.TimeLimit, 10.0);    // Set time limit
+            grbOptimizationModel.set(GRB.DoubleParam.TimeLimit, 15.0);    // Set time limit
             grbOptimizationModel.set(GRB.IntParam.Threads, 4);            // Use multiple threads
             grbOptimizationModel.set(GRB.IntParam.Method, 2);             // Use barrier method
             grbOptimizationModel.set(GRB.IntParam.OutputFlag, 1);         // Enable output
@@ -91,34 +90,5 @@ public class WarmstartSolver {
             e.printStackTrace();
         }
         return new SolverResults(lowerBound, upperBound, objectiveValue, timeInSeconds);
-    }
-
-    private void printFlowVariables(GRBModel model, JobDataInstance data) {
-        try {
-            System.out.println("\n=== FLOW VARIABLES (Resource 1 only) ===");
-            
-            // Get all variables from the model
-            GRBVar[] allVars = model.getVars();
-            
-            for (GRBVar var : allVars) {
-                String varName = var.get(GRB.StringAttr.VarName);
-                
-                // Check if this is a flow variable for resource 1 specifically
-                if (varName.contains("quantity of resource 1") && varName.contains("transferred from")) {
-                    double value = var.get(GRB.DoubleAttr.X);
-                    
-                    // Only print non-zero flow variables for clarity
-                    if (Math.abs(value) > 1e-6) {
-                        System.out.printf("%-80s = %.6f%n", varName, value);
-                    }
-                }
-            }
-            
-            System.out.println("=== END FLOW VARIABLES ===\n");
-            
-        } catch (Exception e) {
-            System.err.println("Error while printing flow variables: " + e.getMessage());
-            e.printStackTrace();
-        }
     }
 }
