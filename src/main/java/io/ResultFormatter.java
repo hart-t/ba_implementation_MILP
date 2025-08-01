@@ -349,7 +349,7 @@ public class ResultFormatter {
         header.add("count every instance: ");
         header.add("average time difference: ");
         header.add("count only the instances where the time limit was not reached: ");
-        header.add("average time difference; ");
+        header.add("average time difference: ");
         header.add("===================================================================================================================================================================================");
         header.add("Paramter\tInstance\tModel\tH_M_Makespan\tnoH_M_Makespan\tH_UB\tH_LB\tOptimal_Makespan\tH_Time\tnoH_Time\tTime_Diff\tH_Makespan\ttime_limit_reached\tError\tHeuristics");
         header.add("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");

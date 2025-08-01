@@ -1,0 +1,403 @@
+===================================================================================================================================================================================
+Instance Set            : j30
+Type                    : sm
+
+Parameter			: parameter number
+Instance			: instance number
+Model				: abbrevation of the used model
+H_M_Makespan		: the computed makespan of the model if at least one heuristic start solution is used
+noH_Makespan		: the computed makespan of the model if no heuristic start solution is used
+H_UB				: upper bound if at least one heuristic start solution is used
+H_LB				: lower bound if at least one heuristic start solution is used
+Optimal-Makespan	: the optimal makespan of the problem-instance from the official solution file
+H_Time				: the time it took the model to compute the problem instance if at least one heuristic start solution is used
+noH_Time			: the time it took the model to compute the problem instance if no heuristic start solution is used
+Time_Diff			: the time diffrence it took the model to compute with or without the use of a heuristic start solution (H-Time - noH-Time)
+H_Makespan			: the makespan of the heuristic start solution, if one is used
+time_limit_reached	: if the solver was stopped cause the given time limit to solve the problem instance is reached
+Error				: if the optimal makespan is not within the computed bounds by either the use of the model with or without the use of a heuristic start solution
+Heuristics			: a list of the abbrevations of the used heuristic start solutions
+
+Total time the models with the heuristic start solution were able to compute the problem instances faster than the models without the heuristic start solution: 
+count every instance: 
+average time difference: 
+count only the instances where the time limit was not reached: 
+average time difference: 
+===================================================================================================================================================================================
+Paramter	Instance	Model	H_M_Makespan	noH_M_Makespan	H_UB	H_LB	Optimal_Makespan	H_Time	noH_Time	Time_Diff	H_Makespan	time_limit_reached	Error	Heuristics
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1			1			DISC	43				43				43		43		43					0.23	0.62		-0.39		46			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	43				43				43		43		43					2.48	3.53		-1.05		46			false				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	44				43				44		37		43					180.01	180.03		-0.02		46			true				false	SSGS-GRPW, SSGS-MLST
+1			2			DISC	47				47				47		47		47					0.20	0.31		-0.11		47			false				false	SSGS-MJS
+						FLOW	47				47				47		47		47					2.71	3.60		-0.89		47			false				false	SSGS-MJS
+						ONOFF	47				47				47		42		47					180.49	180.00		0.49		47			true				false	SSGS-MJS
+1			3			DISC	47				47				47		47		47					0.17	0.45		-0.28		47			false				false	SSGS-MLFT
+						FLOW	47				47				47		47		47					1.32	1.58		-0.26		47			false				false	SSGS-MLFT
+						ONOFF	47				47				47		43		47					180.02	180.00		0.02		47			true				false	SSGS-MLFT
+1			4			DISC	62				62				62		62		62					0.38	0.59		-0.21		63			false				false	SSGS-GRPW, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						FLOW	62				62				62		62		62					3.48	4.28		-0.80		63			false				false	SSGS-GRPW, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						ONOFF	62				62				62		55		62					180.09	180.00		0.09		63			true				false	SSGS-GRPW, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+1			5			DISC	39				39				39		39		39					0.37	1.00		-0.63		42			false				false	SSGS-SPT
+						FLOW	39				39				39		39		39					4.49	5.85		-1.36		42			false				false	SSGS-SPT
+						ONOFF	42				40				42		26		39					180.00	180.00		0.00		42			true				false	SSGS-SPT
+1			6			DISC	48				48				48		48		48					0.27	0.61		-0.34		49			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MLST
+						FLOW	48				48				48		48		48					4.24	4.43		-0.19		49			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MLST
+						ONOFF	49				49				49		38		48					180.00	180.00		0.00		49			true				false	SSGS-SPT, SSGS-GRPW, SSGS-MLST
+1			7			DISC	60				60				60		60		60					0.13	0.20		-0.07		60			false				false	SSGS-GRPW, SSGS-MRU, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	60				60				60		60		60					0.26	0.78		-0.52		60			false				false	SSGS-GRPW, SSGS-MRU, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	60				60				60		60		60					3.55	29.18		-25.63		60			false				false	SSGS-GRPW, SSGS-MRU, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+1			8			DISC	53				53				53		53		53					0.17	0.44		-0.27		53			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						FLOW	53				53				53		53		53					0.32	2.34		-2.02		53			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						ONOFF	53				53				53		53		53					2.30	82.20		-79.90		53			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+1			9			DISC	49				49				49		49		49					0.61	0.89		-0.28		54			false				false	SSGS-SPT
+						FLOW	49				49				49		49		49					6.20	9.61		-3.41		54			false				false	SSGS-SPT
+						ONOFF	50				53				50		39		49					180.01	180.00		0.01		54			true				false	SSGS-SPT
+1			10			DISC	45				45				45		45		45					0.22	0.34		-0.12		46			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						FLOW	45				45				45		45		45					3.30	5.68		-2.38		46			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						ONOFF	46				47				46		34		45					180.04	180.02		0.02		46			true				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+2			1			DISC	38				38				38		38		38					0.15	0.49		-0.34		39			false				false	SSGS-MTS
+						FLOW	38				37				38		38		38					0.75	0.83		-0.08		39			false				false	SSGS-MTS
+						ONOFF	38				38				38		33		38					180.26	180.00		0.26		39			true				false	SSGS-MTS
+2			2			DISC	51				51				51		51		51					0.26	0.46		-0.20		53			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						FLOW	51				51				51		51		51					2.95	1.80		1.15		53			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						ONOFF	51				51				51		46		51					180.11	180.01		0.10		53			true				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+2			3			DISC	43				43				43		43		43					0.19	0.32		-0.13		43			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	43				43				43		43		43					0.24	0.93		-0.69		43			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	43				43				43		43		43					2.91	139.89		-136.98		43			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+2			4			DISC	43				43				43		43		43					0.15	0.23		-0.08		43			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	43				43				43		43		43					0.37	0.49		-0.12		43			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	43				43				43		43		43					174.37	180.01		-5.64		43			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+2			5			DISC	51				51				51		51		51					0.18	0.19		-0.01		51			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	51				51				51		51		51					0.23	0.45		-0.22		51			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	51				51				51		51		51					1.98	118.16		-116.18		51			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+2			6			DISC	47				47				47		47		47					0.14	0.23		-0.09		47			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						FLOW	47				47				47		47		47					0.30	0.53		-0.23		47			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						ONOFF	47				47				47		47		47					2.29	63.43		-61.14		47			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+2			7			DISC	47				47				47		47		47					0.13	0.24		-0.11		47			false				false	SSGS-GRPW, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						FLOW	47				47				47		47		47					0.30	0.47		-0.17		47			false				false	SSGS-GRPW, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						ONOFF	47				47				47		47		47					2.77	45.58		-42.81		47			false				false	SSGS-GRPW, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+2			8			DISC	54				54				54		54		54					0.18	0.32		-0.14		54			false				false	SSGS-MRU
+						FLOW	54				54				54		54		54					4.42	7.53		-3.11		54			false				false	SSGS-MRU
+						ONOFF	54				54				54		50		54					180.01	180.01		0.00		54			true				false	SSGS-MRU
+2			9			DISC	54				54				54		54		54					0.18	0.45		-0.27		54			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						FLOW	54				54				54		54		54					1.05	3.34		-2.29		54			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						ONOFF	54				54				54		51		54					180.01	180.00		0.01		54			true				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+2			10			DISC	43				43				43		43		43					0.12	0.58		-0.46		43			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	43				43				43		43		43					0.37	1.05		-0.68		43			false				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	43				47				43		41		43					180.02	180.19		-0.17		43			true				false	SSGS-GRPW, SSGS-MLST
+3			1			DISC	72				72				72		72		72					0.24	0.25		-0.01		72			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	72				72				72		72		72					0.23	0.35		-0.12		72			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	72				72				72		72		72					2.68	28.34		-25.66		72			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+3			2			DISC	40				40				40		40		40					0.11	0.11		0.00		40			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	40				40				40		40		40					1.18	1.89		-0.71		40			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	40				40				40		37		40					180.32	180.00		0.32		40			true				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+3			3			DISC	57				57				57		57		57					0.19	0.26		-0.07		57			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	57				57				57		57		57					0.26	0.48		-0.22		57			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	57				57				57		57		57					2.73	26.84		-24.11		57			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+3			4			DISC	98				98				98		98		98					0.18	0.16		0.02		98			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	98				98				98		98		98					0.20	0.64		-0.44		98			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	98				98				98		98		98					3.46	30.36		-26.90		98			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+3			5			DISC	53				53				53		53		53					0.24	0.62		-0.38		53			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						FLOW	53				53				53		53		53					0.33	0.73		-0.40		53			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						ONOFF	53				53				53		43		53					180.18	180.01		0.17		53			true				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+3			6			DISC	54				54				54		54		54					0.15	0.26		-0.11		54			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	54				54				54		54		54					0.33	0.46		-0.13		54			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	54				54				54		53		54					180.01	180.01		0.00		54			true				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+3			7			DISC	48				48				48		48		48					0.13	0.24		-0.11		48			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	48				48				48		48		48					0.32	0.62		-0.30		48			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	48				48				48		48		48					2.88	29.90		-27.02		48			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+3			8			DISC	54				54				54		54		54					0.14	0.16		-0.02		54			false				false	SSGS-SPT, SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	54				54				54		54		54					0.30	0.48		-0.18		54			false				false	SSGS-SPT, SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	54				54				54		54		54					2.36	28.66		-26.30		54			false				false	SSGS-SPT, SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+3			9			DISC	65				65				65		65		65					0.16	0.28		-0.12		65			false				false	SSGS-SPT, SSGS-RSM, SSGS-MLFT, SSGS-MJS
+						FLOW	65				65				65		65		65					1.95	0.96		0.99		65			false				false	SSGS-SPT, SSGS-RSM, SSGS-MLFT, SSGS-MJS
+						ONOFF	65				65				65		60		65					180.00	180.02		-0.02		65			true				false	SSGS-SPT, SSGS-RSM, SSGS-MLFT, SSGS-MJS
+3			10			DISC	59				59				59		59		59					0.21	0.33		-0.12		62			false				false	SSGS-SPT
+						FLOW	59				59				59		59		59					0.56	0.57		-0.01		62			false				false	SSGS-SPT
+						ONOFF	59				59				59		57		59					180.06	180.01		0.05		62			true				false	SSGS-SPT
+4			1			DISC	49				49				49		49		49					0.08	0.07		0.01		49			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	49				49				49		49		49					0.17	0.31		-0.14		49			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	49				49				49		49		49					2.74	19.88		-17.14		49			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+4			2			DISC	60				60				60		60		60					0.09	0.08		0.01		60			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	60				60				60		60		60					0.30	0.37		-0.07		60			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	60				60				60		60		60					2.70	20.37		-17.67		60			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+4			3			DISC	47				47				47		47		47					0.07	0.07		0.00		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	47				47				47		47		47					0.32	0.80		-0.48		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	47				47				47		47		47					2.65	25.84		-23.19		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+4			4			DISC	57				57				57		57		57					0.09	0.11		-0.02		57			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	57				57				57		57		57					0.19	0.29		-0.10		57			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	57				57				57		57		57					2.48	31.85		-29.37		57			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+4			5			DISC	59				59				59		59		59					0.09	0.09		0.00		59			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	59				59				59		59		59					0.28	0.90		-0.62		59			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	59				59				59		59		59					2.84	38.58		-35.74		59			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+4			6			DISC	45				45				45		45		45					0.06	0.07		-0.01		45			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	45				45				45		45		45					0.20	0.43		-0.23		45			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	45				45				45		45		45					2.24	41.42		-39.18		45			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+4			7			DISC	56				56				56		56		56					0.14	0.10		0.04		56			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	56				56				56		56		56					0.24	0.44		-0.20		56			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	56				56				56		56		56					2.77	38.27		-35.50		56			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+4			8			DISC	55				55				55		55		55					0.06	0.06		0.00		55			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	55				55				55		55		55					0.24	0.29		-0.05		55			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	55				55				55		55		55					2.12	17.73		-15.61		55			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+4			9			DISC	38				38				38		38		38					0.07	0.07		0.00		38			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	38				38				38		38		38					0.25	0.86		-0.61		38			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	38				38				38		38		38					3.04	46.32		-43.28		38			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+4			10			DISC	48				48				48		48		48					0.09	0.08		0.01		48			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	48				48				48		48		48					0.27	0.50		-0.23		48			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	48				48				48		48		48					2.55	30.57		-28.02		48			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+5			1			DISC	53				53				53		53		53					1.88	4.59		-2.71		56			false				false	SSGS-GRPW, SSGS-MTS, SSGS-MLST
+						FLOW	52				52				52		50		53					180.01	180.01		0.00		56			true				true	SSGS-GRPW, SSGS-MTS, SSGS-MLST
+						ONOFF	56				60				56		41		53					180.03	180.00		0.03		56			true				false	SSGS-GRPW, SSGS-MTS, SSGS-MLST
+5			2			DISC	82				82				82		82		82					10.09	28.41		-18.32		83			false				false	SSGS-MRU
+						FLOW	82				82				82		68		82					180.00	180.05		-0.05		83			true				false	SSGS-MRU
+						ONOFF	83				85				83		56		82					180.01	180.04		-0.03		83			true				false	SSGS-MRU
+5			3			DISC	76				76				76		76		76					18.72	34.70		-15.98		91			false				false	SSGS-RSM
+						FLOW	82				86				82		59		76					180.01	180.01		0.00		91			true				false	SSGS-RSM
+						ONOFF	83				84				83		49		76					180.00	180.03		-0.03		91			true				false	SSGS-RSM
+5			4			DISC	63				63				63		63		63					44.26	37.21		7.05		70			false				false	SSGS-RSM
+						FLOW	62				64				62		52		63					180.02	180.01		0.01		70			true				true	SSGS-RSM
+						ONOFF	67				67				67		35		63					180.00	180.00		0.00		70			true				false	SSGS-RSM
+5			5			DISC	76				76				76		76		76					4.13	6.97		-2.84		85			false				false	SSGS-MLFT
+						FLOW	76				76				76		76		76					131.34	180.05		-48.71		85			false				false	SSGS-MLFT
+						ONOFF	79				79				79		55		76					180.00	180.00		0.00		85			true				false	SSGS-MLFT
+5			6			DISC	64				64				64		64		64					1.78	4.98		-3.20		73			false				false	SSGS-RSM
+						FLOW	66				67				66		56		64					180.00	180.08		-0.08		73			true				false	SSGS-RSM
+						ONOFF	71				67				71		47		64					180.14	181.72		-1.58		73			true				false	SSGS-RSM
+5			7			DISC	76				76				76		76		76					15.95	17.43		-1.48		81			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	78				77				78		54		76					180.03	180.01		0.02		81			true				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	81				86				81		43		76					180.00	180.06		-0.06		81			true				false	SSGS-GRPW, SSGS-MLST
+5			8			DISC	67				67				67		67		67					13.48	14.42		-0.94		76			false				false	SSGS-RSM
+						FLOW	68				70				68		57		67					180.01	180.01		0.00		76			true				false	SSGS-RSM
+						ONOFF	70				74				70		53		67					180.00	180.01		-0.01		76			true				false	SSGS-RSM
+5			9			DISC	49				49				49		49		49					1.41	3.60		-2.19		52			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	49				50				49		49		49					46.69	180.01		-133.32		52			false				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	52				52				52		29		49					180.09	180.00		0.09		52			true				false	SSGS-GRPW, SSGS-MLST
+5			10			DISC	70				70				70		70		70					4.03	6.70		-2.67		76			false				false	SSGS-RSM, SSGS-MTS
+						FLOW	69				69				69		69		70					81.36	95.48		-14.12		76			false				true	SSGS-RSM, SSGS-MTS
+						ONOFF	74				72				74		56		70					180.02	180.00		0.02		76			true				false	SSGS-RSM, SSGS-MTS
+6			1			DISC	59				59				59		59		59					2.68	2.72		-0.04		64			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MLST
+						FLOW	58				59				58		58		59					34.39	28.75		5.64		64			false				true	SSGS-GRPW, SSGS-RSM, SSGS-MLST
+						ONOFF	60				62				60		54		59					180.29	181.10		-0.81		64			true				false	SSGS-GRPW, SSGS-RSM, SSGS-MLST
+6			2			DISC	51				51				51		51		51					0.63	0.96		-0.33		54			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	51				51				51		51		51					61.82	34.25		27.57		54			false				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	52				52				52		50		51					180.02	180.00		0.02		54			true				false	SSGS-GRPW, SSGS-MLST
+6			3			DISC	48				48				48		48		48					0.37	1.17		-0.80		50			false				false	SSGS-SPT, SSGS-MJS
+						FLOW	48				47				48		48		48					2.85	7.97		-5.12		50			false				false	SSGS-SPT, SSGS-MJS
+						ONOFF	50				51				50		45		48					180.04	180.01		0.03		50			true				false	SSGS-SPT, SSGS-MJS
+6			4			DISC	42				42				42		42		42					0.86	1.47		-0.61		45			false				false	SSGS-RSM
+						FLOW	42				42				42		42		42					26.03	65.71		-39.68		45			false				false	SSGS-RSM
+						ONOFF	45				45				45		36		42					180.71	181.15		-0.44		45			true				false	SSGS-RSM
+6			5			DISC	67				67				67		67		67					1.34	3.36		-2.02		70			false				false	SSGS-MRU
+						FLOW	66				67				66		66		67					4.95	6.40		-1.45		70			false				true	SSGS-MRU
+						ONOFF	67				69				67		57		67					180.23	180.03		0.20		70			true				false	SSGS-MRU
+6			6			DISC	37				37				37		37		37					0.18	0.52		-0.34		37			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	37				37				37		37		37					1.22	5.88		-4.66		37			false				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	37				39				37		35		37					180.01	180.10		-0.09		37			true				false	SSGS-GRPW, SSGS-MLST
+6			7			DISC	46				46				46		46		46					0.21	0.53		-0.32		47			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	46				46				46		46		46					2.67	3.97		-1.30		47			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	46				47				46		43		46					180.00	180.01		-0.01		47			true				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+6			8			DISC	39				39				39		39		39					0.26	0.77		-0.51		39			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	39				39				39		39		39					0.29	7.29		-7.00		39			false				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	39				41				39		39		39					2.27	180.17		-177.90		39			false				false	SSGS-GRPW, SSGS-MLST
+6			9			DISC	51				51				51		51		51					0.17	0.71		-0.54		51			false				false	SSGS-MLFT
+						FLOW	51				51				51		51		51					2.26	4.28		-2.02		51			false				false	SSGS-MLFT
+						ONOFF	51				51				51		48		51					180.01	180.08		-0.07		51			true				false	SSGS-MLFT
+6			10			DISC	61				61				61		61		61					0.91	1.58		-0.67		68			false				false	SSGS-MLFT
+						FLOW	61				61				61		61		61					17.53	7.83		9.70		68			false				false	SSGS-MLFT
+						ONOFF	66				64				66		58		61					180.04	180.00		0.04		68			true				false	SSGS-MLFT
+7			1			DISC	55				55				55		55		55					0.28	0.32		-0.04		55			false				false	SSGS-SPT, SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	55				55				55		55		55					0.29	0.60		-0.31		55			false				false	SSGS-SPT, SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	55				55				55		55		55					3.21	30.93		-27.72		55			false				false	SSGS-SPT, SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+7			2			DISC	42				42				42		42		42					0.20	0.27		-0.07		42			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	42				42				42		42		42					0.26	1.39		-1.13		42			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	42				42				42		42		42					2.38	25.95		-23.57		42			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+7			3			DISC	42				42				42		42		42					0.17	0.51		-0.34		42			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						FLOW	42				42				42		42		42					0.65	3.75		-3.10		42			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						ONOFF	42				42				42		39		42					180.00	180.01		-0.01		42			true				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+7			4			DISC	44				44				44		44		44					0.18	0.40		-0.22		44			false				false	SSGS-RSM, SSGS-MTS, SSGS-MJS
+						FLOW	44				44				44		44		44					0.22	1.20		-0.98		44			false				false	SSGS-RSM, SSGS-MTS, SSGS-MJS
+						ONOFF	44				45				44		44		44					2.73	180.01		-177.28		44			false				false	SSGS-RSM, SSGS-MTS, SSGS-MJS
+7			5			DISC	44				44				44		44		44					0.37	0.78		-0.41		46			false				false	SSGS-MTS
+						FLOW	44				44				44		44		44					2.34	5.70		-3.36		46			false				false	SSGS-MTS
+						ONOFF	45				45				45		41		44					180.00	180.02		-0.02		46			true				false	SSGS-MTS
+7			6			DISC	35				35				35		35		35					0.17	0.15		0.02		35			false				false	SSGS-GRPW, SSGS-MRU, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	35				35				35		35		35					0.24	0.83		-0.59		35			false				false	SSGS-GRPW, SSGS-MRU, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	35				35				35		35		35					2.75	13.42		-10.67		35			false				false	SSGS-GRPW, SSGS-MRU, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+7			7			DISC	50				50				50		50		50					0.24	0.38		-0.14		50			false				false	SSGS-MRU
+						FLOW	50				50				50		50		50					0.27	2.93		-2.66		50			false				false	SSGS-MRU
+						ONOFF	50				51				50		50		50					2.63	180.07		-177.44		50			false				false	SSGS-MRU
+7			8			DISC	44				44				44		44		44					0.26	0.72		-0.46		44			false				false	SSGS-SPT
+						FLOW	44				44				44		44		44					2.29	6.41		-4.12		44			false				false	SSGS-SPT
+						ONOFF	44				44				44		43		44					180.01	180.01		0.00		44			true				false	SSGS-SPT
+7			9			DISC	60				60				60		60		60					0.24	0.37		-0.13		61			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						FLOW	60				60				60		59		60					0.86	3.58		-2.72		61			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+						ONOFF	60				60				60		56		60					180.00	180.01		-0.01		61			true				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT
+7			10			DISC	49				49				49		49		49					0.27	0.57		-0.30		51			false				false	SSGS-RSM, SSGS-MLFT
+						FLOW	49				49				49		49		49					3.23	5.52		-2.29		51			false				false	SSGS-RSM, SSGS-MLFT
+						ONOFF	49				49				49		43		49					180.04	180.01		0.03		51			true				false	SSGS-RSM, SSGS-MLFT
+8			1			DISC	44				44				44		44		44					0.19	0.21		-0.02		44			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	44				44				44		44		44					0.22	0.56		-0.34		44			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	44				44				44		44		44					3.20	34.95		-31.75		44			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+8			2			DISC	51				51				51		51		51					0.20	0.17		0.03		51			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	51				51				51		51		51					0.22	0.48		-0.26		51			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	51				51				51		51		51					2.31	23.27		-20.96		51			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+8			3			DISC	53				53				53		53		53					0.19	0.19		0.00		53			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	53				53				53		53		53					0.30	0.56		-0.26		53			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	53				53				53		53		53					2.48	24.47		-21.99		53			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+8			4			DISC	48				48				48		48		48					0.17	0.16		0.01		48			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	48				48				48		48		48					0.29	0.94		-0.65		48			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	48				48				48		48		48					2.73	43.93		-41.20		48			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+8			5			DISC	58				58				58		58		58					0.28	0.22		0.06		58			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	58				58				58		58		58					0.24	0.49		-0.25		58			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	58				58				58		58		58					2.87	30.41		-27.54		58			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+8			6			DISC	47				47				47		47		47					0.23	0.21		0.02		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	47				47				47		47		47					0.31	1.13		-0.82		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	47				47				47		47		47					2.67	13.42		-10.75		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+8			7			DISC	41				41				41		41		41					0.16	0.16		0.00		41			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	41				41				41		41		41					0.24	0.59		-0.35		41			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	41				41				41		41		41					3.23	27.83		-24.60		41			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+8			8			DISC	51				51				51		51		51					0.16	0.19		-0.03		51			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	51				51				51		51		51					0.39	0.53		-0.14		51			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	51				51				51		51		51					2.83	31.47		-28.64		51			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+8			9			DISC	39				39				39		39		39					0.14	0.13		0.01		39			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	39				39				39		39		39					0.28	1.10		-0.82		39			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	39				39				39		39		39					2.81	7.85		-5.04		39			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+8			10			DISC	67				67				67		67		67					0.15	0.17		-0.02		67			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	67				67				67		67		67					0.23	0.87		-0.64		67			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	67				67				67		67		67					2.67	29.98		-27.31		67			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+9			1			DISC	83				83				83		83		83					20.04	67.37		-47.33		89			false				false	SSGS-MTS
+						FLOW	85				85				85		61		83					180.05	180.01		0.04		89			true				false	SSGS-MTS
+						ONOFF	85				84				85		55		83					180.01	180.03		-0.02		89			true				false	SSGS-MTS
+9			2			DISC	92				92				92		91		92					180.06	180.00		0.06		104			true				false	SSGS-MLFT
+						FLOW	102				102				102		46		92					180.00	180.01		-0.01		104			true				false	SSGS-MLFT
+						ONOFF	97				96				97		42		92					180.01	180.00		0.01		104			true				false	SSGS-MLFT
+9			3			DISC	68				68				68		68		68					27.21	32.61		-5.40		82			false				false	SSGS-MLFT
+						FLOW	73				74				73		55		68					180.01	180.01		0.00		82			true				false	SSGS-MLFT
+						ONOFF	82				90				82		47		68					180.01	180.00		0.01		82			true				false	SSGS-MLFT
+9			4			DISC	71				71				71		71		71					80.95	109.77		-28.82		80			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	74				73				74		52		71					180.01	180.01		0.00		80			true				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	76				81				76		52		71					180.01	180.01		0.00		80			true				false	SSGS-GRPW, SSGS-MLST
+9			5			DISC	70				70				70		70		70					6.69	10.45		-3.76		72			false				false	SSGS-MLFT
+						FLOW	71				69				71		56		70					180.02	180.01		0.01		72			true				false	SSGS-MLFT
+						ONOFF	72				78				72		49		70					180.01	180.00		0.01		72			true				false	SSGS-MLFT
+9			6			DISC	59				59				59		59		59					28.30	28.52		-0.22		70			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	65				64				65		47		59					180.01	180.01		0.00		70			true				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	61				69				61		47		59					180.01	180.02		-0.01		70			true				false	SSGS-GRPW, SSGS-MLST
+9			7			DISC	64				63				64		59		63					180.01	87.01		93.00		73			true				false	SSGS-MLFT
+						FLOW	66				63				66		41		63					180.01	180.00		0.01		73			true				false	SSGS-MLFT
+						ONOFF	70				71				70		33		63					180.01	180.02		-0.01		73			true				false	SSGS-MLFT
+9			8			DISC	91				91				91		91		91					81.45	70.80		10.65		92			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	91				96				91		59		91					180.27	180.34		-0.07		92			true				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	92				94				92		43		91					180.01	180.01		0.00		92			true				false	SSGS-GRPW, SSGS-MLST
+9			9			DISC	63				63				63		63		63					117.93	140.68		-22.75		74			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						FLOW	66				66				66		41		63					180.01	180.01		0.00		74			true				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						ONOFF	72				70				72		31		63					180.08	180.01		0.07		74			true				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+9			10			DISC	88				88				88		86		88					180.01	172.80		7.21		94			true				false	SSGS-MRU
+						FLOW	91				89				91		63		88					180.00	180.26		-0.26		94			true				false	SSGS-MRU
+						ONOFF	88				91				88		62		88					180.00	180.01		-0.01		94			true				false	SSGS-MRU
+10			1			DISC	42				42				42		42		42					0.32	0.86		-0.54		42			false				false	SSGS-MLFT
+						FLOW	41				42				41		41		42					4.20	13.09		-8.89		42			false				true	SSGS-MLFT
+						ONOFF	42				42				42		40		42					180.00	180.00		0.00		42			true				false	SSGS-MLFT
+10			2			DISC	56				56				56		56		56					1.71	2.35		-0.64		60			false				false	SSGS-MJS
+						FLOW	56				56				56		52		56					180.02	180.02		0.00		60			true				false	SSGS-MJS
+						ONOFF	59				62				59		48		56					180.16	180.01		0.15		60			true				false	SSGS-MJS
+10			3			DISC	62				62				62		62		62					2.44	5.81		-3.37		70			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	62				62				62		61		62					180.05	180.01		0.04		70			true				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	69				70				69		61		62					180.03	180.01		0.02		70			true				false	SSGS-GRPW, SSGS-MLST
+10			4			DISC	58				58				58		58		58					1.43	3.75		-2.32		60			false				false	SSGS-MLFT
+						FLOW	58				58				58		58		58					59.28	157.90		-98.62		60			false				false	SSGS-MLFT
+						ONOFF	60				59				60		51		58					180.02	180.11		-0.09		60			true				false	SSGS-MLFT
+10			5			DISC	41				41				41		41		41					0.50	1.04		-0.54		45			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	41				41				41		41		41					36.09	153.26		-117.17		45			false				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	42				43				42		41		41					180.00	180.00		0.00		45			true				false	SSGS-GRPW, SSGS-MLST
+10			6			DISC	44				44				44		44		44					0.97	2.06		-1.09		51			false				false	SSGS-RSM
+						FLOW	43				45				43		40		44					180.01	180.00		0.01		51			true				true	SSGS-RSM
+						ONOFF	47				49				47		36		44					180.01	180.26		-0.25		51			true				false	SSGS-RSM
+10			7			DISC	49				49				49		49		49					0.41	1.22		-0.81		50			false				false	SSGS-MLFT
+						FLOW	49				49				49		49		49					6.82	14.41		-7.59		50			false				false	SSGS-MLFT
+						ONOFF	50				54				50		47		49					180.10	180.00		0.10		50			true				false	SSGS-MLFT
+10			8			DISC	54				54				54		54		54					0.98	3.15		-2.17		55			false				false	SSGS-MJS
+						FLOW	53				54				53		50		54					180.08	180.25		-0.17		55			true				true	SSGS-MJS
+						ONOFF	55				56				55		50		54					181.04	180.01		1.03		55			true				false	SSGS-MJS
+10			9			DISC	49				49				49		49		49					0.37	0.33		0.04		49			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	49				49				49		49		49					0.28	1.32		-1.04		49			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	49				49				49		49		49					2.81	27.70		-24.89		49			false				false	SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+10			10			DISC	41				41				41		41		41					0.77	1.92		-1.15		42			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	41				41				41		41		41					83.75	145.64		-61.89		42			false				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	42				43				42		36		41					180.01	180.00		0.01		42			true				false	SSGS-GRPW, SSGS-MLST
+11			1			DISC	54				54				54		54		54					0.60	1.48		-0.88		58			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	54				53				54		54		54					12.33	16.03		-3.70		58			false				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	55				57				55		52		54					180.01	180.01		0.00		58			true				false	SSGS-GRPW, SSGS-MLST
+11			2			DISC	56				56				56		56		56					0.61	1.72		-1.11		62			false				false	SSGS-MTS, SSGS-MLFT
+						FLOW	56				56				56		56		56					2.93	6.94		-4.01		62			false				false	SSGS-MTS, SSGS-MLFT
+						ONOFF	58				58				58		56		56					180.07	180.01		0.06		62			true				false	SSGS-MTS, SSGS-MLFT
+11			3			DISC	81				81				81		81		81					0.34	0.42		-0.08		81			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	81				81				81		81		81					0.27	1.08		-0.81		81			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	81				81				81		81		81					2.54	39.55		-37.01		81			false				false	SSGS-GRPW, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+11			4			DISC	63				63				63		63		63					0.47	0.85		-0.38		64			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	63				63				63		63		63					8.51	13.72		-5.21		64			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	63				63				63		60		63					180.00	180.01		-0.01		64			true				false	SSGS-SPT, SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+11			5			DISC	49				49				49		49		49					0.75	1.26		-0.51		53			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						FLOW	48				49				48		48		49					63.35	92.23		-28.88		53			false				true	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+						ONOFF	52				51				52		45		49					180.02	180.80		-0.78		53			true				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT
+11			6			DISC	44				44				44		44		44					0.37	0.58		-0.21		44			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	44				44				44		44		44					0.26	1.80		-1.54		44			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	44				44				44		44		44					2.67	102.75		-100.08		44			false				false	SSGS-GRPW, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+11			7			DISC	36				36				36		36		36					0.46	0.79		-0.33		39			false				false	SSGS-MJS
+						FLOW	36				35				36		36		36					34.45	29.84		4.61		39			false				false	SSGS-MJS
+						ONOFF	38				37				38		28		36					180.90	180.01		0.89		39			true				false	SSGS-MJS
+11			8			DISC	62				62				62		62		62					0.44	0.92		-0.48		63			false				false	SSGS-MJS
+						FLOW	62				62				62		62		62					3.53	6.33		-2.80		63			false				false	SSGS-MJS
+						ONOFF	62				62				62		62		62					31.26	87.94		-56.68		63			false				false	SSGS-MJS
+11			9			DISC	67				67				67		67		67					0.30	0.32		-0.02		67			false				false	SSGS-GRPW, SSGS-MRU, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	67				67				67		67		67					0.24	2.75		-2.51		67			false				false	SSGS-GRPW, SSGS-MRU, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	67				67				67		67		67					2.31	41.48		-39.17		67			false				false	SSGS-GRPW, SSGS-MRU, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+11			10			DISC	38				38				38		38		38					0.26	0.44		-0.18		39			false				false	SSGS-GRPW, SSGS-MLST
+						FLOW	38				38				38		38		38					1.46	1.47		-0.01		39			false				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	38				38				38		38		38					67.27	109.47		-42.20		39			false				false	SSGS-GRPW, SSGS-MLST
+12			1			DISC	47				47				47		47		47					0.39	0.38		0.01		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	47				47				47		47		47					0.23	2.23		-2.00		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	47				47				47		47		47					3.67	26.82		-23.15		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+12			2			DISC	46				46				46		46		46					0.43	0.38		0.05		46			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	46				46				46		46		46					0.22	2.16		-1.94		46			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	46				46				46		46		46					2.81	66.28		-63.47		46			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+12			3			DISC	37				37				37		37		37					0.24	0.21		0.03		37			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	37				37				37		37		37					0.24	1.15		-0.91		37			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	37				37				37		37		37					2.76	9.92		-7.16		37			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+12			4			DISC	63				63				63		63		63					0.58	0.57		0.01		63			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	63				63				63		63		63					0.24	1.62		-1.38		63			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	63				63				63		63		63					2.65	48.14		-45.49		63			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+12			5			DISC	47				47				47		47		47					0.35	0.31		0.04		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	47				47				47		47		47					0.32	0.88		-0.56		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	47				47				47		47		47					2.48	43.88		-41.40		47			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+12			6			DISC	53				53				53		53		53					0.29	0.29		0.00		53			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	53				53				53		53		53					0.27	1.11		-0.84		53			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	53				53				53		53		53					2.81	40.92		-38.11		53			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+12			7			DISC	55				55				55		55		55					0.42	0.40		0.02		55			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	55				55				55		55		55					0.26	0.70		-0.44		55			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	55				55				55		55		55					2.58	56.97		-54.39		55			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+12			8			DISC	35				35				35		35		35					0.25	0.24		0.01		35			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	35				35				35		35		35					0.26	0.78		-0.52		35			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	35				35				35		35		35					2.55	36.94		-34.39		35			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+12			9			DISC	52				52				52		52		52					0.45	0.43		0.02		52			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	52				52				52		52		52					0.29	1.04		-0.75		52			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	52				52				52		52		52					2.62	28.73		-26.11		52			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+12			10			DISC	57				57				57		57		57					0.35	0.37		-0.02		57			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						FLOW	57				57				57		57		57					0.35	0.96		-0.61		57			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+						ONOFF	57				57				57		57		57					2.76	27.12		-24.36		57			false				false	SSGS-SPT, SSGS-GRPW, SSGS-MRU, SSGS-RSM, SSGS-MTS, SSGS-MLST, SSGS-MLFT, SSGS-MJS
+13			1			DISC	62				61				62		52		58					180.00	180.00		0.00		64			true				false	SSGS-GRPW, SSGS-MLST
+						FLOW	62				65				62		36		58					180.00	180.01		-0.01		64			true				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	63				67				63		27		58					180.01	180.03		-0.02		64			true				false	SSGS-GRPW, SSGS-MLST
+13			2			DISC	65				63				65		56		62					180.00	180.00		0.00		69			true				false	SSGS-MRU
+						FLOW	65				67				65		36		62					180.01	180.01		0.00		69			true				false	SSGS-MRU
+						ONOFF	69				73				69		24		62					180.01	180.02		-0.01		69			true				false	SSGS-MRU
+13			3			DISC	78				78				78		67		76					180.00	180.00		0.00		87			true				false	SSGS-MLFT
+						FLOW	87				86				87		45		76					180.00	180.01		-0.01		87			true				false	SSGS-MLFT
+						ONOFF	85				83				85		41		76					180.00	180.02		-0.02		87			true				false	SSGS-MLFT
+13			4			DISC	74				72				74		66		72					180.00	180.02		-0.02		78			true				false	SSGS-GRPW, SSGS-MLST
+						FLOW	74				75				74		50		72					180.00	180.01		-0.01		78			true				false	SSGS-GRPW, SSGS-MLST
+						ONOFF	76				80				76		48		72					180.01	180.01		0.00		78			true				false	SSGS-GRPW, SSGS-MLST
+13			5			DISC	70				69				70		60		67					180.00	180.00		0.00		77			true				false	SSGS-MTS
+						FLOW	73				77				73		43		67					180.01	180.01		0.00		77			true				false	SSGS-MTS
+						ONOFF	75				77				75		43		67					180.00	180.01		-0.01		77			true				false	SSGS-MTS

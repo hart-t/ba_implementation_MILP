@@ -21,7 +21,7 @@ public class TestAllModelInstanceCombinations {
         assert files != null;
         
         // Limit to just the first 2 files for testing
-        files = Arrays.copyOf(files, Math.min(2, files.length));
+        // files = Arrays.copyOf(files, Math.min(2, files.length));
         
         // Sort files by numeric parameter and instance values
         Arrays.sort(files, (f1, f2) -> {
