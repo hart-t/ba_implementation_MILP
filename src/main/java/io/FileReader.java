@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import enums.ModelType;
 
 public class FileReader {
 
@@ -72,34 +73,183 @@ public class FileReader {
         return new JobDataInstance(instanceName, numberJob, horizon, jobNumSuccessors, jobSuccessors,
                          jobPredecessors, jobDuration, jobResource, resourceCapacity);
     }
-    /*
-     * This method is not used in the current implementation, but can be used to read results from a file.
-     * It is commented out to avoid confusion, but can be uncommented if needed.
-     * It reads a file containing solver results and returns a SolverResults object.
-     *
-    /*
-     * public SolverResults readResults(String file) throws Exception {
-        Double upperBound = null;
-        Double lowerBound = null;
-        Double objectiveValue = null;
-        Double timeInSeconds = null;
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
+    
+    public DataEvaluationInstance getDataFromResultFile(String filename) throws Exception {
+        List<String> parameters = new ArrayList<>();
+        List<String> instances = new ArrayList<>();
+        List<String> modelTypes = new ArrayList<>();
+        List<Integer> hMakespanList = new ArrayList<>();
+        List<Integer> noHMakespanList = new ArrayList<>();
+        List<Integer> hUBList = new ArrayList<>();
+        List<Integer> hLBList = new ArrayList<>();
+        List<Integer> optimalMakespanList = new ArrayList<>();
+        List<Double> hTimeList = new ArrayList<>();
+        List<Double> noHTimeList = new ArrayList<>();
+        List<Double> timeDiffList = new ArrayList<>();
+        List<Integer> heuristicMakespanList = new ArrayList<>();
+        List<Boolean> timeLimitReachedList = new ArrayList<>();
+        List<Boolean> errorList = new ArrayList<>();
+        List<String> heuristicsList = new ArrayList<>();
+        
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filename)))) {
             String line;
+            String currentParameter = "";
+            String currentInstance = "";
+            
             while ((line = br.readLine()) != null) {
-                if (line.startsWith("Upper bound:")) {
-                    upperBound = Double.parseDouble(line.split(":")[1].trim());
-                } else if (line.startsWith("Lower bound:")) {
-                    lowerBound = Double.parseDouble(line.split(":")[1].trim());
-                } else if (line.startsWith("Objective value:")) {
-                    objectiveValue = Double.parseDouble(line.split(":")[1].trim());
-                } else if (line.startsWith("Time in seconds:")) {
-                    timeInSeconds = Double.parseDouble(line.split(":")[1].trim());
+                line = line.trim();
+                
+                // Skip empty lines and header content
+                boolean skipHeader = true;
+                if (skipHeader && (line.isEmpty() || !line.startsWith("-"))) {
+                    continue;
+                } else if (skipHeader && line.startsWith("-")) {
+                    skipHeader = false;
+                    continue;
+                }
+                
+                // Parse data lines
+                String[] parts = line.split("\\s+"); // Split on any whitespace (spaces or tabs)
+                if (parts.length >= 14) { // Ensure we have enough columns
+                    // Handle parameter and instance (may be empty for continuation rows)
+                    String parameter = parts[0].trim();
+                    String instance = parts[1].trim();
+                    String modelType = parts[2].trim();
+                    
+                    // If the first field looks like a model type, this is a continuation row
+                    if (isModelType(parameter) && instance.matches("\\d+") && modelType.matches("\\d+")) {
+                        // This is a continuation row where parameter column contains model type
+                        modelType = parameter;
+                        // Shift all values to the left
+                        parameters.add(currentParameter);
+                        instances.add(currentInstance);
+                        modelTypes.add(modelType);
+                        
+                        // Parse shifted values
+                        hMakespanList.add(parseIntOrDefault(instance, -1)); // instance is actually H_M_Makespan
+                        noHMakespanList.add(parseIntOrDefault(parts[2].trim(), -1));
+                        hUBList.add(parseIntOrDefault(parts[3].trim(), -1));
+                        hLBList.add(parseIntOrDefault(parts[4].trim(), -1));
+                        optimalMakespanList.add(parseIntOrDefault(parts[5].trim(), -1));
+                        hTimeList.add(parseDoubleOrDefault(parts[6].trim(), -1.0));
+                        noHTimeList.add(parseDoubleOrDefault(parts[7].trim(), -1.0));
+                        timeDiffList.add(parseDoubleOrDefault(parts[8].trim(), -1.0));
+                        heuristicMakespanList.add(parseIntOrDefault(parts[9].trim(), -1));
+                        timeLimitReachedList.add(parseBooleanOrDefault(parts[10].trim(), false));
+                        errorList.add(parseBooleanOrDefault(parts[11].trim(), false));
+                        
+                        // Handle heuristics (may span multiple columns)
+                        StringBuilder heuristics = new StringBuilder();
+                        for (int i = 12; i < parts.length; i++) {
+                            if (i > 12) heuristics.append(" ");
+                            heuristics.append(parts[i].trim());
+                        }
+                        heuristicsList.add(heuristics.toString());
+                    } else {
+                        // Normal row with parameter and instance
+                        if (!parameter.isEmpty() && !instance.isEmpty()) {
+                            currentParameter = parameter;
+                            currentInstance = instance;
+                        }
+                        
+                        parameters.add(currentParameter);
+                        instances.add(currentInstance);
+                        modelTypes.add(modelType);
+                        
+                        // Parse numeric values with error handling
+                        hMakespanList.add(parseIntOrDefault(parts[3].trim(), -1));
+                        noHMakespanList.add(parseIntOrDefault(parts[4].trim(), -1));
+                        hUBList.add(parseIntOrDefault(parts[5].trim(), -1));
+                        hLBList.add(parseIntOrDefault(parts[6].trim(), -1));
+                        optimalMakespanList.add(parseIntOrDefault(parts[7].trim(), -1));
+                        hTimeList.add(parseDoubleOrDefault(parts[8].trim(), -1.0));
+                        noHTimeList.add(parseDoubleOrDefault(parts[9].trim(), -1.0));
+                        timeDiffList.add(parseDoubleOrDefault(parts[10].trim(), -1.0));
+                        heuristicMakespanList.add(parseIntOrDefault(parts[11].trim(), -1));
+                        timeLimitReachedList.add(parseBooleanOrDefault(parts[12].trim(), false));
+                        errorList.add(parseBooleanOrDefault(parts[13].trim(), false));
+                        
+                        // Handle heuristics (may span multiple columns)
+                        StringBuilder heuristics = new StringBuilder();
+                        for (int i = 14; i < parts.length; i++) {
+                            if (i > 14) heuristics.append(" ");
+                            heuristics.append(parts[i].trim());
+                        }
+                        heuristicsList.add(heuristics.toString());
+                    }
                 }
             }
         }
-
-        return new SolverResults(upperBound, lowerBound, objectiveValue, timeInSeconds);
+        
+        // Convert lists to arrays
+        String[] parameterArray = parameters.toArray(new String[0]);
+        String[] instanceArray = instances.toArray(new String[0]);
+        String[] modelTypeArray = modelTypes.toArray(new String[0]);
+        int[] hMakespanArray = hMakespanList.stream().mapToInt(Integer::intValue).toArray();
+        int[] noHMakespanArray = noHMakespanList.stream().mapToInt(Integer::intValue).toArray();
+        int[] hUBArray = hUBList.stream().mapToInt(Integer::intValue).toArray();
+        int[] hLBArray = hLBList.stream().mapToInt(Integer::intValue).toArray();
+        int[] optimalMakespanArray = optimalMakespanList.stream().mapToInt(Integer::intValue).toArray();
+        double[] hTimeArray = hTimeList.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] noHTimeArray = noHTimeList.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] timeDiffArray = timeDiffList.stream().mapToDouble(Double::doubleValue).toArray();
+        int[] heuristicMakespanArray = heuristicMakespanList.stream().mapToInt(Integer::intValue).toArray();
+        boolean[] timeLimitReachedArray = new boolean[timeLimitReachedList.size()];
+        for (int i = 0; i < timeLimitReachedList.size(); i++) {
+            timeLimitReachedArray[i] = timeLimitReachedList.get(i);
+        }
+        
+        boolean[] errorArray = new boolean[errorList.size()];
+        for (int i = 0; i < errorList.size(); i++) {
+            errorArray[i] = errorList.get(i);
+        }
+        String[] heuristicsArray = heuristicsList.toArray(new String[0]);
+        
+        return new DataEvaluationInstance(parameterArray, instanceArray, modelTypeArray,
+                hMakespanArray, noHMakespanArray, hUBArray, hLBArray, optimalMakespanArray,
+                hTimeArray, noHTimeArray, timeDiffArray, heuristicMakespanArray,
+                timeLimitReachedArray, errorArray, heuristicsArray);
     }
-     */
+    
+    private boolean isModelType(String value) {
+        try {
+            ModelType.valueOf(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+    
+    private int parseIntOrDefault(String value, int defaultValue) {
+        if (value == null || value.equals("N/A") || value.equals("INFEASIBLE") || value.isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+    
+    private double parseDoubleOrDefault(String value, double defaultValue) {
+        if (value == null || value.equals("N/A") || value.equals("INFEASIBLE") || value.isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+    
+    private boolean parseBooleanOrDefault(String value, boolean defaultValue) {
+        if (value == null || value.equals("N/A") || value.isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            return Boolean.parseBoolean(value);
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
 }
