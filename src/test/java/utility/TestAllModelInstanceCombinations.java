@@ -93,8 +93,8 @@ public class TestAllModelInstanceCombinations {
                 
                 // Write results to file immediately after processing this instance
                 try {
-                    fileWriter.writeResults(".", "test5.txt", results);
-                    System.out.println("Results updated in test5.txt (total results: " + results.size() + ")");
+                    fileWriter.writeResults(".", "test6.txt", results);
+                    System.out.println("Results updated in test6.txt (total results: " + results.size() + ")");
                 } catch (Exception e) {
                     System.err.println("Error writing results after processing " + file.getName() + ": " + e.getMessage());
                 }

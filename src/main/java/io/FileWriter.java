@@ -4,14 +4,16 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FileWriter {
     
-    private ResultFormatter formatter;
+    private FileReader fileReader;
     
     public FileWriter() {
-        this.formatter = new ResultFormatter();
+        this.fileReader = new FileReader();
     }
     
     /**
@@ -33,8 +35,20 @@ public class FileWriter {
         // Create full file path
         File file = new File(dir, filename);
         
+        // Load optimal values
+        Map<String, Integer> optimalValues = fileReader.loadOptimalValues();
+        
+        // Load existing results if file exists
+        Map<String, FileReader.ExistingResultData> existingResults = new HashMap<>();
+        if (file.exists()) {
+            existingResults = fileReader.loadExistingResults(file.getAbsolutePath());
+        }
+        
+        // Create formatter with optimal values
+        ResultFormatter formatter = new ResultFormatter(optimalValues);
+        
         // Format the results using the formatter
-        List<String> lines = formatter.formatResults(results, file);
+        List<String> lines = formatter.formatResults(results, existingResults);
         
         // Write the lines to the file
         writeLinesToFile(file, lines);

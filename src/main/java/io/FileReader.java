@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import enums.ModelType;
 
 public class FileReader {
@@ -251,5 +253,130 @@ public class FileReader {
         } catch (Exception e) {
             return defaultValue;
         }
+    }
+    
+    public Map<String, Integer> loadOptimalValues() {
+        Map<String, Integer> optimalValues = new HashMap<>();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                new FileInputStream("/home/tobsi/university/kit/RCPSP_Benchmark_Solutions/j30opt.sm/j30opt.sm")))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("=") || line.startsWith("Authors") || 
+                    line.startsWith("Instance") || line.startsWith("Type") || line.startsWith("Date") ||
+                    line.startsWith("Research") || line.startsWith("Computer") || line.startsWith("Processor") ||
+                    line.startsWith("Clockpulse") || line.startsWith("Operating") || line.startsWith("Memory") ||
+                    line.startsWith("Language") || line.startsWith("Average") || line.startsWith("Paramter") ||
+                    line.startsWith("--") || line.contains("benchmark") || line.contains("resource-constrained")) {
+                    continue;
+                }
+                
+                String[] parts = line.split("\\s+");
+                if (parts.length >= 3) {
+                    try {
+                        int parameter = Integer.parseInt(parts[0]);
+                        int instance = Integer.parseInt(parts[1]);
+                        int makespan = Integer.parseInt(parts[2]);
+                        
+                        String key = String.format("j30%d_%d", parameter, instance);
+                        optimalValues.put(key, makespan);
+                    } catch (NumberFormatException e) {
+                        continue;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Could not load optimal values file: " + e.getMessage());
+        }
+        return optimalValues;
+    }
+    
+    public Map<String, ExistingResultData> loadExistingResults(String filename) throws Exception {
+        Map<String, ExistingResultData> existingResults = new HashMap<>();
+        
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)))) {
+            String line;
+            String currentParameter = "";
+            String currentInstance = "";
+            
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                
+                // Skip header lines
+                if (line.isEmpty() || line.startsWith("=") || line.startsWith("Parameter") || 
+                    line.startsWith("Instance") || line.startsWith("Model") || line.startsWith("H_M_Makespan") ||
+                    line.startsWith("Paramter") || line.startsWith("-")) {
+                    continue;
+                }
+                
+                // Parse data lines
+                String[] parts = line.split("\\s+");
+                if (parts.length >= 3) {
+                    String parameter = parts[0].trim();
+                    String instance = parts[1].trim();
+                    String model = parts[2].trim();
+                    
+                    if (!parameter.isEmpty() && !instance.isEmpty()) {
+                        currentParameter = parameter;
+                        currentInstance = instance;
+                    } else if (!parts[0].trim().isEmpty()) {
+                        model = parts[0].trim();
+                        parameter = currentParameter;
+                        instance = currentInstance;
+                    }
+                    
+                    if (!parameter.isEmpty() && !instance.isEmpty()) {
+                        String key = parameter + "_" + instance + "_" + model;
+                        ExistingResultData data = parseExistingResultLine(parts);
+                        existingResults.put(key, data);
+                    }
+                }
+            }
+        }
+        return existingResults;
+    }
+    
+    private ExistingResultData parseExistingResultLine(String[] parts) {
+        ExistingResultData data = new ExistingResultData();
+        
+        if (parts.length > 3) data.hMakespan = parseStringValue(parts[3]);
+        if (parts.length > 4) data.noHMakespan = parseStringValue(parts[4]);
+        if (parts.length > 5) data.hUB = parseStringValue(parts[5]);
+        if (parts.length > 6) data.hLB = parseStringValue(parts[6]);
+        // Skip optimalMakespan as it's always recalculated
+        if (parts.length > 8) data.hTime = parseStringValue(parts[8]);
+        if (parts.length > 9) data.noHTime = parseStringValue(parts[9]);
+        // Skip timeDiff as it's always recalculated
+        if (parts.length > 11) data.heuristicMakespan = parseStringValue(parts[11]);
+        if (parts.length > 12) data.timeLimitReached = parseStringValue(parts[12]);
+        if (parts.length > 13) data.error = parseStringValue(parts[13]);
+        if (parts.length > 14) {
+            StringBuilder heuristics = new StringBuilder();
+            for (int i = 14; i < parts.length; i++) {
+                if (i > 14) heuristics.append(" ");
+                heuristics.append(parts[i]);
+            }
+            data.heuristics = heuristics.toString();
+        }
+        
+        return data;
+    }
+    
+    private String parseStringValue(String value) {
+        return "N/A".equals(value) ? null : value;
+    }
+    
+    // Helper class to store existing result data
+    public static class ExistingResultData {
+        public String hMakespan;
+        public String noHMakespan;
+        public String hUB;
+        public String hLB;
+        public String hTime;
+        public String noHTime;
+        public String heuristicMakespan;
+        public String timeLimitReached;
+        public String error;
+        public String heuristics;
     }
 }

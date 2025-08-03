@@ -1,77 +1,33 @@
 package io;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import enums.PriorityRuleType;
+import enums.ModelType;
 
 public class ResultFormatter {
     
     private Map<String, Integer> optimalValues;
-    private Map<String, ResultData> existingResults; // Maps "parameter_instance_model" to existing data
     
-    public ResultFormatter() {
-        this.optimalValues = new HashMap<>();
-        this.existingResults = new HashMap<>();
-        loadOptimalValues();
+    public ResultFormatter(Map<String, Integer> optimalValues) {
+        this.optimalValues = optimalValues != null ? optimalValues : new HashMap<>();
     }
     
-    private void loadOptimalValues() {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                new FileInputStream("/home/tobsi/university/kit/RCPSP_Benchmark_Solutions/j30opt.sm/j30opt.sm")))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("=") || line.startsWith("Authors") || 
-                    line.startsWith("Instance") || line.startsWith("Type") || line.startsWith("Date") ||
-                    line.startsWith("Research") || line.startsWith("Computer") || line.startsWith("Processor") ||
-                    line.startsWith("Clockpulse") || line.startsWith("Operating") || line.startsWith("Memory") ||
-                    line.startsWith("Language") || line.startsWith("Average") || line.startsWith("Paramter") ||
-                    line.startsWith("--") || line.contains("benchmark") || line.contains("resource-constrained")) {
-                    continue;
-                }
-                
-                String[] parts = line.split("\\s+");
-                if (parts.length >= 3) {
-                    try {
-                        int parameter = Integer.parseInt(parts[0]);
-                        int instance = Integer.parseInt(parts[1]);
-                        int makespan = Integer.parseInt(parts[2]);
-                        
-                        String key = String.format("j30%d_%d", parameter, instance);
-                        optimalValues.put(key, makespan);
-                    } catch (NumberFormatException e) {
-                        continue;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Warning: Could not load optimal values file: " + e.getMessage());
-        }
-    }
     
-    public List<String> formatResults(List<Result> results, File outputFile) throws Exception {
+    public List<String> formatResults(List<Result> results, Map<String, FileReader.ExistingResultData> existingResults) throws Exception {
         List<String> lines = new ArrayList<>();
         
-        // Check if file exists and load existing data if it does
-        boolean fileExists = outputFile.exists();
-        if (fileExists) {
-            loadExistingResults(outputFile);
-        }
-        
-        // Always add header (either for new file or when rewriting existing file)
+        // Always add header
         lines.addAll(createHeader());
         
         // Group results by parameter, instance, and model for proper merging
         Map<String, List<Result>> groupedResults = new HashMap<>();
         for (Result result : results) {
             String[] instanceParts = extractInstanceInfo(result.instanceName);
-            String parameter = instanceParts[0];
-            String instance = instanceParts[1];
+            int parameter = Integer.parseInt(instanceParts[0]);
+            int instance = Integer.parseInt(instanceParts[1]);
             String model = getModelShortName(result.getModelType().getDescription());
             String key = parameter + "_" + instance + "_" + model;
             
@@ -83,11 +39,10 @@ public class ResultFormatter {
             resultList.add(result);
         }
         
-        // Process results in sorted order
-        String currentParameter = "";
-        String currentInstance = "";
+        int currentParameter = -1;
+        int currentInstance = -1;
         
-        // Sort the keys to ensure proper ordering
+        // Sort the keys
         List<String> sortedKeys = new ArrayList<>(groupedResults.keySet());
         sortedKeys.sort((k1, k2) -> {
             String[] parts1 = k1.split("_");
@@ -109,19 +64,21 @@ public class ResultFormatter {
         
         for (String key : sortedKeys) {
             String[] parts = key.split("_");
-            String parameter = parts[0];
-            String instance = parts[1];
+            int parameter = Integer.parseInt(parts[0]);
+            int instance = Integer.parseInt(parts[1]);
             String model = parts[2];
             
-            boolean isFirstModelForInstance = !parameter.equals(currentParameter) || !instance.equals(currentInstance);
+            // Check if this is the first model for this instance
+            boolean isFirstModelForInstance = parameter != currentParameter || instance != currentInstance;
             
+            // Get results for this key if available
             List<Result> resultsForKey = groupedResults.get(key);
-            ResultData existingData = existingResults.get(key);
+            FileReader.ExistingResultData existingData = existingResults != null ? existingResults.get(key) : null;
             
-            // Merge all results for this key (heuristic and non-heuristic)
             Result heuristicResult = null;
             Result nonHeuristicResult = null;
             
+            // check if we have heuristic and/or non-heuristic results
             for (Result result : resultsForKey) {
                 boolean hasHeuristics = result.getUsedHeuristics() != null && !result.getUsedHeuristics().isEmpty();
                 if (hasHeuristics) {
@@ -144,90 +101,28 @@ public class ResultFormatter {
         return lines;
     }
     
-    private void loadExistingResults(File file) throws Exception {
-        existingResults.clear();
-        
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
-            String line;
-            String currentParameter = "";
-            String currentInstance = "";
-            
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                
-                // Skip header lines
-                if (line.isEmpty() || line.startsWith("=") || line.startsWith("Parameter") || 
-                    line.startsWith("Instance") || line.startsWith("Model") || line.startsWith("H_M_Makespan") ||
-                    line.startsWith("Paramter") || line.startsWith("-")) {
-                    continue;
-                }
-                
-                // Parse data lines
-                String[] parts = line.split("\\s+");
-                if (parts.length >= 3) {
-                    String parameter = parts[0].trim();
-                    String instance = parts[1].trim();
-                    String model = parts[2].trim();
-                    
-                    if (!parameter.isEmpty() && !instance.isEmpty()) {
-                        currentParameter = parameter;
-                        currentInstance = instance;
-                    } else if (!parts[0].trim().isEmpty()) {
-                        model = parts[0].trim();
-                        parameter = currentParameter;
-                        instance = currentInstance;
-                    }
-                    
-                    if (!parameter.isEmpty() && !instance.isEmpty()) {
-                        String key = parameter + "_" + instance + "_" + model;
-                        ResultData data = parseExistingLine(parts);
-                        existingResults.put(key, data);
-                    }
-                }
-            }
-        }
-    }
-    
-    private ResultData parseExistingLine(String[] parts) {
-        ResultData data = new ResultData();
-        
-        if (parts.length > 3) data.hMakespan = parseValue(parts[3]);
-        if (parts.length > 4) data.noHMakespan = parseValue(parts[4]);
-        if (parts.length > 5) data.hUB = parseValue(parts[5]);
-        if (parts.length > 6) data.hLB = parseValue(parts[6]);
-        // Skip optimalMakespan as it's always recalculated
-        if (parts.length > 8) data.hTime = parseValue(parts[8]);
-        if (parts.length > 9) data.noHTime = parseValue(parts[9]);
-        // Skip timeDiff as it's always recalculated
-        if (parts.length > 11) data.heuristicMakespan = parseValue(parts[11]);
-        if (parts.length > 12) data.timeLimitReached = parseValue(parts[12]);
-        if (parts.length > 13) data.error = parseValue(parts[13]);
-        if (parts.length > 14) {
-            StringBuilder heuristics = new StringBuilder();
-            for (int i = 14; i < parts.length; i++) {
-                if (i > 14) heuristics.append(" ");
-                heuristics.append(parts[i]);
-            }
-            data.heuristics = heuristics.toString();
-        }
-        
-        return data;
-    }
-    
-    private String parseValue(String value) {
-        return "N/A".equals(value) ? null : value;
-    }
     
     private String formatMergedResultLine(Result heuristicResult, Result nonHeuristicResult,
-                                         String parameter, String instance, String model,
-                                         boolean isFirstModelForInstance, ResultData existingData) {
+                                         int parameter, int instance, String model,
+                                         boolean isFirstModelForInstance, FileReader.ExistingResultData existingData) {
         
-        // Get optimal makespan for this instance
-        String instanceName = heuristicResult != null ? heuristicResult.instanceName : nonHeuristicResult.instanceName;
+        // Get instance name and optimal makespan
+        String instanceName;
+        if (heuristicResult != null) {
+            instanceName = heuristicResult.instanceName;
+        } else {
+            instanceName = nonHeuristicResult.instanceName;
+        }
+        
         Integer optimalMakespan = optimalValues.get(instanceName);
-        String optimalStr = optimalMakespan != null ? optimalMakespan.toString() : "N/A";
+        String optimalStr;
+        if (optimalMakespan != null) {
+            optimalStr = optimalMakespan.toString();
+        } else {
+            optimalStr = "N/A";
+        }
         
-        // Initialize all values
+        // Initialize all values to "N/A"
         String hMakespan = "N/A";
         String noHMakespan = "N/A";
         String hUB = "N/A";
@@ -262,9 +157,13 @@ public class ResultFormatter {
                 hLB = "INFEASIBLE";
             }
             
+            
             hTime = formatTime(heuristicResult.solverResults.timeInSeconds);
-            heuristicMakespan = heuristicResult.getBestHeuristicMakespan() > 0 ? 
-                String.valueOf(heuristicResult.getBestHeuristicMakespan()) : "N/A";
+            if (heuristicResult.getBestHeuristicMakespan() > 0) {
+                heuristicMakespan = String.valueOf(heuristicResult.getBestHeuristicMakespan());
+            } else {
+                heuristicMakespan = "N/A";
+            }
             timeLimitReached = String.valueOf(heuristicResult.solverResults.wasStoppedByTimeLimit());
             errorStr = String.valueOf(checkError(heuristicResult, optimalMakespan));
             heuristicsStr = getHeuristicShortNames(heuristicResult.getUsedHeuristics());
@@ -313,16 +212,30 @@ public class ResultFormatter {
         }
         
         // Format parameter and instance columns
-        String parameterCol = isFirstModelForInstance ? parameter : "";
-        String instanceCol = isFirstModelForInstance ? instance : "";
+        String parameterCol;
+        if (isFirstModelForInstance) {
+            parameterCol = String.valueOf(parameter);
+        } else {
+            parameterCol = "";
+        }
         
+        String instanceCol;
+        if (isFirstModelForInstance) {
+            instanceCol = String.valueOf(instance);
+        } else {
+            instanceCol = "";
+        }
+        
+        // Format the final line (i dont even know xd there is propably a better way to do this)
         return String.format("%s\t\t\t%s\t\t\t%s\t%s\t\t\t\t%s\t\t\t\t%s\t\t%s\t\t%s\t\t\t\t\t%s\t%s\t\t%s\t\t%s\t\t\t%s\t\t\t\t%s\t%s",
             parameterCol, instanceCol, model, hMakespan, noHMakespan, hUB, hLB, 
             optimalStr, hTime, noHTime, timeDiff, heuristicMakespan, 
             timeLimitReached, errorStr, heuristicsStr);
     }
     
-    
+    // Create header for the result file
+    // just dont start a line with a "-", it will break some things in the FileReader and FileWriter
+    // cause it is used to indicate the start of the data section
     private List<String> createHeader() {
         List<String> header = new ArrayList<>();
         header.add("===================================================================================================================================================================================");
@@ -368,14 +281,12 @@ public class ResultFormatter {
     }
     
     private String getModelShortName(String fullModelName) {
-        if (fullModelName.contains("Flow-Based") || fullModelName.contains("FLOW")) {
-            return "FLOW";
-        } else if (fullModelName.contains("Discrete") || fullModelName.contains("DISC")) {
-            return "DISC";
-        } else if (fullModelName.contains("On-Off") || fullModelName.contains("EVENT") || fullModelName.contains("ONOFF")) {
-            return "ONOFF";
-        } else if (fullModelName.contains("Interval") || fullModelName.contains("IEE")) {
-            return "IEE";
+        // Try to find matching model type by description
+        for (ModelType modelType : ModelType.values()) {
+            if (fullModelName.contains(modelType.getDescription()) || 
+                fullModelName.contains(modelType.getCode())) {
+                return modelType.getCode();
+            }
         }
         return fullModelName;
     }
@@ -387,34 +298,26 @@ public class ResultFormatter {
         
         List<String> shortNames = new ArrayList<>();
         for (String heuristic : heuristics) {
-            String shortName = convertHeuristicToShortName(heuristic);
+            // Try to find matching priority rule by description
+            String shortName = null;
+            for (PriorityRuleType ruleType : PriorityRuleType.values()) {
+                if (heuristic.contains(ruleType.getDescription().toUpperCase().replace(" ", "")) ||
+                    heuristic.contains(ruleType.getCode())) {
+                    shortName = "SSGS-" + ruleType.getCode();
+                    break;
+                }
+            }
+            
+            if (shortName == null) {
+                shortName = heuristic;
+            }
+            
             if (!shortNames.contains(shortName)) {
                 shortNames.add(shortName);
             }
         }
         
         return String.join(", ", shortNames);
-    }
-    
-    private String convertHeuristicToShortName(String fullHeuristicName) {
-        if (fullHeuristicName.contains("SHORTESTPROCESSINGTIME") || fullHeuristicName.contains("SPT")) {
-            return "SSGS-SPT";
-        } else if (fullHeuristicName.contains("GREATESTRANKPOSITIONALWEIGHT") || fullHeuristicName.contains("GRPW") || fullHeuristicName.contains("RPW")) {
-            return "SSGS-GRPW";
-        } else if (fullHeuristicName.contains("MOSTRESOURCEUSAGE") || fullHeuristicName.contains("MRU")) {
-            return "SSGS-MRU";
-        } else if (fullHeuristicName.contains("RESOURCESCHEDULINGMETHOD") || fullHeuristicName.contains("RSM")) {
-            return "SSGS-RSM";
-        } else if (fullHeuristicName.contains("MOSTTOTALSUCCESSORS") || fullHeuristicName.contains("MTS")) {
-            return "SSGS-MTS";
-        } else if (fullHeuristicName.contains("MINIMUMLATESTSTARTTIME") || fullHeuristicName.contains("MLST")) {
-            return "SSGS-MLST";
-        } else if (fullHeuristicName.contains("MINIMUMLATESTFINISHTIME") || fullHeuristicName.contains("MLFT")) {
-            return "SSGS-MLFT";
-        } else if (fullHeuristicName.contains("MINIMUMJOBSLACK") || fullHeuristicName.contains("MJS")) {
-            return "SSGS-MJS";
-        }
-        return fullHeuristicName;
     }
     
     private String formatTime(double timeInSeconds) {
@@ -424,7 +327,7 @@ public class ResultFormatter {
     
     private boolean isReasonableObjectiveValue(double value) {
         // Check if the value is reasonable (not indicating an infeasible solution)
-        // Values larger than 1 billion likely indicate infeasible solutions
+        // Values larger than 1 billion?? likely indicate infeasible solutions
         // Also check for negative infinity or NaN
         return !Double.isNaN(value) && !Double.isInfinite(value) && value > 0 && value < 1000000000.0;
     }
@@ -433,19 +336,5 @@ public class ResultFormatter {
         if (optimalMakespan == null) return false;
         double computedMakespan = result.solverResults.objectiveValue;
         return computedMakespan < optimalMakespan.doubleValue();
-    }
-    
-    // Helper class to store existing result data
-    private static class ResultData {
-        String hMakespan;
-        String noHMakespan;
-        String hUB;
-        String hLB;
-        String hTime;
-        String noHTime;
-        String heuristicMakespan;
-        String timeLimitReached;
-        String error;
-        String heuristics;
     }
 }

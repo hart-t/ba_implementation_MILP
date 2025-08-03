@@ -86,10 +86,11 @@ public class IntervalEventBasedModel implements ModelInterface {
                 for (int e = 0; e < startOfEventVars.length; e++) {
                     for (int f = e + 1; f < startOfEventVars.length; f++) {
                         GRBLinExpr leftSide = new GRBLinExpr();
+                        GRBLinExpr rightSide = new GRBLinExpr();
+
                         leftSide.addTerm(1, startOfEventVars[e]);
                         leftSide.addTerm(data.jobDuration.get(i), ziefVars[i][e][f]);
 
-                        GRBLinExpr rightSide = new GRBLinExpr();
                         rightSide.addTerm(1, startOfEventVars[f]);
 
                         model.addConstr(leftSide, GRB.LESS_EQUAL, rightSide, "eventInterval_" + i + "_" + e + "_" + f);
@@ -97,6 +98,22 @@ public class IntervalEventBasedModel implements ModelInterface {
                 }
             }
 
+            // (39) forbid for every precedence pair (i, j) ∈ P that their assigned event intervals overlap in some event e.
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int j = 0; j < data.numberJob; j++) {
+                    for (int e = 0; e < startOfEventVars.length; e++) {
+                        GRBLinExpr leftSide = new GRBLinExpr();
+                        GRBLinExpr rightSide = new GRBLinExpr();
+
+                        leftSide.addTerm(1, startOfEventVars[j]);
+                        leftSide.addTerm(data.jobDuration.get(i), ziefVars[i][j][e]);
+
+                        rightSide.addTerm(1, startOfEventVars[e]);
+
+                        model.addConstr(leftSide, GRB.LESS_EQUAL, rightSide, "eventInterval_" + i + "_" + j + "_" + e);
+                    }
+                }
+            }
 
 
 
