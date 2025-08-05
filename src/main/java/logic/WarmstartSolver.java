@@ -3,6 +3,7 @@ package logic;
 import com.gurobi.gurobi.GRB;
 import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBModel;
+import com.gurobi.gurobi.GRBConstr;
 
 import interfaces.CompletionMethodInterface;
 import interfaces.ModelInterface;
@@ -12,6 +13,10 @@ import io.OptimizedSolution;
 import io.Result;
 import io.ScheduleResult;
 import io.SolverResults;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class WarmstartSolver {
 
@@ -42,7 +47,7 @@ public class WarmstartSolver {
 
             // Configure Gurobi parameters and logging
             grbOptimizationModel.set(GRB.DoubleParam.MIPGap, 0.0);        // Require optimal solution
-            grbOptimizationModel.set(GRB.DoubleParam.TimeLimit, 5.0);   // Set time limit
+            grbOptimizationModel.set(GRB.DoubleParam.TimeLimit, 30.0);   // Set time limit
             grbOptimizationModel.set(GRB.IntParam.Threads, 4);            // Use multiple threads
             grbOptimizationModel.set(GRB.IntParam.Method, 2);             // Use barrier method
             grbOptimizationModel.set(GRB.IntParam.OutputFlag, 1);         // Enable output
@@ -50,6 +55,19 @@ public class WarmstartSolver {
         
             // Optimize and check solution quality
             grbOptimizationModel.optimize();
+
+            // Print model statistics
+            System.out.println("Model Statistics:");
+            System.out.println("Number of variables: " + grbOptimizationModel.get(GRB.IntAttr.NumVars));
+            System.out.println("Number of constraints: " + grbOptimizationModel.get(GRB.IntAttr.NumConstrs));
+            System.out.println("Number of binary variables: " + grbOptimizationModel.get(GRB.IntAttr.NumBinVars));
+            System.out.println("Number of integer variables: " + grbOptimizationModel.get(GRB.IntAttr.NumIntVars));
+
+            // TODO delete later
+            // Check if model is infeasible and log infeasible constraints
+            if (grbOptimizationModel.get(GRB.IntAttr.Status) == GRB.Status.INFEASIBLE) {
+                logInfeasibleConstraints(grbOptimizationModel, data.instanceName);
+            }
 
             // Print all flow variables
             // printFlowVariables(grbOptimizationModel, data);
@@ -71,6 +89,49 @@ public class WarmstartSolver {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void logInfeasibleConstraints(GRBModel model, String instanceName) {
+        try {
+            // Compute IIS (Irreducible Inconsistent Subsystem)
+            model.computeIIS();
+            
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
+            String infeasibilityLogFile = "infeasible_constraints_" + instanceName + "_" + timestamp + ".log";
+            
+            try (FileWriter writer = new FileWriter(infeasibilityLogFile)) {
+                writer.write("INFEASIBLE MODEL DETECTED\n");
+                writer.write("Instance: " + instanceName + "\n");
+                writer.write("Timestamp: " + timestamp + "\n");
+                writer.write("========================================\n\n");
+                
+                writer.write("INFEASIBLE CONSTRAINTS (IIS):\n");
+                writer.write("------------------------------\n");
+                
+                // Get all constraints and check which ones are in the IIS
+                GRBConstr[] constraints = model.getConstrs();
+                int infeasibleCount = 0;
+                
+                for (GRBConstr constr : constraints) {
+                    if (constr.get(GRB.IntAttr.IISConstr) == 1) {
+                        writer.write("Constraint: " + constr.get(GRB.StringAttr.ConstrName) + "\n");
+                        writer.write("Type: " + (char)constr.get(GRB.CharAttr.Sense) + "\n");
+                        writer.write("RHS: " + constr.get(GRB.DoubleAttr.RHS) + "\n");
+                        writer.write("---\n");
+                        infeasibleCount++;
+                    }
+                }
+                
+                writer.write("\nTotal infeasible constraints: " + infeasibleCount + "\n");
+                writer.write("\nIIS analysis completed.\n");
+            }
+            
+            System.out.println("Model is infeasible. Infeasible constraints logged to: " + infeasibilityLogFile);
+            
+        } catch (Exception e) {
+            System.err.println("Error while analyzing infeasible constraints: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public SolverResults buildSolverResults(GRBModel model) {

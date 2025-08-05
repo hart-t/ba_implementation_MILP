@@ -262,12 +262,13 @@ public class FileReader {
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim();
-                if (line.isEmpty() || line.startsWith("=") || line.startsWith("Authors") || 
-                    line.startsWith("Instance") || line.startsWith("Type") || line.startsWith("Date") ||
-                    line.startsWith("Research") || line.startsWith("Computer") || line.startsWith("Processor") ||
-                    line.startsWith("Clockpulse") || line.startsWith("Operating") || line.startsWith("Memory") ||
-                    line.startsWith("Language") || line.startsWith("Average") || line.startsWith("Paramter") ||
-                    line.startsWith("--") || line.contains("benchmark") || line.contains("resource-constrained")) {
+
+                // Skip empty lines and header content
+                boolean skipHeader = true;
+                if (skipHeader && (line.isEmpty() || !line.startsWith("-"))) {
+                    continue;
+                } else if (skipHeader && line.startsWith("-")) {
+                    skipHeader = false;
                     continue;
                 }
                 
@@ -290,7 +291,7 @@ public class FileReader {
         }
         return optimalValues;
     }
-    
+
     public Map<String, ExistingResultData> loadExistingResults(String filename) throws Exception {
         Map<String, ExistingResultData> existingResults = new HashMap<>();
         
@@ -365,7 +366,7 @@ public class FileReader {
     private String parseStringValue(String value) {
         return "N/A".equals(value) ? null : value;
     }
-    
+
     // Helper class to store existing result data
     public static class ExistingResultData {
         public String hMakespan;

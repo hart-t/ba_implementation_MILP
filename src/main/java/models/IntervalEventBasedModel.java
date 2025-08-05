@@ -6,8 +6,10 @@ import interfaces.ModelInterface;
 import interfaces.ModelSolutionInterface;
 import enums.ModelType;
 import solutionBuilder.BuildIntervalEventSolution;
+import utility.DeleteDummyJobs;
 
 import com.gurobi.gurobi.*;
+import com.gurobi.gurobi.GRB.StringAttr;
 
 /*
  * Tesch, A. (2020). A polyhedral study of event-based models for the resource-constrained project 
@@ -36,88 +38,115 @@ public class IntervalEventBasedModel implements ModelInterface {
             GRBModel model = initialSolution.getModel();
 
             // Cast to access the Variables
-            GRBVar[] startOfEventVars;
-            GRBVar[][][] ziefVars;
+            GRBVar[] startOfEventIntervalVars;
+            GRBVar[][][] jobActiveAtIntervalVars;
             if (initialSolution instanceof IntervalEventBasedModelSolution) {
-                startOfEventVars = ((IntervalEventBasedModelSolution) initialSolution)
-                        .getStartOfEventVars();
-                ziefVars = ((IntervalEventBasedModelSolution) initialSolution)
-                        .getZiefVars();
+                startOfEventIntervalVars = ((IntervalEventBasedModelSolution) initialSolution)
+                        .getStartOfEventIntervalVars();
+                jobActiveAtIntervalVars = ((IntervalEventBasedModelSolution) initialSolution)
+                        .getjobActiveAtIntervalVars();
             } else {
                 throw new IllegalArgumentException("Expected IntervalEventBasedModelSolution but got " +
                         initialSolution.getClass().getSimpleName());
             }
 
+            // delete dummy jobs from data and earliestLatestStartTimes
+            data = DeleteDummyJobs.deleteDummyJobs(data);
+
             // set the objective function to minimize the makespan
             GRBLinExpr obj = new GRBLinExpr();
-            obj.addTerm(1, startOfEventVars[startOfEventVars.length - 1]);
+            obj.addTerm(1, startOfEventIntervalVars[startOfEventIntervalVars.length - 1]);
             model.setObjective(obj, GRB.MINIMIZE);
 
-            // (36) Add constraints for the zief variables
+            // int counter = 0;
+            // (36) Add constraints for the jobActiveAtIntervalVars
             for (int i = 0; i < data.numberJob; i++) {
                 GRBLinExpr expr = new GRBLinExpr();
-                for (int e = 0; e < startOfEventVars.length; e++) {
-                    for (int f = 0; f < startOfEventVars.length; f++) {
-                        expr.addTerm(1, ziefVars[i][e][f]);
+                for (int e = 0; e < startOfEventIntervalVars.length - 1; e++) {
+                    for (int f = e + 1; f < startOfEventIntervalVars.length; f++) {
+                        expr.addTerm(1, jobActiveAtIntervalVars[i][e][f]);
                     }
                 }
-
-                model.addConstr(expr, GRB.EQUAL, 1, "zjefSum_" + i);
+                model.addConstr(expr, GRB.EQUAL, 1, "jobActiveAtIntervalVarsSum_" + i);
+                // counter++;
             }
+
+            // System.out.println(counter);
+            // counter = 0;
 
             // (37) Event e must not exceed the resource capacities
             for (int k = 0; k < data.resourceCapacity.size(); k++) {
-                for (int e = 0; e < data.numberJob; e++) {
+                for (int e = 0; e < startOfEventIntervalVars.length - 1; e++) {
                     GRBLinExpr expr = new GRBLinExpr();
+
                     for (int i = 0; i < data.numberJob; i++) {
-                        expr.addTerm(data.jobResource.get(i).get(k), ziefVars[i][e][e]);
                         for (int ee = 0; ee <= e; ee++) {
-                            for (int ff = e + 1; ff < data.numberJob; ff++) {
-                                expr.addTerm(data.jobResource.get(i).get(k), ziefVars[i][ee][ff]);
+                            for (int ff = e + 1; ff < startOfEventIntervalVars.length; ff++) {
+                                expr.addTerm(data.jobResource.get(i).get(k), jobActiveAtIntervalVars[i][ee][ff]);
                             }
                         }
                     }
-                    model.addConstr(expr, GRB.LESS_EQUAL, data.resourceCapacity.get(k), "resourceCap_" + k + "_event_" + e);
+                    model.addConstr(expr, GRB.LESS_EQUAL, data.resourceCapacity.get(k), "resourceCapacity_" + k + "_event_" + e);
+                    // counter++;
                 }
             }
 
-            // (38) Moreover, inequalities (38) say that if job j is assigned an event interval [e′, f ′ ] ⊆ [e, f ], then t e + p j ≤ t f musthold.
+            // System.out.println(counter);
+            // counter = 0;
+
+            // (38)
             for (int i = 0; i < data.numberJob; i++) {
-                for (int e = 0; e < startOfEventVars.length; e++) {
-                    for (int f = e + 1; f < startOfEventVars.length; f++) {
-                        GRBLinExpr leftSide = new GRBLinExpr();
-                        GRBLinExpr rightSide = new GRBLinExpr();
+                for (int e = 0; e < startOfEventIntervalVars.length - 1; e++) {
+                    for (int f = e + 1; f < startOfEventIntervalVars.length; f++) {
+                        GRBLinExpr expr = new GRBLinExpr();
+                        GRBLinExpr expr2 = new GRBLinExpr();
 
-                        leftSide.addTerm(1, startOfEventVars[e]);
-                        leftSide.addTerm(data.jobDuration.get(i), ziefVars[i][e][f]);
+                        expr.addTerm(1, startOfEventIntervalVars[e]);
 
-                        rightSide.addTerm(1, startOfEventVars[f]);
+                        for (int ee = e; ee < f; ee++) {
+                            for (int ff = ee + 1; ff <= f; ff++) {
+                                expr.addTerm(data.jobDuration.get(i), jobActiveAtIntervalVars[i][ee][ff]);
+                            }
+                        }
+                        expr2.addTerm(1, startOfEventIntervalVars[f]);
 
-                        model.addConstr(leftSide, GRB.LESS_EQUAL, rightSide, "eventInterval_" + i + "_" + e + "_" + f);
+                        model.addConstr(expr, GRB.LESS_EQUAL, expr2, "job_" + i + "_event_" + e + "_" + f);
+                        // counter++;
                     }
                 }
             }
 
-            // (39) forbid for every precedence pair (i, j) ∈ P that their assigned event intervals overlap in some event e.
-            for (int i = 0; i < data.numberJob; i++) {
-                for (int j = 0; j < data.numberJob; j++) {
-                    for (int e = 0; e < startOfEventVars.length; e++) {
-                        GRBLinExpr leftSide = new GRBLinExpr();
-                        GRBLinExpr rightSide = new GRBLinExpr();
+            // System.out.println(counter);
+            // counter = 0;
 
-                        leftSide.addTerm(1, startOfEventVars[j]);
-                        leftSide.addTerm(data.jobDuration.get(i), ziefVars[i][j][e]);
+            // (39)
+            for (int j = 0; j < data.numberJob; j++) {
+                for (int i : data.jobPredecessors.get(j)) {
+                    if (j == 5) System.out.println("Processing predecessor constraint for job " + j + " and predecessor " + i);
+                    for (int e = 0; e < startOfEventIntervalVars.length - 1; e++) {
+                        GRBLinExpr expr = new GRBLinExpr();
 
-                        rightSide.addTerm(1, startOfEventVars[e]);
+                        for (int ee = 0; ee < startOfEventIntervalVars.length - 1; ee++) {
+                            for (int ff = Math.max(e + 1, ee + 1); ff < startOfEventIntervalVars.length; ff++) {
+                                expr.addTerm(1, jobActiveAtIntervalVars[i][ee][ff]);
+                            }
+                        }
 
-                        model.addConstr(leftSide, GRB.LESS_EQUAL, rightSide, "eventInterval_" + i + "_" + j + "_" + e);
+                        for (int ee = 0; ee <= e; ee++) {
+                            for (int ff = e + 1; ff < startOfEventIntervalVars.length; ff++) {
+                                expr.addTerm(1, jobActiveAtIntervalVars[j][ee][ff]);
+                            }
+                        }
+                        model.addConstr(expr, GRB.LESS_EQUAL, 1, j + "predecessor_" + i + "_" + e);
+                        // counter++;
                     }
                 }
             }
 
+            // System.out.println(counter);
+            // counter = 0;
 
-
-        return model; // Placeholder return, replace with actual GRBModel
+            return model;
         } catch (GRBException e) {
             System.err.println("Error while completing the model: " + e.getMessage());
             return null;
@@ -154,19 +183,86 @@ public class IntervalEventBasedModel implements ModelInterface {
             return model;
         }
 
-        public GRBVar[] getStartOfEventVars() {
+        public GRBVar[] getStartOfEventIntervalVars() {
             return startOfEventVars;
         }
 
-        public GRBVar[][][] getZiefVars() {
+        public GRBVar[][][] getjobActiveAtIntervalVars() {
             return ziefVars;
+        }
+        
+        public int[][] getEarliestLatestStartTimes() {
+            return earliestLatestStartTimes;
         }
     }
 
     @Override
     public int[][] getStartAndFinishTimes(GRBModel model, JobDataInstance data) {
-        // Return start and finish times for jobs in this model
-        return new int[0][];
+        try {
+            // This model uses dummy jobs, so we need to work with the data without dummy jobs
+            JobDataInstance noDummyData = DeleteDummyJobs.deleteDummyJobs(data);
+            
+            int[] startTimes = new int[noDummyData.numberJob];
+            int[] finishTimes = new int[noDummyData.numberJob];
+            
+            // Initialize start times to -1 (not found)
+            for (int i = 0; i < noDummyData.numberJob; i++) {
+                startTimes[i] = -1;
+            }
+            
+            // Extract event interval start times
+            double[] eventStartTimes = new double[noDummyData.numberJob + 1];
+            for (int e = 0; e <= noDummyData.numberJob; e++) {
+                GRBVar eventVar = model.getVarByName("startOfEvent[" + e + "]");
+                if (eventVar != null) {
+                    eventStartTimes[e] = eventVar.get(GRB.DoubleAttr.X);
+                    System.out.println("Event " + e + " starts at time: " + eventStartTimes[e]);
+                }
+            }
+            
+            // Find start times by checking which interval each job is active in
+            for (int i = 0; i < noDummyData.numberJob; i++) {
+                for (int e = 0; e < noDummyData.numberJob; e++) {
+                    for (int f = e + 1; f <= noDummyData.numberJob; f++) {
+                        try {
+                            GRBVar activeVar = model.getVarByName("jobActiveAtIntervalVars[" + i + "][" + e + "][" + f + "]");
+                            
+                            
+                            if (activeVar != null && activeVar.get(GRB.DoubleAttr.X) > 0.5) {
+                                if (i == 5 || i == 1) System.out.println("Job " + i + " is active in interval [" + e + ", " + f + ")");
+                                System.out.println(eventStartTimes[e]);
+                                System.out.println(eventStartTimes[f]);
+                                // Job i is active in interval [e, f), so it starts at event e
+                                startTimes[i] = (int) Math.round(eventStartTimes[e]);
+                                break;
+                            }
+                        } catch (GRBException ex) {
+                            // Variable doesn't exist, continue
+                        }
+                    }
+                    
+                    // Break outer loop if start time found
+                    if (startTimes[i] >= 0) {
+                        break;
+                    }
+                }
+            }
+            
+            // Calculate finish times: startTime + duration
+            for (int i = 0; i < noDummyData.numberJob; i++) {
+                if (startTimes[i] >= 0) {
+                    finishTimes[i] = startTimes[i] + noDummyData.jobDuration.get(i);
+                } else {
+                    finishTimes[i] = -1; // Job not scheduled
+                }
+            }
+            
+            return new int[][]{startTimes, finishTimes};
+            
+        } catch (GRBException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

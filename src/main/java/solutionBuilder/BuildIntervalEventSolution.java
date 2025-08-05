@@ -20,22 +20,24 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
     GRBModel model) {
         int[][] earliestLatestStartTimes = DAGLongestPath.generateEarliestAndLatestStartTimes
                         (data.jobPredecessors, data.jobDuration, data.horizon);
-        earliestLatestStartTimes = DeleteDummyJobs.deleteDummyJobsFromEarliestLatestStartTimes(earliestLatestStartTimes);
 
-        GRBVar[] startOfEventVars = new GRBVar[data.numberJob];
-        GRBVar[][][] ziefVars = new GRBVar[data.numberJob][startOfEventVars.length][startOfEventVars.length];
+        JobDataInstance noDummyData = DeleteDummyJobs.deleteDummyJobs(data);
+
+        GRBVar[] startOfEventVars = new GRBVar[noDummyData.numberJob + 1];
+        GRBVar[][][] jobActiveAtIntervalVars = new GRBVar[noDummyData.numberJob][startOfEventVars.length][startOfEventVars.length];
 
         try {
             // add startOfEvent variables
             for (int e = 0; e < startOfEventVars.length; e++) {
-                startOfEventVars[e] = model.addVar(0.0, data.horizon, 0.0, GRB.CONTINUOUS, "startOfEvent[" + e + "]");
+                startOfEventVars[e] = model.addVar(0.0, noDummyData.horizon, 0.0, GRB.CONTINUOUS, "startOfEvent[" + e + "]");
             }
+            model.update(); // Ensure the model is updated after adding variables
 
             // add zief variables
-            for (int i = 0; i < data.numberJob; i++) {
-                for (int e = 0; e < startOfEventVars.length; e++) {
-                    for (int f = 0; f < startOfEventVars.length; f++) {
-                        ziefVars[i][e][f] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "zief[" +
+            for (int i = 0; i < noDummyData.numberJob; i++) {
+                for (int e = 0; e < startOfEventVars.length - 1; e++) {
+                    for (int f = e + 1; f < startOfEventVars.length; f++) {
+                        jobActiveAtIntervalVars[i][e][f] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "jobActiveAtIntervalVars[" +
                             i + "][" + e + "][" + f + "]");
                     }
                 }
@@ -45,39 +47,55 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
 
             model.update(); // Ensure the model is updated after adding variables
             if (!startTimes.isEmpty()) {
-                
+
+                Map<Integer, Integer> noDummyStartTimes = DeleteDummyJobs.deleteDummyJobsFromStartTimesMap(startTimes);
+
                 // print start times for debugging
-                System.out.println("Start times from heuristic: " + startTimes);
-                
-                // Set the start values for the starting time variables based on the provided startTimes map
-                // Sort start times to assign events in chronological order
-                List<Map.Entry<Integer, Integer>> sortedEntries = new ArrayList<>(startTimes.entrySet());
-                sortedEntries.sort(Map.Entry.comparingByValue());
-                System.out.println("Sorted start times: " + sortedEntries);
+                System.out.println("Start times from heuristic: " + noDummyStartTimes);
 
-                // Update the model
+                // Sort job indices by their start times (smallest first)
+                List<Integer> sortedJobIndices = new ArrayList<>(noDummyStartTimes.keySet());
+                sortedJobIndices.sort((job1, job2) -> Integer.compare(noDummyStartTimes.get(job1), noDummyStartTimes.get(job2)));
+                System.out.println("Sorted job indices by start time: " + sortedJobIndices);
+
+                // set the start values for the startOfEventVars
+                for (int eventIndex = 0; eventIndex < startOfEventVars.length - 1; eventIndex++) {
+                    GRBVar var = model.getVarByName("startOfEvent[" + eventIndex + "]");
+                    // event E starts at startTimes.get(eventIndex)
+                    var.set(GRB.DoubleAttr.Start, noDummyStartTimes.get(sortedJobIndices.get(eventIndex)));
+                    System.out.println("Setting startOfEvent[" + eventIndex + "] to " + noDummyStartTimes.get(sortedJobIndices.get(eventIndex)));
+                }
+
+                int heuristicMakespan = 0;
+                for (int jobIndex : noDummyStartTimes.keySet()) {
+                    heuristicMakespan = Math.max(heuristicMakespan, noDummyStartTimes.get(jobIndex) + noDummyData.jobDuration.get(jobIndex));
+                }
+                GRBVar makespanVar = model.getVarByName("startOfEvent[" + (startOfEventVars.length - 1) + "]");
+                makespanVar.set(GRB.DoubleAttr.Start, heuristicMakespan);
+
+                List<Integer> eventGotJob = new ArrayList<>();
+                
                 model.update();
-
-                // Event counter starting at 0
-                int event = 0;
                 
-                for (Map.Entry<Integer, Integer> entry : sortedEntries) {
-                    int job = entry.getKey();
-                    int startTime = entry.getValue();
-                    
-                    // Set jobActiveAtEventVars[job][counter] to 1
-                    GRBVar var1 = model.getVarByName("jobActiveAtEvent[" + job + "][" + event + "]");
-                
-                    // Job is set to be active at one (the corresponding) event
-                    //jobActiveAtEventVars[job][event].set(GRB.DoubleAttr.Start, 1.0);
-                    var1.set(GRB.DoubleAttr.Start, 1.0);
-
-                    // The start time of the event is set to the start time of the job given by the heuristic
-                    GRBVar var2 = model.getVarByName("startOfEvent[" + event + "]");
-                    //startOfEventEVars[event].set(GRB.DoubleAttr.Start, startTime);
-                    var2.set(GRB.DoubleAttr.Start, startTime);
-                    
-                    event++;
+                for (int jobIndex = 0; jobIndex < noDummyData.numberJob; jobIndex++) {
+                    boolean firstMatchFound = false;
+                    for (int e = 0; e < startOfEventVars.length - 1; e++) {
+                        for (int f = e + 1; f < startOfEventVars.length; f++) {
+                            if (!firstMatchFound) {
+                                if (noDummyStartTimes.get(jobIndex) == startOfEventVars[e].get(GRB.DoubleAttr.Start)) {
+                                    if (!eventGotJob.contains(e)) {
+                                        if (noDummyStartTimes.get(jobIndex) + noDummyData.jobDuration.get(jobIndex) <= startOfEventVars[f].get(GRB.DoubleAttr.Start)) {
+                                            jobActiveAtIntervalVars[jobIndex][e][f].set(GRB.DoubleAttr.Start, 1);
+                                            firstMatchFound = true;
+                                            eventGotJob.add(e);
+                                            continue;
+                                        }
+                                    }
+                                }
+                            }
+                            jobActiveAtIntervalVars[jobIndex][e][f].set(GRB.DoubleAttr.Start, 0);
+                        }
+                    }
                 }
             }
             model.update(); // Ensure the model is updated after modifying variables
@@ -89,8 +107,8 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
 
         IntervalEventBasedModel intervalEventBasedModel = new IntervalEventBasedModel();
         IntervalEventBasedModelSolution solution = intervalEventBasedModel.new
-                                        IntervalEventBasedModelSolution(startOfEventVars, ziefVars, model,
-                                         earliestLatestStartTimes);
+                                        IntervalEventBasedModelSolution(startOfEventVars, jobActiveAtIntervalVars, model,
+                                        earliestLatestStartTimes);
 
         return solution;
     }

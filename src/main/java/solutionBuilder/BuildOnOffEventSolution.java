@@ -59,9 +59,6 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
                 sortedEntries.sort(Map.Entry.comparingByValue());
                 System.out.println("Sorted start times: " + sortedEntries);
 
-                // Update the model
-                model.update();
-
                 // Event counter starting at 0
                 int event = 0;
                 
@@ -139,7 +136,7 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
         OnOffEventBasedModel onOffEventBasedModel = new OnOffEventBasedModel();
         OnOffEventBasedModelSolution solution = onOffEventBasedModel.new 
                                         OnOffEventBasedModelSolution(makespanVar, startOfEventEVars, jobActiveAtEventVars, model,
-                                         earliestLatestStartTimes);
+                                        earliestLatestStartTimes);
 
         return solution;
     }

@@ -15,11 +15,13 @@ import io.JobDataInstance;
  * 
  * https://www.sciencedirect.com/science/article/pii/S0377221724005162?via%3Dihub 4.0
  * sequencing model
+ * 
+ * 30 vars zu viel bei IEE vermutlich erste einfach nicht mitgezählt?
  */
 
 public class Main {
     public static void main(String[] args) {
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j305_4.sm";
+        String filename = "/home/tobsi/university/kit/benchmarkSets/j301_1.sm";
 
         try {
             FileReader fileReader = new FileReader();
@@ -44,9 +46,9 @@ public class Main {
             // Configure models using simple string codes
             List<String> modelConfigs = Arrays.asList(
                  //"FLOW"      // Flow-Based Continuous Time Model
-                 "DISC"     // Discrete Time Model
+                 //"DISC"     // Discrete Time Model
                  //"EVENT"     // On-Off Event Based Model
-                 // "IEE"     // Interval Event Based Model
+                  "IEE"     // Interval Event Based Model
             );
 
             // Solve with each model
