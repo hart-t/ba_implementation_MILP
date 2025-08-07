@@ -22,10 +22,10 @@ public enum HeuristicType {
     public String getDescription() { return description; }
     public boolean isOpeningHeuristic() { return isOpeningHeuristic; }
     
-    public HeuristicInterface createHeuristic(PriorityRuleType priorityRule) {
+    public HeuristicInterface createHeuristic(PriorityRuleType priorityRule, SamplingType samplingType) {
         switch (this) {
             case SGS:
-                return new HeuristicSerialSGS(priorityRule.createRule());
+                return new HeuristicSerialSGS(priorityRule.createRule(), samplingType.createSamplingType());
             default:
                 throw new UnsupportedOperationException("Heuristic not implemented: " + this);
         }

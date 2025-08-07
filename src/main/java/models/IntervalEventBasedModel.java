@@ -9,7 +9,6 @@ import solutionBuilder.BuildIntervalEventSolution;
 import utility.DeleteDummyJobs;
 
 import com.gurobi.gurobi.*;
-import com.gurobi.gurobi.GRB.StringAttr;
 
 /*
  * Tesch, A. (2020). A polyhedral study of event-based models for the resource-constrained project 

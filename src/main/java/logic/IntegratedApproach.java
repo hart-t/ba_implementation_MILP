@@ -5,9 +5,7 @@ import interfaces.ModelInterface;
 import io.JobDataInstance;
 import io.Result;
 import io.ScheduleResult;
-import enums.HeuristicType;
-import enums.PriorityRuleType;
-import enums.ModelType;
+import enums.*;
 
 import java.util.*;
 
@@ -26,15 +24,16 @@ public class IntegratedApproach {
         
         for (String config : configs) {
             String[] parts = config.split("-");
-            if (parts.length != 2) {
+            if (parts.length != 3) {
                 throw new IllegalArgumentException("Invalid heuristic config: " + config + 
-                    ". Expected format: 'HEURISTIC-PRIORITYRULE' (e.g., 'SSGS-SPT')");
+                    ". Expected format: 'HEURISTIC-PRIORITYRULE-SAMPLINGTYPE' (e.g., 'SSGS-SPT-NS')");
             }
             
             HeuristicType heuristicType = HeuristicType.fromCode(parts[0]);
             PriorityRuleType priorityRule = PriorityRuleType.fromCode(parts[1]);
+            SamplingType samplingType = SamplingType.fromCode(parts[2]);
             
-            heuristics.add(heuristicType.createHeuristic(priorityRule));
+            heuristics.add(heuristicType.createHeuristic(priorityRule, samplingType));
             
             System.out.println("Added heuristic: " + heuristicType.getDescription() + 
                              " with " + priorityRule.getDescription());
@@ -50,7 +49,7 @@ public class IntegratedApproach {
     }
 
     public Result solve(JobDataInstance data) {
-        ScheduleResult scheduleResult = new ScheduleResult(new ArrayList<>(), new HashMap<>());
+        ScheduleResult scheduleResult = new ScheduleResult(new ArrayList<>(), new ArrayList<Map<Integer,Integer>>());
         Result result;
         if (!heuristics.isEmpty()) {
             List<HeuristicInterface> openingHeuristics = new ArrayList<>();

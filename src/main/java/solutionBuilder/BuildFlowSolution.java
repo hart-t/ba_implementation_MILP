@@ -15,7 +15,7 @@ import java.util.*;
 
 public class BuildFlowSolution implements CompletionMethodInterface {
 
-    public ModelSolutionInterface buildSolution(Map<Integer, Integer> startTimes, JobDataInstance data, 
+    public ModelSolutionInterface buildSolution(List<Map<Integer, Integer>> startTimesList, JobDataInstance data,
     GRBModel model) {
 
         GRBVar[] startingTimeVars = new GRBVar[data.numberJob];
@@ -54,7 +54,17 @@ public class BuildFlowSolution implements CompletionMethodInterface {
             }
 
             model.update(); // Ensure the model is updated after adding variables
-            if (!startTimes.isEmpty()) {
+            if (!startTimesList.isEmpty()) {
+                Map<Integer, Integer> startTimes = null;
+                // Iterate through the list of start times and set the start values for the variables
+                // This allows for multiple MIP starts, where each start time configuration can be tried
+                // by Gurobi to find a feasible solution faster.
+                // If there are multiple start times, Gurobi will try each one in sequence and choose the best one.
+                for (int mipStartIndex = 0; mipStartIndex < startTimesList.size(); mipStartIndex++) {
+                    model.set(GRB.IntParam.StartNumber, mipStartIndex);
+                    startTimes = startTimesList.get(mipStartIndex);
+                }
+                
                 // Set the start values for the starting time variables based on the provided startTimes map
                 for (int i = 0; i < data.numberJob; i++) {
                     int startTime = startTimes.get(i);

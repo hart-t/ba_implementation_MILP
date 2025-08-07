@@ -55,7 +55,7 @@ public class Result {
     }
 
     public int getBestHeuristicMakespan() {
-        return scheduleResult.getStartTimes().get(scheduleResult.getStartTimes().size() - 1);
+        return scheduleResult.getMakespan();
     }
 
     public ModelType getModelType() {

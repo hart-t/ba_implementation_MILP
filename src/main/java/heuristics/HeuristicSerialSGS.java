@@ -2,9 +2,11 @@ package heuristics;
 
 import java.util.*;
 
+import enums.SamplingType;
 import io.JobDataInstance;
 import interfaces.HeuristicInterface;
 import interfaces.PriorityRuleInterface;
+import interfaces.SamplingTypeInterface;
 import io.ScheduleResult;
 
 /*
@@ -16,9 +18,13 @@ import io.ScheduleResult;
 public class HeuristicSerialSGS implements HeuristicInterface {
     
     private final PriorityRuleInterface priorityStrategy;
+    private final boolean isOpeningHeuristic = true;
+    private final String heuristicCode = "SSGS"; // Serial Schedule Generation Scheme
+    private SamplingTypeInterface samplingType;
 
-    public HeuristicSerialSGS(PriorityRuleInterface priorityStrategy) {
+    public HeuristicSerialSGS(PriorityRuleInterface priorityStrategy, SamplingTypeInterface samplingType) {
         this.priorityStrategy = priorityStrategy;
+        this.samplingType = samplingType;
     }
 
     private ScheduleResult determineStartTimes(JobDataInstance data) {
@@ -64,8 +70,13 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                 }
             }
             
-            // Apply priority rule
-            eligibleActivities.sort(priorityStrategy.getComparator(data));
+            if (samplingType != null) {
+                eligibleActivities = priorityStrategy.getSampledList(data, eligibleActivities);
+            } else {
+                // Apply priority rule
+                eligibleActivities.sort(priorityStrategy.getComparator(data));
+            }
+
             
             // Schedule the highest priority eligible activity
             for (int i : eligibleActivities) {
@@ -81,7 +92,7 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                     for (int t2 = 0; t2 < jobDuration.get(i); t2++) {
                         for (int r = 0; r < resourceCapacity.size(); r++) {
                             if (t + t2 < horizon) {
-                                // BUG: This checks if adding this job exceeds capacity
+                                // TODO BUG: This checks if adding this job exceeds capacity
                                 // But it should prevent scheduling if it would exceed capacity
                                 if (resourceUsed[r][t + t2] + jobResource.get(i).get(r) > resourceCapacity.get(r)) {
                                     canSchedule = false;
@@ -122,12 +133,12 @@ public class HeuristicSerialSGS implements HeuristicInterface {
             }
             
             if (!anyActivityScheduled) {
-                throw new RuntimeException("SSGS failed to schedule any activity in iteration " + iterationCount);
+                throw new RuntimeException(getHeuristicCode() + "-" + getPriorityCode() + " failed to schedule any activity in iteration " + iterationCount);
             }
         }
         
         if (!allScheduled(scheduled)) {
-            throw new RuntimeException("SSGS failed to schedule all activities within iteration limit");
+            throw new RuntimeException(getHeuristicCode() + "-" + getPriorityCode() + " failed to schedule all activities within iteration limit");
         }
 
         // After scheduling, check total resource usage
@@ -147,9 +158,11 @@ public class HeuristicSerialSGS implements HeuristicInterface {
             }
         }
         List<String> usedHeuristics = new ArrayList<>();
-        usedHeuristics.add(getHeuristicCode());
+        List<Map<Integer,Integer>> startTimeList = new ArrayList<>();
+        startTimeList.add(startTimes);
+        usedHeuristics.add(getHeuristicCode() + "-" + getPriorityCode());
 
-        return new ScheduleResult(usedHeuristics, startTimes);
+        return new ScheduleResult(usedHeuristics, startTimeList);
     }
 
     private static boolean allScheduled(boolean[] scheduled) {
@@ -161,14 +174,14 @@ public class HeuristicSerialSGS implements HeuristicInterface {
 
     @Override
     public boolean isOpeningHeuristic() {
-        return true;
+        return isOpeningHeuristic;
     }
 
     @Override
     public ScheduleResult determineScheduleResult(JobDataInstance data, ScheduleResult initialScheduleResult) {
         if (initialScheduleResult.getUsedHeuristics().isEmpty()) {
             ScheduleResult scheduleResult = determineStartTimes(data);
-            System.out.println("SSGS-" + getHeuristicCode() + " found a schedule with makespan " 
+            System.out.println(getHeuristicCode() + "-" + getPriorityCode() + " found a schedule with makespan " 
                 + scheduleResult.getStartTimes().get(data.numberJob - 1));
             return scheduleResult;
         } else {
@@ -176,28 +189,44 @@ public class HeuristicSerialSGS implements HeuristicInterface {
             ScheduleResult newSchedule = determineStartTimes(data);
             
             // Calculate completion time of last job for both schedules
-            int newMakespan = newSchedule.getStartTimes().get(data.numberJob - 1);
-            int existingMakespan = initialScheduleResult.getStartTimes().get(data.numberJob - 1);
-            
+            int newMakespan = newSchedule.getMakespan();
+            int existingMakespan = initialScheduleResult.getMakespan();
+
             if (newMakespan < existingMakespan) {
-                System.out.println("SSGS-" + getHeuristicCode() + " found a better schedule with makespan " + newMakespan + " (was " + existingMakespan + ")");
+                System.out.println(getHeuristicCode() + "-" + getPriorityCode() + " found a better schedule with makespan " + newMakespan + " (was " + existingMakespan + ")");
                 return newSchedule;
             } else if (newMakespan == existingMakespan) {
-                initialScheduleResult.getUsedHeuristics().add(getHeuristicCode());
-                System.out.println("SSGS-" + getHeuristicCode() + " found an equivalent schedule with makespan " + newMakespan);
-                return initialScheduleResult;
-            } else {
-                return initialScheduleResult;
+                initialScheduleResult.addHeuristic(getHeuristicCode() + "-" + getPriorityCode());
+                if (!startTimesMatch(initialScheduleResult.getStartTimes(), newSchedule.getStartTimes().get(0))) {
+                    initialScheduleResult.addStartTimes(newSchedule.getStartTimes().get(0));
+                    System.out.println(getHeuristicCode() + "-" + getPriorityCode() + " found a different schedule with makespan " + newMakespan);
+                } else {
+                    System.out.println(getHeuristicCode() + "-" + getPriorityCode() + " found an equivalent schedule with makespan " + newMakespan);
+                }
             }
+            return initialScheduleResult;
         }
     }
         
 
-    private String getHeuristicCode() {
+    private String getPriorityCode() {
         // TODO
         // i need to store the priority rule type or extract it from the priorityStrategy
         // For now, this is a placeholder - i might need to modify the constructor
-        return "SSGS-" + priorityStrategy.getClass().getSimpleName().replace("Rule", "").toUpperCase();
+        return priorityStrategy.getClass().getSimpleName().replace("Rule", "").toUpperCase();
+    }
+
+    private String getHeuristicCode() {
+        return heuristicCode;
+    }
+
+    private boolean startTimesMatch(List<Map<Integer,Integer>> initialStartTimes, Map<Integer,Integer> newStartTimes) {
+        for (Map<Integer,Integer> startTimesMap : initialStartTimes) {
+            if (startTimesMap.equals(newStartTimes)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
-
+ 

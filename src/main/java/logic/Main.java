@@ -17,6 +17,7 @@ import io.JobDataInstance;
  * sequencing model
  * 
  * 30 vars zu viel bei IEE vermutlich erste einfach nicht mitgezählt?
+ * 
  */
 
 public class Main {
@@ -33,14 +34,14 @@ public class Main {
              * heuristic and the schedule with the lowest makespan will be chosen.
              */
             List<String> heuristicConfigs = Arrays.asList(
-                "SSGS-SPT",        // Serial SGS with Shortest Processing Time
-                "SSGS-GRPW",      // Serial SGS with Greatest Rank Positional Weight
-                "SSGS-MRU",       // Serial SGS with Most Resource Usage
-                "SSGS-RSM",       // Serial SGS with Resource Scheduling Method
-                "SSGS-MTS",       // Serial SGS with Most Total Successors
-                "SSGS-MLST",      // Serial SGS with Minimum Latest Start Time
-                "SSGS-MLFT",      // Serial SGS with Minimum Latest Finish Time
-                "SSGS-MJS"       // Serial SGS with Minimum Job Slack
+                "SSGS-SPT-NS",        // Serial SGS with Shortest Processing Time
+                "SSGS-GRPW-NS",      // Serial SGS with Greatest Rank Positional Weight
+                "SSGS-MRU-NS",       // Serial SGS with Most Resource Usage
+                "SSGS-RSM-NS",       // Serial SGS with Resource Scheduling Method
+                "SSGS-MTS-NS",       // Serial SGS with Most Total Successors
+                "SSGS-MLST-NS",      // Serial SGS with Minimum Latest Start Time
+                "SSGS-MLFT-NS",      // Serial SGS with Minimum Latest Finish Time
+                "SSGS-MJS-NS"       // Serial SGS with Minimum Job Slack
             );
             
             // Configure models using simple string codes
