@@ -77,6 +77,8 @@ public class ResourceSchedulingMethodRule implements PriorityRuleInterface {
         Random random = new Random();
         
         while (!remaining.isEmpty()) {
+            boolean jobSelectedThisIteration = false;
+            
             for (int i = 0; i < remaining.size(); i++) {
                 int job = remaining.get(i);
                 int rsmValue = rsmValues.get(job);
@@ -88,13 +90,13 @@ public class ResourceSchedulingMethodRule implements PriorityRuleInterface {
                 if (random.nextDouble() < probability) {
                     result.add(job);
                     remaining.remove(i);
+                    jobSelectedThisIteration = true;
                     break;
                 }
             }
             
             // Fallback: if no job was selected, select the one with lowest RSM value
-            if (remaining.size() == eligibleActivities.size() - result.size() && 
-                remaining.size() == eligibleActivities.size()) {
+            if (!jobSelectedThisIteration) {
                 int bestJob = remaining.stream()
                     .min(Comparator.comparingInt(rsmValues::get))
                     .orElse(remaining.get(0));

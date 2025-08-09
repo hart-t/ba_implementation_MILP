@@ -32,6 +32,8 @@ public class ShortestProcessingTimeRule implements PriorityRuleInterface {
         int remainingTotalTime = totalProcessingTime;
         
         while (!remaining.isEmpty()) {
+            boolean jobSelectedThisIteration = false;
+            
             for (int i = 0; i < remaining.size(); i++) {
                 int job = remaining.get(i);
                 int processingTime = data.jobDuration.get(job);
@@ -43,14 +45,23 @@ public class ShortestProcessingTimeRule implements PriorityRuleInterface {
                     result.add(job);
                     remaining.remove(i);
                     remainingTotalTime -= processingTime;
+                    jobSelectedThisIteration = true;
                     break;
                 }
             }
             
-            // Fallback: if no job was selected in this iteration, select the first one
-            if (remaining.size() == eligibleActivities.size() - result.size() && 
-                remaining.size() == eligibleActivities.size()) {
-                int job = remaining.remove(0);
+            // Fallback: if no job was selected in this iteration, select the shortest one
+            if (!jobSelectedThisIteration) {
+                int bestJobIndex = 0;
+                int bestJobDuration = data.jobDuration.get(remaining.get(0));
+                for (int i = 1; i < remaining.size(); i++) {
+                    int jobDuration = data.jobDuration.get(remaining.get(i));
+                    if (jobDuration < bestJobDuration) {
+                        bestJobDuration = jobDuration;
+                        bestJobIndex = i;
+                    }
+                }
+                int job = remaining.remove(bestJobIndex);
                 result.add(job);
                 remainingTotalTime -= data.jobDuration.get(job);
             }

@@ -16,7 +16,7 @@ public class IntegratedApproach {
     public IntegratedApproach(List<String> heuristicConfigs, String modelConfig) {
         this.heuristics = createHeuristics(heuristicConfigs);
         ModelInterface model = createModel(modelConfig);
-        this.solver = new WarmstartSolver(model);   
+        this.solver = new WarmstartSolver(model);
     }
     
     private List<HeuristicInterface> createHeuristics(List<String> configs) {

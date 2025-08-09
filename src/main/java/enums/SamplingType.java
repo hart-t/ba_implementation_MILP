@@ -5,6 +5,7 @@ import samplingTypes.*;
 
 public enum SamplingType {
     NS("NS", "No Sampling", NoSampling::new),
+    RS("RS", "Random Sampling", RandomSampling::new),
     BRS("BRS", "Biased Random Sampling", BiasedRandomSampling::new),
     RBRS("RBRS", "Regret Based Biased Random Sampling", RegretBasedBiasedRandomSampling::new);
 

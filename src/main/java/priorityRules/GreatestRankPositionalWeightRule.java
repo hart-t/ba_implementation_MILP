@@ -78,6 +78,8 @@ public class GreatestRankPositionalWeightRule implements PriorityRuleInterface {
         Random random = new Random();
         
         while (!remaining.isEmpty()) {
+            boolean jobSelectedThisIteration = false;
+            
             for (int i = 0; i < remaining.size(); i++) {
                 int job = remaining.get(i);
                 int rpw = eligibleRpwValues.get(job);
@@ -94,13 +96,13 @@ public class GreatestRankPositionalWeightRule implements PriorityRuleInterface {
                 if (random.nextDouble() < probability) {
                     result.add(job);
                     remaining.remove(i);
+                    jobSelectedThisIteration = true;
                     break;
                 }
             }
             
             // Fallback: if no job was selected, select the one with highest RPW
-            if (remaining.size() == eligibleActivities.size() - result.size() && 
-                remaining.size() == eligibleActivities.size()) {
+            if (!jobSelectedThisIteration) {
                 int bestJob = remaining.stream()
                     .max(Comparator.comparingInt(eligibleRpwValues::get))
                     .orElse(remaining.get(0));

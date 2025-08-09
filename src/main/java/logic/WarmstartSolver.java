@@ -30,6 +30,8 @@ public class WarmstartSolver {
         try {
             String logFile = "linear_model.log";
             completionMethod = model.getCompletionMethod();
+            System.out.println("Using completion method: " + completionMethod.getClass().getSimpleName());
+
             // Initialize the Gurobi environment and model
             GRBEnv env = new GRBEnv();
             GRBModel grbOptimizationModel = new GRBModel(env);

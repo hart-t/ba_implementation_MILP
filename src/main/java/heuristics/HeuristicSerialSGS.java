@@ -2,7 +2,6 @@ package heuristics;
 
 import java.util.*;
 
-import enums.SamplingType;
 import io.JobDataInstance;
 import interfaces.HeuristicInterface;
 import interfaces.PriorityRuleInterface;
@@ -69,16 +68,29 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                     eligibleActivities.add(i);
                 }
             }
-            
-            if (samplingType != null) {
-                eligibleActivities = priorityStrategy.getSampledList(data, eligibleActivities);
-            } else {
-                // Apply priority rule
-                eligibleActivities.sort(priorityStrategy.getComparator(data));
+
+            switch (samplingType.getSamplingType()) {
+                case enums.SamplingType.NS:
+                    eligibleActivities.sort(priorityStrategy.getComparator(data));
+                    break;
+
+                case enums.SamplingType.RS:
+                    Collections.shuffle(eligibleActivities);
+                    break;
+
+                case enums.SamplingType.BRS:
+                    eligibleActivities = priorityStrategy.getSampledList(data, eligibleActivities);
+                    break;
+
+                case enums.SamplingType.RBRS:
+                    // TODO: Implement regret-based sampling
+                    eligibleActivities = priorityStrategy.getSampledList(data, eligibleActivities);
+                    break;
             }
 
-            
             // Schedule the highest priority eligible activity
+            boolean activityScheduledThisIteration = false;
+            
             for (int i : eligibleActivities) {
                 int earliestStart = 0;
                 for (int predecessor : jobPredecessors.get(i)) {
@@ -92,8 +104,7 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                     for (int t2 = 0; t2 < jobDuration.get(i); t2++) {
                         for (int r = 0; r < resourceCapacity.size(); r++) {
                             if (t + t2 < horizon) {
-                                // TODO BUG: This checks if adding this job exceeds capacity
-                                // But it should prevent scheduling if it would exceed capacity
+                                // it should prevent scheduling if it would exceed capacity
                                 if (resourceUsed[r][t + t2] + jobResource.get(i).get(r) > resourceCapacity.get(r)) {
                                     canSchedule = false;
                                     break;
@@ -116,6 +127,7 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                         startTimes.put(i, t);
                         scheduled[i] = true;
                         activityScheduled = true;
+                        activityScheduledThisIteration = true;
                         break;
                     }
                 }
@@ -123,16 +135,8 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                 if (activityScheduled) break; // Only schedule one activity per iteration
             }
             
-            // If no activity was scheduled in this iteration, we have a problem lol
-            boolean anyActivityScheduled = false;
-            for (int i : eligibleActivities) {
-                if (scheduled[i]) {
-                    anyActivityScheduled = true;
-                    break;
-                }
-            }
-            
-            if (!anyActivityScheduled) {
+            // If no activity was scheduled in this iteration, we have a problem
+            if (!activityScheduledThisIteration) {
                 throw new RuntimeException(getHeuristicCode() + "-" + getPriorityCode() + " failed to schedule any activity in iteration " + iterationCount);
             }
         }
@@ -182,7 +186,7 @@ public class HeuristicSerialSGS implements HeuristicInterface {
         if (initialScheduleResult.getUsedHeuristics().isEmpty()) {
             ScheduleResult scheduleResult = determineStartTimes(data);
             System.out.println(getHeuristicCode() + "-" + getPriorityCode() + " found a schedule with makespan " 
-                + scheduleResult.getStartTimes().get(data.numberJob - 1));
+                + scheduleResult.getMakespan());
             return scheduleResult;
         } else {
             // Calculate new start times using this heuristic
