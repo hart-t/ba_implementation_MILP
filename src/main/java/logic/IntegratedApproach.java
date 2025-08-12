@@ -12,11 +12,12 @@ import java.util.*;
 public class IntegratedApproach {
     private List<HeuristicInterface> heuristics = new ArrayList<>();
     private WarmstartSolver solver;
+    private int maxRuntime;
 
     public IntegratedApproach(List<String> heuristicConfigs, String modelConfig) {
         this.heuristics = createHeuristics(heuristicConfigs);
         ModelInterface model = createModel(modelConfig);
-        this.solver = new WarmstartSolver(model);
+        this.solver = new WarmstartSolver(model, maxRuntime);
     }
     
     private List<HeuristicInterface> createHeuristics(List<String> configs) {
@@ -26,30 +27,47 @@ public class IntegratedApproach {
             String[] parts = config.split("-");
             if (parts.length != 3) {
                 throw new IllegalArgumentException("Invalid heuristic config: " + config + 
-                    ". Expected format: 'HEURISTIC-PRIORITYRULE-SAMPLINGTYPE' (e.g., 'SSGS-SPT-NS')");
+                    ". Expected format: 'HEURISTIC-PRIORITYRULE-SAMPLINGTYPE' (e.g., 'SSGS-SPT-NS', SSGS-SPT-RS_50)");
             }
             
             HeuristicType heuristicType = HeuristicType.fromCode(parts[0]);
             PriorityRuleType priorityRule = PriorityRuleType.fromCode(parts[1]);
-            SamplingType samplingType = SamplingType.fromCode(parts[2]);
+
+            String[] samplingConfigParts = parts[2].split("_");
+            SamplingType samplingType = SamplingType.fromCode(samplingConfigParts[0]);
+
+            String log = "Added heuristic: " + heuristicType.getDescription() + 
+                " with " + priorityRule.getDescription() + " with " + samplingType.getDescription();
+
+            if (samplingType.equals(SamplingType.NS)) {
+                heuristics.add(heuristicType.createHeuristic(priorityRule, samplingType));
+            } else {
+                for (int i = 0; i < Integer.parseInt(samplingConfigParts[1]); i++) {
+                    heuristics.add(heuristicType.createHeuristic(priorityRule, samplingType));
+                }
+                log += " with " + samplingConfigParts[1] + " tries";
+            }
             
-            heuristics.add(heuristicType.createHeuristic(priorityRule, samplingType));
-            
-            System.out.println("Added heuristic: " + heuristicType.getDescription() + 
-                             " with " + priorityRule.getDescription());
+            System.out.println(log);
         }
         
         return heuristics;
     }
     
     private ModelInterface createModel(String config) {
-        ModelType modelType = ModelType.fromCode(config);
-        System.out.println("Using model: " + modelType.getDescription());
+        String[] parts = config.split("-");
+            if (parts.length != 2) {
+                throw new IllegalArgumentException("Invalid model config: " + config + 
+                    ". Expected format: 'MODEL-TIME' (e.g., 'DISC-30', where '30' is the max runtime in seconds)");
+            }
+        ModelType modelType = ModelType.fromCode(parts[0]);
+        this.maxRuntime = Integer.parseInt(parts[1]);
+        System.out.println("Using model: " + modelType.getDescription() + " with max runtime: " + maxRuntime + " seconds");
         return modelType.createModel();
     }
 
     public Result solve(JobDataInstance data) {
-        ScheduleResult scheduleResult = new ScheduleResult(new ArrayList<>(), new ArrayList<Map<Integer,Integer>>());
+        ScheduleResult scheduleResult = new ScheduleResult(new HashSet<>(), new ArrayList<Map<Integer,Integer>>());
         Result result;
         if (!heuristics.isEmpty()) {
             List<HeuristicInterface> openingHeuristics = new ArrayList<>();

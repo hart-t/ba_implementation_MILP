@@ -1,5 +1,6 @@
 package io;
 
+import java.util.HashSet;
 import java.util.List;
 
 import enums.ModelType;
@@ -50,7 +51,7 @@ public class Result {
         }
     }
 
-    public List<String> getUsedHeuristics() {
+    public HashSet<String> getUsedHeuristics() {
             return scheduleResult.getUsedHeuristics();
     }
 

@@ -2,14 +2,15 @@ package io;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
 
 public class ScheduleResult {
-    private List<String> usedHeuristics;
+    private HashSet<String> usedHeuristics;
     // Can contain multiple start times, where job starting times may vary but the makespans are the same
     private List<Map<Integer, Integer>> startTimes;
     private int makespan;
 
-   public ScheduleResult(List<String> usedHeuristics, List<Map<Integer, Integer>> startTimes) {
+   public ScheduleResult(HashSet<String> usedHeuristics, List<Map<Integer, Integer>> startTimes) {
         this.usedHeuristics = usedHeuristics;
         this.startTimes = startTimes;
         if (startTimes.isEmpty()) {
@@ -23,7 +24,7 @@ public class ScheduleResult {
         return startTimes;
     }
 
-    public List<String> getUsedHeuristics() {
+    public HashSet<String> getUsedHeuristics() {
         return usedHeuristics;
     }
 

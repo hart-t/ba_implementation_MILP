@@ -4,7 +4,7 @@ import interfaces.HeuristicInterface;
 import heuristics.*;
 
 public enum HeuristicType {
-    SGS("SSGS", "Serial Schedule Generation Scheme", true),
+    SSGS("SSGS", "Serial Schedule Generation Scheme", true),
     // Add improvement heuristics here with false flag
     ;
     
@@ -24,7 +24,7 @@ public enum HeuristicType {
     
     public HeuristicInterface createHeuristic(PriorityRuleType priorityRule, SamplingType samplingType) {
         switch (this) {
-            case SGS:
+            case SSGS:
                 return new HeuristicSerialSGS(priorityRule.createRule(), samplingType.createSamplingType());
             default:
                 throw new UnsupportedOperationException("Heuristic not implemented: " + this);

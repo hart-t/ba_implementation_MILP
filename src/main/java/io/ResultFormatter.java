@@ -2,6 +2,7 @@ package io;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import enums.PriorityRuleType;
@@ -134,7 +135,9 @@ public class ResultFormatter {
         String timeLimitReached = "N/A";
         String errorStr = "N/A";
         String heuristicsStr = "N/A";
-        
+        String samplingMethod = "N/A";
+        String samplingSize = "N/A";
+
         // Fill values from heuristic result
         if (heuristicResult != null) {
             // Check if objective value is reasonable (not indicating infeasible solution)
@@ -197,6 +200,8 @@ public class ResultFormatter {
             if (existingData.timeLimitReached != null) timeLimitReached = existingData.timeLimitReached;
             if (existingData.error != null) errorStr = existingData.error;
             if (existingData.heuristics != null) heuristicsStr = existingData.heuristics;
+            if (existingData.samplingMethod != null) samplingMethod = existingData.samplingMethod;
+            if (existingData.samplingSize != null) samplingSize = existingData.samplingSize;
         }
         
         // Calculate time difference if both times are available
@@ -227,10 +232,10 @@ public class ResultFormatter {
         }
         
         // Format the final line (i dont even know xd there is propably a better way to do this)
-        return String.format("%s\t\t\t%s\t\t\t%s\t%s\t\t\t\t%s\t\t\t\t%s\t\t%s\t\t%s\t\t\t\t\t%s\t%s\t\t%s\t\t%s\t\t\t%s\t\t\t\t%s\t%s",
-            parameterCol, instanceCol, model, hMakespan, noHMakespan, hUB, hLB, 
-            optimalStr, hTime, noHTime, timeDiff, heuristicMakespan, 
-            timeLimitReached, errorStr, heuristicsStr);
+        return String.format("%s\t\t\t%s\t\t\t%s\t%s\t\t\t\t%s\t\t\t\t%s\t\t%s\t\t%s\t\t\t\t\t%s\t%s\t\t%s\t\t%s\t\t\t%s\t\t\t\t%s\t%s\t%s\t%s",
+            parameterCol, instanceCol, model, hMakespan, noHMakespan, hUB, hLB,
+            optimalStr, hTime, noHTime, timeDiff, heuristicMakespan,
+            timeLimitReached, errorStr, heuristicsStr, samplingMethod, samplingSize);
     }
     
     // Create header for the result file
@@ -238,7 +243,7 @@ public class ResultFormatter {
     // cause it is used to indicate the start of the data section
     private List<String> createHeader() {
         List<String> header = new ArrayList<>();
-        header.add("===================================================================================================================================================================================");
+        header.add("====================================================================================================================================================================================================");
         header.add("Instance Set            : j30");
         header.add("Type                    : sm");
         header.add("");
@@ -263,9 +268,9 @@ public class ResultFormatter {
         header.add("average time difference: ");
         header.add("count only the instances where the time limit was not reached: ");
         header.add("average time difference: ");
-        header.add("===================================================================================================================================================================================");
-        header.add("Paramter\tInstance\tModel\tH_M_Makespan\tnoH_M_Makespan\tH_UB\tH_LB\tOptimal_Makespan\tH_Time\tnoH_Time\tTime_Diff\tH_Makespan\ttime_limit_reached\tError\tHeuristics");
-        header.add("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        header.add("=====================================================================================================================================================================================================");
+        header.add("Paramter\tInstance\tModel\tH_M_Makespan\tnoH_M_Makespan\tH_UB\tH_LB\tOptimal_Makespan\tH_Time\tnoH_Time\tTime_Diff\tH_Makespan\ttime_limit_reached\tError\tHeuristics\tSampling_Method\tSampling_Size");
+        header.add("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         return header;
     }
     
@@ -291,7 +296,7 @@ public class ResultFormatter {
         return fullModelName;
     }
     
-    private String getHeuristicShortNames(List<String> heuristics) {
+    private String getHeuristicShortNames(HashSet<String> heuristics) {
         if (heuristics == null || heuristics.isEmpty()) {
             return "N/A";
         }

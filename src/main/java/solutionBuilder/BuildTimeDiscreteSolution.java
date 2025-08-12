@@ -46,6 +46,7 @@ public class BuildTimeDiscreteSolution implements CompletionMethodInterface {
                 // by Gurobi to find a feasible solution faster.
                 // If there are multiple start times, Gurobi will try each one in sequence and choose the best one.
                 for (int mipStartIndex = 0; mipStartIndex < startTimesList.size(); mipStartIndex++) {
+                    System.out.println("Setting MIP start for index: " + mipStartIndex);
                     model.set(GRB.IntParam.StartNumber, mipStartIndex);
                     startTimes = startTimesList.get(mipStartIndex);
                 }
@@ -54,7 +55,8 @@ public class BuildTimeDiscreteSolution implements CompletionMethodInterface {
                         GRBVar var = model.getVarByName("startingTime[" + i + "] at [" + j + "]");
                         if (var != null) {
                             if (startTimes.get(i).equals(j)) {
-                            var.set(GRB.DoubleAttr.Start, 1.0);
+                                System.out.println("Setting variable for job " + i + " at time " + j + " to 1.0");
+                                var.set(GRB.DoubleAttr.Start, 1.0);
                             } else {
                                 var.set(GRB.DoubleAttr.Start, 0.0);
                             }

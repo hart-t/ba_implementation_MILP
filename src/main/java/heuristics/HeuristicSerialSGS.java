@@ -18,7 +18,7 @@ public class HeuristicSerialSGS implements HeuristicInterface {
     
     private final PriorityRuleInterface priorityStrategy;
     private final boolean isOpeningHeuristic = true;
-    private final String heuristicCode = "SSGS"; // Serial Schedule Generation Scheme
+    private final String heuristicCode = enums.HeuristicType.SSGS.getCode(); // Serial Schedule Generation Scheme
     private SamplingTypeInterface samplingType;
 
     public HeuristicSerialSGS(PriorityRuleInterface priorityStrategy, SamplingTypeInterface samplingType) {
@@ -161,7 +161,7 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                                  ", capacity=" + resourceCapacity.get(r) + " ✗ VIOLATED");
             }
         }
-        List<String> usedHeuristics = new ArrayList<>();
+        HashSet<String> usedHeuristics = new HashSet<>();
         List<Map<Integer,Integer>> startTimeList = new ArrayList<>();
         startTimeList.add(startTimes);
         usedHeuristics.add(getHeuristicCode() + "-" + getPriorityCode());
@@ -205,7 +205,7 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                     initialScheduleResult.addStartTimes(newSchedule.getStartTimes().get(0));
                     System.out.println(getHeuristicCode() + "-" + getPriorityCode() + " found a different schedule with makespan " + newMakespan);
                 } else {
-                    System.out.println(getHeuristicCode() + "-" + getPriorityCode() + " found an equivalent schedule with makespan " + newMakespan);
+                    // System.out.println(getHeuristicCode() + "-" + getPriorityCode() + " found an equivalent schedule with makespan " + newMakespan);
                 }
             }
             return initialScheduleResult;

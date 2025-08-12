@@ -9,21 +9,24 @@ public class DataEvaluationInstance {
     private String[] parameter;
     private String[] instance;
     private String[] modelType;
-    private int[] hMakespan;
-    private int[] noHMakespan;
-    private int[] hUB;
-    private int[] hLB;
-    private int[] optimalMakespan;
-    private double[] hTime;
-    private double[] noHTime;
-    private double[] timeDiff;
-    private int[] heuristicMakespan;
-    private boolean[] timeLimitReached;
-    private boolean[] error;
-    private String[] heuristics;
+    private int[] hMakespan;                            // best computed makespan from the model with the use of a heuristic start solution
+    private int[] noHMakespan;                          // best computed makespan from the model without the use of a heuristic start solution
+    private int[] hUB;                                  // TODO, replace with nhLB upper bound on the makespan (with the use of a heuristic start solution)
+    private int[] hLB;                                  // lower bound on the makespan (with the use of a heuristic start solution)
+    private int[] optimalMakespan;                      // optimal makespan
+    private double[] hTime;                             // time it took to compute with the use of a start solution, computed with the use of start times from the heuristics
+    private double[] noHTime;                           // time it took to compute without the use of a start solution
+    private double[] timeDiff;                          // difference in time between heuristical and non-heuristical approaches
+    private int[] heuristicMakespan;                    // best heuristical computed makespan
+    private boolean[] timeLimitReached;                 // indicates if the time limit was reached
+    private boolean[] error;                            // indicates if there was an error (for debungging only, delete later)
+    private String[] heuristics;                        // heuristics used
+    private String[] samplingMethod;                    // sampling method used
+    private int[] samplingSize;                         // if sampling is used, it represents the number of tries for the start times
 
     public DataEvaluationInstance(String[] parameter, String[] instance, String[] modelType, int[] hMakespan, int[] noHMakespan, int[] hUB, int[] hLB, int[] optimalMakespan,
-                                  double[] hTime, double[] noHTime, double[] timeDiff, int[] heuristicMakespan, boolean[] timeLimitReached, boolean[] error, String[] heuristics) {
+                                  double[] hTime, double[] noHTime, double[] timeDiff, int[] heuristicMakespan, boolean[] timeLimitReached, boolean[] error, String[] heuristics,
+                                  String[] samplingMethod, int[] samplingSize) {
         this.parameter = parameter;
         this.instance = instance;
         this.modelType = modelType;
@@ -39,6 +42,8 @@ public class DataEvaluationInstance {
         this.timeLimitReached = timeLimitReached;
         this.error = error;
         this.heuristics = heuristics;
+        this.samplingMethod = samplingMethod;
+        this.samplingSize = samplingSize;
     }
 
     // Getter methods
@@ -57,7 +62,9 @@ public class DataEvaluationInstance {
     public boolean[] getTimeLimitReached() { return timeLimitReached; }
     public boolean[] getError() { return error; }
     public String[] getHeuristics() { return heuristics; }
-    
+    public String[] getSamplingMethod() { return samplingMethod; }
+    public int[] getSamplingSize() { return samplingSize; }
+
     public int getDataCount() {
         return parameter != null ? parameter.length : 0;
     }

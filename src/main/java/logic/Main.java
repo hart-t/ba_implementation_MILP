@@ -34,7 +34,7 @@ public class Main {
              * heuristic and the schedule with the lowest makespan will be chosen.
              */
             List<String> heuristicConfigs = Arrays.asList(
-                "SSGS-SPT-BRS"        // Serial SGS with Shortest Processing Time
+                "SSGS-SPT-BRS_500"        // Serial SGS with Shortest Processing Time
                 //"SSGS-GRPW-NS",      // Serial SGS with Greatest Rank Positional Weight
                 //"SSGS-MRU-NS",       // Serial SGS with Most Resource Usage
                 //"SSGS-RSM-NS",       // Serial SGS with Resource Scheduling Method
@@ -47,7 +47,7 @@ public class Main {
             // Configure models using simple string codes
             List<String> modelConfigs = Arrays.asList(
                  //"FLOW"      // Flow-Based Continuous Time Model
-                 "DISC"     // Discrete Time Model
+                 "DISC-30"     // Discrete Time Model
                  //"EVENT"     // On-Off Event Based Model
                  // "IEE"     // Interval Event Based Model
             );

@@ -92,7 +92,9 @@ public class FileReader {
         List<Boolean> timeLimitReachedList = new ArrayList<>();
         List<Boolean> errorList = new ArrayList<>();
         List<String> heuristicsList = new ArrayList<>();
-        
+        List<String> samplingMethodList = new ArrayList<>();
+        List<Integer> samplingSizeList = new ArrayList<>();
+
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filename)))) {
             String line;
             String currentParameter = "";
@@ -117,68 +119,48 @@ public class FileReader {
                     String parameter = parts[0].trim();
                     String instance = parts[1].trim();
                     String modelType = parts[2].trim();
+                    int startIndex;
                     
-                    // If the first field looks like a model type, this is a continuation row
                     if (isModelType(parameter) && instance.matches("\\d+") && modelType.matches("\\d+")) {
                         // This is a continuation row where parameter column contains model type
                         modelType = parameter;
-                        // Shift all values to the left
-                        parameters.add(currentParameter);
-                        instances.add(currentInstance);
-                        modelTypes.add(modelType);
-                        
-                        // Parse shifted values
-                        hMakespanList.add(parseIntOrDefault(instance, -1)); // instance is actually H_M_Makespan
-                        noHMakespanList.add(parseIntOrDefault(parts[2].trim(), -1));
-                        hUBList.add(parseIntOrDefault(parts[3].trim(), -1));
-                        hLBList.add(parseIntOrDefault(parts[4].trim(), -1));
-                        optimalMakespanList.add(parseIntOrDefault(parts[5].trim(), -1));
-                        hTimeList.add(parseDoubleOrDefault(parts[6].trim(), -1.0));
-                        noHTimeList.add(parseDoubleOrDefault(parts[7].trim(), -1.0));
-                        timeDiffList.add(parseDoubleOrDefault(parts[8].trim(), -1.0));
-                        heuristicMakespanList.add(parseIntOrDefault(parts[9].trim(), -1));
-                        timeLimitReachedList.add(parseBooleanOrDefault(parts[10].trim(), false));
-                        errorList.add(parseBooleanOrDefault(parts[11].trim(), false));
-                        
-                        // Handle heuristics (may span multiple columns)
-                        StringBuilder heuristics = new StringBuilder();
-                        for (int i = 12; i < parts.length; i++) {
-                            if (i > 12) heuristics.append(" ");
-                            heuristics.append(parts[i].trim());
-                        }
-                        heuristicsList.add(heuristics.toString());
+                        startIndex = 1;
                     } else {
                         // Normal row with parameter and instance
                         if (!parameter.isEmpty() && !instance.isEmpty()) {
                             currentParameter = parameter;
                             currentInstance = instance;
                         }
-                        
-                        parameters.add(currentParameter);
-                        instances.add(currentInstance);
-                        modelTypes.add(modelType);
-                        
-                        // Parse numeric values with error handling
-                        hMakespanList.add(parseIntOrDefault(parts[3].trim(), -1));
-                        noHMakespanList.add(parseIntOrDefault(parts[4].trim(), -1));
-                        hUBList.add(parseIntOrDefault(parts[5].trim(), -1));
-                        hLBList.add(parseIntOrDefault(parts[6].trim(), -1));
-                        optimalMakespanList.add(parseIntOrDefault(parts[7].trim(), -1));
-                        hTimeList.add(parseDoubleOrDefault(parts[8].trim(), -1.0));
-                        noHTimeList.add(parseDoubleOrDefault(parts[9].trim(), -1.0));
-                        timeDiffList.add(parseDoubleOrDefault(parts[10].trim(), -1.0));
-                        heuristicMakespanList.add(parseIntOrDefault(parts[11].trim(), -1));
-                        timeLimitReachedList.add(parseBooleanOrDefault(parts[12].trim(), false));
-                        errorList.add(parseBooleanOrDefault(parts[13].trim(), false));
-                        
-                        // Handle heuristics (may span multiple columns)
-                        StringBuilder heuristics = new StringBuilder();
-                        for (int i = 14; i < parts.length; i++) {
-                            if (i > 14) heuristics.append(" ");
-                            heuristics.append(parts[i].trim());
-                        }
-                        heuristicsList.add(heuristics.toString());
+                        startIndex = 3;
                     }
+
+                    // Shift all values to the left
+                    parameters.add(currentParameter);
+                    instances.add(currentInstance);
+                    modelTypes.add(modelType);
+                    
+                    // Parse shifted values
+                    hMakespanList.add(parseIntOrDefault(parts[startIndex], -1)); // instance is actually H_M_Makespan
+                    noHMakespanList.add(parseIntOrDefault(parts[startIndex + 1].trim(), -1));
+                    hUBList.add(parseIntOrDefault(parts[startIndex + 2].trim(), -1));
+                    hLBList.add(parseIntOrDefault(parts[startIndex + 3].trim(), -1));
+                    optimalMakespanList.add(parseIntOrDefault(parts[startIndex + 4].trim(), -1));
+                    hTimeList.add(parseDoubleOrDefault(parts[startIndex + 5].trim(), -1.0));
+                    noHTimeList.add(parseDoubleOrDefault(parts[startIndex + 6].trim(), -1.0));
+                    timeDiffList.add(parseDoubleOrDefault(parts[startIndex + 7].trim(), -1.0));
+                    heuristicMakespanList.add(parseIntOrDefault(parts[startIndex + 8].trim(), -1));
+                    timeLimitReachedList.add(parseBooleanOrDefault(parts[startIndex + 9].trim(), false));
+                    errorList.add(parseBooleanOrDefault(parts[startIndex + 10].trim(), false));
+                    samplingMethodList.add(parts[startIndex + 11].trim());
+                    samplingSizeList.add(parseIntOrDefault(parts[startIndex + 12].trim(), -1));
+
+                    // Handle heuristics (may span multiple columns)
+                    StringBuilder heuristics = new StringBuilder();
+                    for (int i = startIndex + 13; i < parts.length; i++) {
+                        if (i > startIndex + 13) heuristics.append(" ");
+                        heuristics.append(parts[i].trim());
+                    }
+                    heuristicsList.add(heuristics.toString());
                 }
             }
         }
@@ -206,11 +188,13 @@ public class FileReader {
             errorArray[i] = errorList.get(i);
         }
         String[] heuristicsArray = heuristicsList.toArray(new String[0]);
-        
+        String[] samplingMethodArray = samplingMethodList.toArray(new String[0]);
+        int[] samplingSizeArray = samplingSizeList.stream().mapToInt(Integer::intValue).toArray();
+
         return new DataEvaluationInstance(parameterArray, instanceArray, modelTypeArray,
                 hMakespanArray, noHMakespanArray, hUBArray, hLBArray, optimalMakespanArray,
                 hTimeArray, noHTimeArray, timeDiffArray, heuristicMakespanArray,
-                timeLimitReachedArray, errorArray, heuristicsArray);
+                timeLimitReachedArray, errorArray, heuristicsArray, samplingMethodArray, samplingSizeArray);
     }
     
     private boolean isModelType(String value) {
@@ -351,10 +335,12 @@ public class FileReader {
         if (parts.length > 11) data.heuristicMakespan = parseStringValue(parts[11]);
         if (parts.length > 12) data.timeLimitReached = parseStringValue(parts[12]);
         if (parts.length > 13) data.error = parseStringValue(parts[13]);
-        if (parts.length > 14) {
+        if (parts.length > 14) data.samplingMethod = parseStringValue(parts[14]);
+        if (parts.length > 15) data.samplingSize = parseStringValue(parts[15]);
+        if (parts.length > 16) {
             StringBuilder heuristics = new StringBuilder();
-            for (int i = 14; i < parts.length; i++) {
-                if (i > 14) heuristics.append(" ");
+            for (int i = 16; i < parts.length; i++) {
+                if (i > 16) heuristics.append(" ");
                 heuristics.append(parts[i]);
             }
             data.heuristics = heuristics.toString();
@@ -379,5 +365,18 @@ public class FileReader {
         public String timeLimitReached;
         public String error;
         public String heuristics;
+        public String samplingMethod;
+        public String samplingSize;
     }
 }
+
+
+
+
+
+
+
+
+
+
+                    
