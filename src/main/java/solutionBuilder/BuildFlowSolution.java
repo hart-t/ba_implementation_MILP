@@ -37,7 +37,7 @@ public class BuildFlowSolution implements CompletionMethodInterface {
                 for (int j = 0; j < data.numberJob; j++) {
                     if (i == j) continue; // Skip self-precedence
                     precedenceVars[i][j] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "[" + i +
-                            "] precedes [" + j + "]");
+                            "]_precedes_[" + j + "]");
                 }
             }
 
@@ -56,16 +56,20 @@ public class BuildFlowSolution implements CompletionMethodInterface {
             model.update(); // Ensure the model is updated after adding variables
             if (!startTimesList.isEmpty()) {
                 Map<Integer, Integer> startTimes = null;
+                model.set(GRB.IntAttr.NumStart, startTimesList.size());
+                model.update();
+
                 // Iterate through the list of start times and set the start values for the variables
                 // This allows for multiple MIP starts, where each start time configuration can be tried
                 // by Gurobi to find a feasible solution faster.
                 // If there are multiple start times, Gurobi will try each one in sequence and choose the best one.
-                for (int mipStartIndex = 0; mipStartIndex < startTimesList.size(); mipStartIndex++) {
-                    model.set(GRB.IntParam.StartNumber, mipStartIndex);
-                    startTimes = startTimesList.get(mipStartIndex);
-                }
                 
-                // Set the start values for the starting time variables based on the provided startTimes map
+                for (int s = 0; s < model.get(GRB.IntAttr.NumStart); s++) {
+                    model.set(GRB.IntParam.StartNumber, s);
+                    System.out.println("Setting MIP start for index: " + s);
+                    startTimes = startTimesList.get(s);
+
+                    // Set the start values for the starting time variables based on the provided startTimes map
                 for (int i = 0; i < data.numberJob; i++) {
                     int startTime = startTimes.get(i);
                     GRBVar var = model.getVarByName("startingTime[" + i + "]");
@@ -122,6 +126,10 @@ public class BuildFlowSolution implements CompletionMethodInterface {
                     double resourceCapacity = data.resourceCapacity.get(k);
                         flowVar.set(GRB.DoubleAttr.Start, resourceCapacity);
                 }
+                model.update(); // Update the model after setting starts
+            }
+            model.update(); // Ensure the model is updated after modifying variables
+                
 
             } else {
                 System.out.println("No start times provided, using default values.");

@@ -41,29 +41,35 @@ public class BuildTimeDiscreteSolution implements CompletionMethodInterface {
             model.update(); // Ensure the model is updated after adding variables
             if (!startTimesList.isEmpty()) {
                 Map<Integer, Integer> startTimes = null;
+                model.set(GRB.IntAttr.NumStart, startTimesList.size());
+                model.update();
+
                 // Iterate through the list of start times and set the start values for the variables
                 // This allows for multiple MIP starts, where each start time configuration can be tried
                 // by Gurobi to find a feasible solution faster.
                 // If there are multiple start times, Gurobi will try each one in sequence and choose the best one.
-                for (int mipStartIndex = 0; mipStartIndex < startTimesList.size(); mipStartIndex++) {
-                    System.out.println("Setting MIP start for index: " + mipStartIndex);
-                    model.set(GRB.IntParam.StartNumber, mipStartIndex);
-                    startTimes = startTimesList.get(mipStartIndex);
-                }
-                for (int i = 0; i < data.numberJob; i++) {
-                    for (int j = earliestStartTime[i]; j < latestStartTime[i]; j++) {
-                        GRBVar var = model.getVarByName("startingTime[" + i + "] at [" + j + "]");
-                        if (var != null) {
-                            if (startTimes.get(i).equals(j)) {
-                                System.out.println("Setting variable for job " + i + " at time " + j + " to 1.0");
-                                var.set(GRB.DoubleAttr.Start, 1.0);
+                
+                for (int s = 0; s < model.get(GRB.IntAttr.NumStart); s++) {
+                    model.set(GRB.IntParam.StartNumber, s);
+                    System.out.println("Setting MIP start for index: " + s);
+                    startTimes = startTimesList.get(s);
+
+                    for (int i = 0; i < data.numberJob; i++) {
+                        for (int j = earliestStartTime[i]; j < latestStartTime[i]; j++) {
+                            GRBVar var = model.getVarByName("startingTime[" + i + "] at [" + j + "]");
+                            if (var != null) {
+                                if (startTimes.get(i).equals(j)) {
+                                    System.out.println("Setting variable for job " + i + " at time " + j + " to 1.0");
+                                    var.set(GRB.DoubleAttr.Start, 1.0);
+                                } else {
+                                    var.set(GRB.DoubleAttr.Start, 0.0);
+                                }
                             } else {
-                                var.set(GRB.DoubleAttr.Start, 0.0);
-                            }
-                        } else {
-                            System.err.println("Variable for job " + i + " at time " + j + " not found.");
-                        }   
-                    }  
+                                System.err.println("Variable for job " + i + " at time " + j + " not found.");
+                            }   
+                        }  
+                    }
+                    model.update(); // Update the model after setting starts
                 }
             }
             model.update(); // Ensure the model is updated after modifying variables

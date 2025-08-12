@@ -95,8 +95,7 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
                     GRBLinExpr expr = new GRBLinExpr();
                     expr.addTerm(1, precedenceVars[i][j]);
                     expr.addTerm(1, precedenceVars[j][i]);
-                    model.addConstr(expr, GRB.LESS_EQUAL, 1, i + " and " + j + " cannot both precede each " +
-                            "other (C12)");
+                    model.addConstr(expr, GRB.LESS_EQUAL, 1, "C12_precedence_mutual_exclusion_job_" + i + "_job_" + j);
                 }
             }
 
@@ -117,8 +116,7 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
                         expr2.addTerm(1, precedenceVars[j][k]);
                         expr2.addConstant(-1);
 
-                        model.addConstr(expr1, GRB.GREATER_EQUAL, expr2, expr1.toString() + "greater equal to " +
-                                expr2.toString() + " (C13)");
+                        model.addConstr(expr1, GRB.GREATER_EQUAL, expr2, "C13_precedence_transitivity_job_" + i + "_job_" + j + "_job_" + k);
                     }
                 }
             }
@@ -147,11 +145,8 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
 
                     rightSide.addConstant(-Mij);
                     rightSide.addTerm((data.jobDuration.get(i) + Mij), precedenceVars[i][j]);
-                    
-                    model.addConstr(leftSide, GRB.GREATER_EQUAL, rightSide, startingTimeVars[j].get(GRB.StringAttr.VarName) 
-                    + "-" + startingTimeVars[i].get(GRB.StringAttr.VarName) + "greater equal to " + 
-                    -Mij + " + " + "job duration of job " + i + " " + (data.jobDuration.get(i) + " + " + Mij) 
-                    + "    precedenceVars i j " + precedenceVars[i][j].get(GRB.DoubleAttr.Obj) + " (C14)");
+
+                    model.addConstr(leftSide, GRB.GREATER_EQUAL, rightSide, "C14_disjunctive_timing_job_" + i + "_job_" + j);
                 }
             }
 
@@ -169,7 +164,7 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
                         int minResourceDemand = Math.min(resourceDemands[i][k], resourceDemands[j][k]);
                         expr2.addTerm(minResourceDemand, precedenceVars[i][j]);
 
-                        model.addConstr(expr1, GRB.LESS_EQUAL, expr2, expr1 + "less equal to " + expr2 + " (C15)");
+                        model.addConstr(expr1, GRB.LESS_EQUAL, expr2, "C15_flow_precedence_link_job_" + i + "_job_" + j + "_resource_" + k);
                     }
                 }
             }
@@ -189,10 +184,7 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
 
                     expr2.addConstant(resourceDemands[i][k]);
 
-                    model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 
-                    + " (C16) flow from " + i + " to all j for resource " + k 
-                    + " must equal demand of resource " + k + " for job " + i 
-                    + " that is " + resourceDemands[i][k] + " (C16)");
+                    model.addConstr(expr1, GRB.EQUAL, expr2, "C16_flow_conservation_outgoing_job_" + i + "_resource_" + k);
                 }
             }
 
@@ -211,7 +203,7 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
 
                     expr2.addConstant(resourceDemands[j][k]);
 
-                    model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 + " (C17)");
+                    model.addConstr(expr1, GRB.EQUAL, expr2, "C17_flow_conservation_incoming_job_" + j + "_resource_" + k);
                 }
             }
 
@@ -223,7 +215,7 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
                 expr1.addTerm(1, continuousFlowVars[data.numberJob - 1][0][k]);
                 expr2.addConstant(data.resourceCapacity.get(k));
 
-                model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 + " (C18)");
+                model.addConstr(expr1, GRB.EQUAL, expr2, "C18_supersink_supersource_flow_resource_" + k);
             }
 
 
@@ -242,10 +234,10 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
                     expr3.addConstant(0);
 
                     if (teMatrix[i][j] == 1) {
-                        model.addConstr(expr1, GRB.EQUAL, expr2, expr1 + " equals " + expr2 + " (C19)");
+                        model.addConstr(expr1, GRB.EQUAL, expr2, "C19_enforce_precedence_job_" + i + "_before_job_" + j);
                     }
                     if (teMatrix[i][j] == 0) {
-                        model.addConstr(expr1, GRB.EQUAL, expr3, expr1 + " equals " + expr3 + " (C20)");
+                        model.addConstr(expr1, GRB.EQUAL, expr3, "C20_prohibit_precedence_job_" + i + "_before_job_" + j);
                     }
                 }
             }
@@ -261,7 +253,7 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
                         expr1.addTerm(1, continuousFlowVars[i][j][k]);
                         expr2.addConstant(0);
 
-                        model.addConstr(expr1, GRB.GREATER_EQUAL, expr2, expr1 + "non negative (C21)");
+                        model.addConstr(expr1, GRB.GREATER_EQUAL, expr2, "C21_flow_non_negative_job_" + i + "_job_" + j + "_resource_" + k);
                     }
                 }
             }
@@ -275,7 +267,7 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
             expr01.addTerm(1, startingTimeVars[0]);
             expr02.addConstant(0);
 
-            model.addConstr(expr01, GRB.EQUAL, expr02, expr01 + "starting time " + expr02 + " (C22)");
+            model.addConstr(expr01, GRB.EQUAL, expr02, "C22_supersource_start_time_zero");
 
             // (23) Starting time of variable x is between its earliest and latest starting time
             for (int i = 0; i < data.numberJob; i++) {
@@ -287,10 +279,8 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
                 expr2.addConstant(earliestStartTime[i]);
                 expr3.addConstant(latestStartTime[i]);
 
-                model.addConstr(expr2, GRB.LESS_EQUAL, expr1, expr2 + " earliest possible start <= " +
-                        expr1 + "(23)");
-                model.addConstr(expr1, GRB.LESS_EQUAL, expr3, expr1 + " latest possible start >= " +
-                        expr3 + "(23)");
+                model.addConstr(expr2, GRB.LESS_EQUAL, expr1, "C23_earliest_start_time_bound_job_" + i);
+                model.addConstr(expr1, GRB.LESS_EQUAL, expr3, "C23_latest_start_time_bound_job_" + i);
             }
 
             // Objective function: minimize the starting time of the last job

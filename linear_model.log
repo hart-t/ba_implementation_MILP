@@ -5574,3 +5574,603 @@ Optimal solution found (tolerance 0.00e+00)
 Best objective 4.300000000000e+01, best bound 4.300000000000e+01, gap 0.0000%
 Warning: variable name "startingTime[0] at [0]" has a space
 Warning: to let Gurobi read it back, use rlp format
+
+Gurobi 12.0.2 (linux64) logging started Di 12 Aug 2025 15:12:59 CEST
+
+Set parameter LogFile to value "linear_model.log"
+Gurobi Optimizer version 12.0.2 build v12.0.2rc0 (linux64 - "Ubuntu 22.04.5 LTS")
+
+CPU model: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 4 physical cores, 8 logical processors, using up to 4 threads
+
+Non-default parameters:
+TimeLimit  30
+MIPGap  0
+Method  2
+Threads  4
+
+Academic license 2623289 - for non-commercial use only - registered to ue___@student.kit.edu
+Optimize a model with 713 rows, 4073 columns and 36458 nonzeros
+Model fingerprint: 0x99aff4df
+Variable types: 0 continuous, 4073 integer (4073 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+02]
+  Objective range  [4e+01, 2e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+01]
+
+User MIP start produced solution with objective 49 (0.02s)
+Loaded user MIP start with objective 49
+
+Presolve removed 514 rows and 3563 columns
+Presolve time: 0.31s
+Presolved: 199 rows, 510 columns, 3629 nonzeros
+Variable types: 0 continuous, 510 integer (495 binary)
+Root barrier log...
+
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 2.233e+03
+ Factor NZ  : 4.512e+03
+ Factor Ops : 1.162e+05 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.01834127e+03 -1.43191764e+02  5.78e+01 0.00e+00  4.58e+00     0s
+   1   3.30057870e+02 -2.19822037e+02  1.69e+01 7.11e-15  1.27e+00     0s
+   2   7.19962565e+01 -9.05066637e+01  1.66e+00 7.11e-15  1.92e-01     0s
+   3   4.35474996e+01  1.30990035e+01  1.78e-15 3.89e-16  2.59e-02     0s
+   4   4.23627298e+01  3.71308418e+01  6.22e-15 7.11e-15  4.45e-03     0s
+   5   4.09323644e+01  3.82168303e+01  5.33e-15 7.11e-15  2.31e-03     0s
+   6   4.03786162e+01  3.90599182e+01  1.41e-13 7.11e-15  1.12e-03     0s
+   7   4.00557495e+01  3.94993091e+01  3.89e-13 2.26e-16  4.74e-04     0s
+   8   3.99685653e+01  3.97880514e+01  2.63e-12 1.62e-16  1.54e-04     0s
+   9   3.99401540e+01  3.99288104e+01  7.31e-13 1.82e-16  9.65e-06     0s
+  10   3.99371310e+01  3.99368563e+01  3.13e-12 7.11e-15  2.34e-07     0s
+  11   3.99370543e+01  3.99370540e+01  2.27e-12 8.88e-16  2.39e-10     0s
+
+Barrier solved model in 11 iterations and 0.36 seconds (0.31 work units)
+Optimal objective 3.99370543e+01
+
+
+Root relaxation: objective 3.993705e+01, 356 iterations, 0.01 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   39.93705    0   53   49.00000   39.93705  18.5%     -    0s
+     0     0   40.00000    0   32   49.00000   40.00000  18.4%     -    0s
+     0     0   43.00000    0   30   49.00000   43.00000  12.2%     -    0s
+     0     0   43.00000    0   15   49.00000   43.00000  12.2%     -    0s
+     0     0   43.00000    0   11   49.00000   43.00000  12.2%     -    0s
+H    0     0                      43.0000000   43.00000  0.00%     -    0s
+     0     0   43.00000    0   11   43.00000   43.00000  0.00%     -    0s
+
+Cutting planes:
+  Gomory: 3
+  Cover: 33
+  Clique: 14
+  MIR: 8
+  StrongCG: 2
+  GUB cover: 10
+  Zero half: 1
+  RLT: 5
+  Relax-and-lift: 3
+  BQP: 9
+
+Explored 1 nodes (651 simplex iterations) in 0.41 seconds (0.32 work units)
+Thread count was 4 (of 8 available processors)
+
+Solution count 2: 43 49 
+
+Optimal solution found (tolerance 0.00e+00)
+Best objective 4.300000000000e+01, best bound 4.300000000000e+01, gap 0.0000%
+Warning: variable name "startingTime[0] at [0]" has a space
+Warning: to let Gurobi read it back, use rlp format
+
+Gurobi 12.0.2 (linux64) logging started Di 12 Aug 2025 15:14:37 CEST
+
+Set parameter LogFile to value "linear_model.log"
+Gurobi Optimizer version 12.0.2 build v12.0.2rc0 (linux64 - "Ubuntu 22.04.5 LTS")
+
+CPU model: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 4 physical cores, 8 logical processors, using up to 4 threads
+
+Non-default parameters:
+TimeLimit  30
+MIPGap  0
+Method  2
+Threads  4
+
+Academic license 2623289 - for non-commercial use only - registered to ue___@student.kit.edu
+Optimize a model with 713 rows, 4073 columns and 36458 nonzeros
+Model fingerprint: 0x99aff4df
+Variable types: 0 continuous, 4073 integer (4073 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+02]
+  Objective range  [4e+01, 2e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+01]
+
+User MIP start produced solution with objective 49 (0.30s)
+Loaded user MIP start with objective 49
+
+Presolve removed 514 rows and 3563 columns
+Presolve time: 0.37s
+Presolved: 199 rows, 510 columns, 3629 nonzeros
+Variable types: 0 continuous, 510 integer (495 binary)
+Root barrier log...
+
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 2.233e+03
+ Factor NZ  : 4.512e+03
+ Factor Ops : 1.162e+05 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.01834127e+03 -1.43191764e+02  5.78e+01 0.00e+00  4.58e+00     1s
+   1   3.30057870e+02 -2.19822037e+02  1.69e+01 7.11e-15  1.27e+00     1s
+   2   7.19962565e+01 -9.05066637e+01  1.66e+00 7.11e-15  1.92e-01     1s
+   3   4.35474996e+01  1.30990035e+01  1.78e-15 3.89e-16  2.59e-02     1s
+   4   4.23627298e+01  3.71308418e+01  6.22e-15 7.11e-15  4.45e-03     1s
+   5   4.09323644e+01  3.82168303e+01  5.33e-15 7.11e-15  2.31e-03     1s
+   6   4.03786162e+01  3.90599182e+01  1.41e-13 7.11e-15  1.12e-03     1s
+   7   4.00557495e+01  3.94993091e+01  3.89e-13 2.26e-16  4.74e-04     1s
+   8   3.99685653e+01  3.97880514e+01  2.63e-12 1.62e-16  1.54e-04     1s
+   9   3.99401540e+01  3.99288104e+01  7.31e-13 1.82e-16  9.65e-06     1s
+  10   3.99371310e+01  3.99368563e+01  3.13e-12 7.11e-15  2.34e-07     1s
+  11   3.99370543e+01  3.99370540e+01  2.27e-12 8.88e-16  2.39e-10     1s
+
+Barrier solved model in 11 iterations and 0.69 seconds (0.31 work units)
+Optimal objective 3.99370543e+01
+
+
+Root relaxation: objective 3.993705e+01, 356 iterations, 0.01 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   39.93705    0   53   49.00000   39.93705  18.5%     -    0s
+     0     0   40.00000    0   32   49.00000   40.00000  18.4%     -    0s
+     0     0   43.00000    0   30   49.00000   43.00000  12.2%     -    0s
+     0     0   43.00000    0   15   49.00000   43.00000  12.2%     -    0s
+     0     0   43.00000    0   11   49.00000   43.00000  12.2%     -    0s
+H    0     0                      43.0000000   43.00000  0.00%     -    0s
+     0     0   43.00000    0   11   43.00000   43.00000  0.00%     -    0s
+
+Cutting planes:
+  Gomory: 3
+  Cover: 33
+  Clique: 14
+  MIR: 8
+  StrongCG: 2
+  GUB cover: 10
+  Zero half: 1
+  RLT: 5
+  Relax-and-lift: 3
+  BQP: 9
+
+Explored 1 nodes (651 simplex iterations) in 0.75 seconds (0.32 work units)
+Thread count was 4 (of 8 available processors)
+
+Solution count 2: 43 49 
+
+Optimal solution found (tolerance 0.00e+00)
+Best objective 4.300000000000e+01, best bound 4.300000000000e+01, gap 0.0000%
+Warning: variable name "startingTime[0] at [0]" has a space
+Warning: to let Gurobi read it back, use rlp format
+
+Gurobi 12.0.2 (linux64) logging started Di 12 Aug 2025 15:20:48 CEST
+
+Set parameter LogFile to value "linear_model.log"
+Gurobi Optimizer version 12.0.2 build v12.0.2rc0 (linux64 - "Ubuntu 22.04.5 LTS")
+
+CPU model: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 4 physical cores, 8 logical processors, using up to 4 threads
+
+Non-default parameters:
+TimeLimit  30
+MIPGap  0
+Method  2
+Threads  4
+
+Academic license 2623289 - for non-commercial use only - registered to ue___@student.kit.edu
+Optimize a model with 713 rows, 4073 columns and 36458 nonzeros
+Model fingerprint: 0xcbd842af
+Variable types: 0 continuous, 4073 integer (4073 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+02]
+  Objective range  [4e+01, 2e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+01]
+
+Loaded user MIP start with objective 49
+
+Presolve removed 514 rows and 3563 columns
+Presolve time: 0.35s
+Presolved: 199 rows, 510 columns, 3629 nonzeros
+Variable types: 0 continuous, 510 integer (495 binary)
+Root barrier log...
+
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 2.233e+03
+ Factor NZ  : 4.512e+03
+ Factor Ops : 1.162e+05 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.01834127e+03 -1.43191764e+02  5.78e+01 0.00e+00  4.58e+00     0s
+   1   3.30057870e+02 -2.19822037e+02  1.69e+01 7.11e-15  1.27e+00     0s
+   2   7.19962565e+01 -9.05066637e+01  1.66e+00 7.11e-15  1.92e-01     0s
+   3   4.35474996e+01  1.30990035e+01  1.78e-15 3.89e-16  2.59e-02     0s
+   4   4.23627298e+01  3.71308418e+01  6.22e-15 7.11e-15  4.45e-03     0s
+   5   4.09323644e+01  3.82168303e+01  5.33e-15 7.11e-15  2.31e-03     0s
+   6   4.03786162e+01  3.90599182e+01  1.41e-13 7.11e-15  1.12e-03     0s
+   7   4.00557495e+01  3.94993091e+01  3.89e-13 2.26e-16  4.74e-04     0s
+   8   3.99685653e+01  3.97880514e+01  2.63e-12 1.62e-16  1.54e-04     0s
+   9   3.99401540e+01  3.99288104e+01  7.31e-13 1.82e-16  9.65e-06     0s
+  10   3.99371310e+01  3.99368563e+01  3.13e-12 7.11e-15  2.34e-07     0s
+  11   3.99370543e+01  3.99370540e+01  2.27e-12 8.88e-16  2.39e-10     0s
+
+Barrier solved model in 11 iterations and 0.36 seconds (0.30 work units)
+Optimal objective 3.99370543e+01
+
+
+Root relaxation: objective 3.993705e+01, 356 iterations, 0.01 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   39.93705    0   53   49.00000   39.93705  18.5%     -    0s
+     0     0   40.00000    0   32   49.00000   40.00000  18.4%     -    0s
+     0     0   43.00000    0   35   49.00000   43.00000  12.2%     -    0s
+     0     0   43.00000    0   23   49.00000   43.00000  12.2%     -    0s
+     0     0   43.00000    0   19   49.00000   43.00000  12.2%     -    0s
+H    0     0                      48.0000000   43.00000  10.4%     -    0s
+     0     0   43.00000    0   16   48.00000   43.00000  10.4%     -    0s
+H    0     0                      45.0000000   43.00000  4.44%     -    0s
+H    0     0                      43.0000000   43.00000  0.00%     -    0s
+
+Cutting planes:
+  Gomory: 11
+  Cover: 39
+  Clique: 16
+  MIR: 18
+  StrongCG: 7
+  GUB cover: 12
+  Zero half: 4
+  RLT: 6
+  Relax-and-lift: 7
+  BQP: 9
+
+Explored 1 nodes (690 simplex iterations) in 0.43 seconds (0.33 work units)
+Thread count was 4 (of 8 available processors)
+
+Solution count 4: 43 45 48 49 
+
+Optimal solution found (tolerance 0.00e+00)
+Best objective 4.300000000000e+01, best bound 4.300000000000e+01, gap 0.0000%
+Warning: variable name "startingTime[0] at [0]" has a space
+Warning: to let Gurobi read it back, use rlp format
+
+Gurobi 12.0.2 (linux64) logging started Di 12 Aug 2025 16:30:35 CEST
+
+Set parameter LogFile to value "linear_model.log"
+Gurobi Optimizer version 12.0.2 build v12.0.2rc0 (linux64 - "Ubuntu 22.04.5 LTS")
+
+CPU model: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 4 physical cores, 8 logical processors, using up to 4 threads
+
+Non-default parameters:
+TimeLimit  30
+MIPGap  0
+Method  2
+Threads  4
+
+Academic license 2623289 - for non-commercial use only - registered to ue___@student.kit.edu
+Optimize a model with 713 rows, 4073 columns and 36458 nonzeros
+Model fingerprint: 0x917006a8
+Variable types: 0 continuous, 4073 integer (4073 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+02]
+  Objective range  [4e+01, 2e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+01]
+
+User MIP start 0 produced solution with objective 49 (0.01s)
+Loaded user MIP start 0 with objective 49
+User MIP start 1 did not produce a new incumbent solution
+
+Presolve removed 514 rows and 3563 columns
+Presolve time: 0.28s
+Presolved: 199 rows, 510 columns, 3629 nonzeros
+Variable types: 0 continuous, 510 integer (495 binary)
+Root barrier log...
+
+Ordering time: 0.00s
+
+Barrier statistics:
+ AA' NZ     : 2.233e+03
+ Factor NZ  : 4.512e+03
+ Factor Ops : 1.162e+05 (less than 1 second per iteration)
+ Threads    : 1
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0   1.01834127e+03 -1.43191764e+02  5.78e+01 0.00e+00  4.58e+00     0s
+   1   3.30057870e+02 -2.19822037e+02  1.69e+01 7.11e-15  1.27e+00     0s
+   2   7.19962565e+01 -9.05066637e+01  1.66e+00 7.11e-15  1.92e-01     0s
+   3   4.35474996e+01  1.30990035e+01  1.78e-15 3.89e-16  2.59e-02     0s
+   4   4.23627298e+01  3.71308418e+01  6.22e-15 7.11e-15  4.45e-03     0s
+   5   4.09323644e+01  3.82168303e+01  5.33e-15 7.11e-15  2.31e-03     0s
+   6   4.03786162e+01  3.90599182e+01  1.41e-13 7.11e-15  1.12e-03     0s
+   7   4.00557495e+01  3.94993091e+01  3.89e-13 2.26e-16  4.74e-04     0s
+   8   3.99685653e+01  3.97880514e+01  2.63e-12 1.62e-16  1.54e-04     0s
+   9   3.99401540e+01  3.99288104e+01  7.31e-13 1.82e-16  9.65e-06     0s
+  10   3.99371310e+01  3.99368563e+01  3.13e-12 7.11e-15  2.34e-07     0s
+  11   3.99370543e+01  3.99370540e+01  2.27e-12 8.88e-16  2.39e-10     0s
+
+Barrier solved model in 11 iterations and 0.31 seconds (0.31 work units)
+Optimal objective 3.99370543e+01
+
+
+Root relaxation: objective 3.993705e+01, 356 iterations, 0.01 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   39.93705    0   53   49.00000   39.93705  18.5%     -    0s
+     0     0   40.00000    0   32   49.00000   40.00000  18.4%     -    0s
+     0     0   43.00000    0   32   49.00000   43.00000  12.2%     -    0s
+     0     0   43.00000    0   27   49.00000   43.00000  12.2%     -    0s
+     0     0   43.00000    0   14   49.00000   43.00000  12.2%     -    0s
+H    0     0                      48.0000000   43.00000  10.4%     -    0s
+H    0     0                      45.0000000   43.00000  4.44%     -    0s
+H    0     0                      43.0000000   43.00000  0.00%     -    0s
+
+Cutting planes:
+  Gomory: 11
+  Cover: 39
+  Clique: 17
+  MIR: 19
+  StrongCG: 12
+  GUB cover: 10
+  Zero half: 2
+  RLT: 6
+  Relax-and-lift: 12
+  BQP: 8
+
+Explored 1 nodes (691 simplex iterations) in 0.36 seconds (0.33 work units)
+Thread count was 4 (of 8 available processors)
+
+Solution count 4: 43 45 48 49 
+
+Optimal solution found (tolerance 0.00e+00)
+Best objective 4.300000000000e+01, best bound 4.300000000000e+01, gap 0.0000%
+Warning: variable name "startingTime[0] at [0]" has a space
+Warning: to let Gurobi read it back, use rlp format
+
+Gurobi 12.0.2 (linux64) logging started Di 12 Aug 2025 16:40:50 CEST
+
+Set parameter LogFile to value "linear_model.log"
+Gurobi Optimizer version 12.0.2 build v12.0.2rc0 (linux64 - "Ubuntu 22.04.5 LTS")
+
+CPU model: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 4 physical cores, 8 logical processors, using up to 4 threads
+
+Non-default parameters:
+TimeLimit  30
+MIPGap  0
+Method  2
+Threads  4
+
+Academic license 2623289 - for non-commercial use only - registered to ue___@student.kit.edu
+Optimize a model with 40257 rows, 4992 columns and 109452 nonzeros
+Model fingerprint: 0xacc0db00
+Variable types: 4000 continuous, 992 integer (992 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+02]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 2e+02]
+  RHS range        [1e+00, 2e+02]
+
+User MIP start 0 produced solution with objective 49 (0.06s)
+Loaded user MIP start 0 with objective 49
+User MIP start 1 did not produce a new incumbent solution
+
+Presolve removed 30386 rows and 4206 columns
+Presolve time: 0.32s
+Presolved: 9871 rows, 786 columns, 27138 nonzeros
+Variable types: 265 continuous, 521 integer (521 binary)
+Root relaxation presolved: 786 rows, 10587 columns, 27762 nonzeros
+
+Root barrier log...
+
+Ordering time: 0.02s
+
+Barrier statistics:
+ Free vars  : 57
+ AA' NZ     : 1.918e+04
+ Factor NZ  : 1.236e+05 (roughly 6 MB of memory)
+ Factor Ops : 3.067e+07 (less than 1 second per iteration)
+ Threads    : 4
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0  -4.68922081e+04  3.80000000e+01  1.39e+01 1.30e+01  8.72e+00     1s
+   1  -1.39583585e+04  4.29180002e+01  3.53e+00 7.24e+00  2.74e+00     1s
+   2  -5.25730013e+03  4.46982055e+01  5.16e-01 2.94e+00  8.78e-01     1s
+   3  -1.51522005e+03  4.12939381e+01  3.78e-02 4.52e-01  1.67e-01     1s
+   4  -2.39405242e+02  3.90208340e+01  4.79e-03 4.84e-02  2.61e-02     1s
+   5   1.73986270e+01  3.80009592e+01  3.16e-04 4.05e-03  1.89e-03     1s
+   6   3.79350918e+01  3.80001241e+01  2.05e-08 3.72e-06  5.99e-06     1s
+   7   3.79999351e+01  3.80000001e+01  8.19e-13 1.60e-10  5.99e-09     1s
+   8   3.80000000e+01  3.80000000e+01  1.16e-14 1.60e-13  6.19e-15     1s
+
+Barrier solved model in 8 iterations and 0.54 seconds (0.28 work units)
+Optimal objective 3.80000000e+01
+
+
+Root relaxation: objective 3.800000e+01, 620 iterations, 0.11 seconds (0.06 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   38.00000    0   25   49.00000   38.00000  22.4%     -    0s
+     0     0   38.00000    0   33   49.00000   38.00000  22.4%     -    0s
+     0     0   38.00000    0   30   49.00000   38.00000  22.4%     -    1s
+     0     0   38.00000    0   41   49.00000   38.00000  22.4%     -    1s
+     0     0   38.00000    0   18   49.00000   38.00000  22.4%     -    1s
+     0     0   38.00000    0   44   49.00000   38.00000  22.4%     -    1s
+     0     0   38.00000    0   43   49.00000   38.00000  22.4%     -    1s
+     0     0   38.00000    0   59   49.00000   38.00000  22.4%     -    2s
+     0     0   38.00000    0   41   49.00000   38.00000  22.4%     -    2s
+     0     0   38.00000    0   32   49.00000   38.00000  22.4%     -    2s
+     0     0   38.00000    0   43   49.00000   38.00000  22.4%     -    2s
+     0     0   38.00000    0   43   49.00000   38.00000  22.4%     -    2s
+     0     0   38.00000    0   43   49.00000   38.00000  22.4%     -    3s
+     0     2   38.00000    0   31   49.00000   38.00000  22.4%     -    3s
+H  381   124                      48.0000000   38.24216  20.3%  26.9    4s
+*  405   130              34      46.0000000   38.61493  16.1%  26.4    4s
+H  414   137                      44.0000000   38.64865  12.2%  26.4    4s
+*  621    99              24      43.0000000   40.00000  6.98%  22.9    4s
+
+Cutting planes:
+  Gomory: 7
+  Cover: 19
+  Implied bound: 151
+  MIR: 126
+  Flow cover: 52
+  Inf proof: 24
+  Network: 1
+  RLT: 19
+  Relax-and-lift: 22
+  BQP: 12
+  PSD: 2
+
+Explored 761 nodes (21000 simplex iterations) in 4.92 seconds (2.23 work units)
+Thread count was 4 (of 8 available processors)
+
+Solution count 5: 43 44 46 ... 49
+
+Optimal solution found (tolerance 0.00e+00)
+Best objective 4.300000000000e+01, best bound 4.300000000000e+01, gap 0.0000%
+Warning: variable name "[0] precedes [1]" has a space
+Warning: constraint name "0 and 1 cannot both precede each other (C12)" has a space
+Warning: to let Gurobi read it back, use rlp format
+
+Gurobi 12.0.2 (linux64) logging started Di 12 Aug 2025 16:47:05 CEST
+
+Set parameter LogFile to value "linear_model.log"
+Gurobi Optimizer version 12.0.2 build v12.0.2rc0 (linux64 - "Ubuntu 22.04.5 LTS")
+
+CPU model: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 4 physical cores, 8 logical processors, using up to 4 threads
+
+Non-default parameters:
+TimeLimit  30
+MIPGap  0
+Method  2
+Threads  4
+
+Academic license 2623289 - for non-commercial use only - registered to ue___@student.kit.edu
+Optimize a model with 40257 rows, 4992 columns and 109452 nonzeros
+Model fingerprint: 0xacc0db00
+Variable types: 4000 continuous, 992 integer (992 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+02]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 2e+02]
+  RHS range        [1e+00, 2e+02]
+
+User MIP start 0 produced solution with objective 49 (0.04s)
+Loaded user MIP start 0 with objective 49
+User MIP start 1 did not produce a new incumbent solution
+
+Presolve removed 30386 rows and 4206 columns
+Presolve time: 0.19s
+Presolved: 9871 rows, 786 columns, 27138 nonzeros
+Variable types: 265 continuous, 521 integer (521 binary)
+Root relaxation presolved: 786 rows, 10587 columns, 27762 nonzeros
+
+Root barrier log...
+
+Ordering time: 0.02s
+
+Barrier statistics:
+ Free vars  : 57
+ AA' NZ     : 1.918e+04
+ Factor NZ  : 1.236e+05 (roughly 6 MB of memory)
+ Factor Ops : 3.067e+07 (less than 1 second per iteration)
+ Threads    : 4
+
+                  Objective                Residual
+Iter       Primal          Dual         Primal    Dual     Compl     Time
+   0  -4.68922081e+04  3.80000000e+01  1.39e+01 1.30e+01  8.72e+00     0s
+   1  -1.39583585e+04  4.29180002e+01  3.53e+00 7.24e+00  2.74e+00     0s
+   2  -5.25730013e+03  4.46982055e+01  5.16e-01 2.94e+00  8.78e-01     0s
+   3  -1.51522005e+03  4.12939381e+01  3.78e-02 4.52e-01  1.67e-01     0s
+   4  -2.39405242e+02  3.90208340e+01  4.79e-03 4.84e-02  2.61e-02     0s
+   5   1.73986270e+01  3.80009592e+01  3.16e-04 4.05e-03  1.89e-03     0s
+   6   3.79350918e+01  3.80001241e+01  2.05e-08 3.72e-06  5.99e-06     0s
+   7   3.79999351e+01  3.80000001e+01  8.19e-13 1.60e-10  5.99e-09     0s
+   8   3.80000000e+01  3.80000000e+01  1.16e-14 1.60e-13  6.19e-15     0s
+
+Barrier solved model in 8 iterations and 0.40 seconds (0.28 work units)
+Optimal objective 3.80000000e+01
+
+
+Root relaxation: objective 3.800000e+01, 620 iterations, 0.14 seconds (0.06 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0   38.00000    0   25   49.00000   38.00000  22.4%     -    0s
+     0     0   38.00000    0   33   49.00000   38.00000  22.4%     -    0s
+     0     0   38.00000    0   30   49.00000   38.00000  22.4%     -    1s
+     0     0   38.00000    0   41   49.00000   38.00000  22.4%     -    1s
+     0     0   38.00000    0   18   49.00000   38.00000  22.4%     -    1s
+     0     0   38.00000    0   44   49.00000   38.00000  22.4%     -    1s
+     0     0   38.00000    0   43   49.00000   38.00000  22.4%     -    1s
+     0     0   38.00000    0   59   49.00000   38.00000  22.4%     -    2s
+     0     0   38.00000    0   41   49.00000   38.00000  22.4%     -    2s
+     0     0   38.00000    0   32   49.00000   38.00000  22.4%     -    2s
+     0     0   38.00000    0   43   49.00000   38.00000  22.4%     -    2s
+     0     0   38.00000    0   43   49.00000   38.00000  22.4%     -    2s
+     0     0   38.00000    0   43   49.00000   38.00000  22.4%     -    3s
+     0     2   38.00000    0   31   49.00000   38.00000  22.4%     -    3s
+H  381   124                      48.0000000   38.24216  20.3%  26.9    4s
+*  405   130              34      46.0000000   38.61493  16.1%  26.4    4s
+H  414   137                      44.0000000   38.64865  12.2%  26.4    4s
+*  621    99              24      43.0000000   40.00000  6.98%  22.9    4s
+
+Cutting planes:
+  Gomory: 7
+  Cover: 19
+  Implied bound: 151
+  MIR: 126
+  Flow cover: 52
+  Inf proof: 24
+  Network: 1
+  RLT: 19
+  Relax-and-lift: 22
+  BQP: 12
+  PSD: 2
+
+Explored 761 nodes (21000 simplex iterations) in 4.70 seconds (2.23 work units)
+Thread count was 4 (of 8 available processors)
+
+Solution count 5: 43 44 46 ... 49
+
+Optimal solution found (tolerance 0.00e+00)
+Best objective 4.300000000000e+01, best bound 4.300000000000e+01, gap 0.0000%
+Warning: variable name "[0] precedes [1]" has a space
+Warning: to let Gurobi read it back, use rlp format

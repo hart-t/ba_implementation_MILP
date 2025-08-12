@@ -46,8 +46,8 @@ public class Main {
             
             // Configure models using simple string codes
             List<String> modelConfigs = Arrays.asList(
-                 //"FLOW"      // Flow-Based Continuous Time Model
-                 "DISC-30"     // Discrete Time Model
+                 "FLOW-30"      // Flow-Based Continuous Time Model
+                 //"DISC-30"     // Discrete Time Model
                  //"EVENT"     // On-Off Event Based Model
                  // "IEE"     // Interval Event Based Model
             );
