@@ -81,4 +81,76 @@ public class MinimumLatestStartTimeRule implements PriorityRuleInterface {
         
         return result;
     }
+
+    public List<Integer> getRegretBasedSampledList(JobDataInstance data, List<Integer> eligibleActivities) {
+        if (eligibleActivities.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<Integer> result = new ArrayList<>();
+        List<Integer> remaining = new ArrayList<>(eligibleActivities);
+        Random random = new Random();
+        
+        while (!remaining.isEmpty()) {
+            // Calculate regret for each remaining activity
+            List<Double> regrets = new ArrayList<>();
+            double totalRegret = 0.0;
+            
+            // Calculate latest start times for remaining activities
+            int[] latestStartTimes = DAGLongestPath.generateEarliestAndLatestStartTimes
+                    (data.jobPredecessors, data.jobDuration, data.horizon)[1];
+            
+            // Find the minimum LST among remaining activities (best choice for this rule)
+            int minLst = remaining.stream()
+                .mapToInt(job -> latestStartTimes[job])
+                .min()
+                .orElse(Integer.MAX_VALUE);
+            
+            // Calculate regret for each activity (difference from minimum)
+            for (int job : remaining) {
+                double regret = latestStartTimes[job] - minLst;
+                regrets.add(regret);
+                totalRegret += regret;
+            }
+            
+            // If all activities have the same LST (totalRegret = 0), select randomly
+            if (totalRegret == 0.0) {
+                int selectedIndex = random.nextInt(remaining.size());
+                result.add(remaining.remove(selectedIndex));
+                continue;
+            }
+            
+            // Calculate selection probabilities based on inverse regret
+            // Activities with lower regret (closer to minimum) have higher probability
+            List<Double> probabilities = new ArrayList<>();
+            for (int i = 0; i < remaining.size(); i++) {
+                // Inverse regret: higher probability for lower regret
+                double inverseRegret = totalRegret - regrets.get(i);
+                probabilities.add(inverseRegret);
+            }
+            
+            // Normalize probabilities
+            double totalInverseRegret = probabilities.stream().mapToDouble(Double::doubleValue).sum();
+            for (int i = 0; i < probabilities.size(); i++) {
+                probabilities.set(i, probabilities.get(i) / totalInverseRegret);
+            }
+            
+            // Select activity based on probabilities
+            double randomValue = random.nextDouble();
+            double cumulativeProbability = 0.0;
+            int selectedIndex = 0;
+            
+            for (int i = 0; i < probabilities.size(); i++) {
+                cumulativeProbability += probabilities.get(i);
+                if (randomValue <= cumulativeProbability) {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+            
+            result.add(remaining.remove(selectedIndex));
+        }
+        
+        return result;
+    }
 }

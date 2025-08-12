@@ -113,4 +113,75 @@ public class GreatestRankPositionalWeightRule implements PriorityRuleInterface {
         
         return result;
     }
+
+    public List<Integer> getRegretBasedSampledList(JobDataInstance data, List<Integer> eligibleActivities) {
+        if (eligibleActivities.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<Integer> result = new ArrayList<>();
+        List<Integer> remaining = new ArrayList<>(eligibleActivities);
+        Random random = new Random();
+        
+        while (!remaining.isEmpty()) {
+            // Calculate regret for each remaining activity
+            List<Double> regrets = new ArrayList<>();
+            double totalRegret = 0.0;
+            
+            // Calculate RPW values for remaining activities
+            Map<Integer, Integer> allRpwValues = calculateRankPositionalWeights(data);
+            
+            // Find the maximum RPW among remaining activities (best choice for this rule)
+            int maxRpw = remaining.stream()
+                .mapToInt(job -> allRpwValues.get(job))
+                .max()
+                .orElse(0);
+            
+            // Calculate regret for each activity (difference from maximum)
+            for (int job : remaining) {
+                double regret = maxRpw - allRpwValues.get(job);
+                regrets.add(regret);
+                totalRegret += regret;
+            }
+            
+            // If all activities have the same RPW (totalRegret = 0), select randomly
+            if (totalRegret == 0.0) {
+                int selectedIndex = random.nextInt(remaining.size());
+                result.add(remaining.remove(selectedIndex));
+                continue;
+            }
+            
+            // Calculate selection probabilities based on inverse regret
+            // Activities with lower regret (closer to maximum) have higher probability
+            List<Double> probabilities = new ArrayList<>();
+            for (int i = 0; i < remaining.size(); i++) {
+                // Inverse regret: higher probability for lower regret
+                double inverseRegret = totalRegret - regrets.get(i);
+                probabilities.add(inverseRegret);
+            }
+            
+            // Normalize probabilities
+            double totalInverseRegret = probabilities.stream().mapToDouble(Double::doubleValue).sum();
+            for (int i = 0; i < probabilities.size(); i++) {
+                probabilities.set(i, probabilities.get(i) / totalInverseRegret);
+            }
+            
+            // Select activity based on probabilities
+            double randomValue = random.nextDouble();
+            double cumulativeProbability = 0.0;
+            int selectedIndex = 0;
+            
+            for (int i = 0; i < probabilities.size(); i++) {
+                cumulativeProbability += probabilities.get(i);
+                if (randomValue <= cumulativeProbability) {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+            
+            result.add(remaining.remove(selectedIndex));
+        }
+        
+        return result;
+    }
 }

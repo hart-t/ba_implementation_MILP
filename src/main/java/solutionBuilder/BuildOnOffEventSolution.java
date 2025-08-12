@@ -48,94 +48,99 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
             model.update(); // Ensure the model is updated after adding variables
             if (!startTimesList.isEmpty()) {
                 Map<Integer, Integer> startTimes = null;
+                model.set(GRB.IntAttr.NumStart, startTimesList.size());
+                model.update();
+
                 // Iterate through the list of start times and set the start values for the variables
                 // This allows for multiple MIP starts, where each start time configuration can be tried
                 // by Gurobi to find a feasible solution faster.
                 // If there are multiple start times, Gurobi will try each one in sequence and choose the best one.
-                for (int mipStartIndex = 0; mipStartIndex < startTimesList.size(); mipStartIndex++) {
-                    model.set(GRB.IntParam.StartNumber, mipStartIndex);
-                    startTimes = startTimesList.get(mipStartIndex);
-                }
                 
-                startTimes = DeleteDummyJobs.deleteDummyJobsFromStartTimesMap(startTimes);
+                for (int s = 0; s < model.get(GRB.IntAttr.NumStart); s++) {
+                    model.set(GRB.IntParam.StartNumber, s);
+                    System.out.println("Setting MIP start for index: " + s);
+                    startTimes = startTimesList.get(s);
 
-                // print start times for debugging
-                System.out.println("Start times from heuristic: " + startTimes);
-                
-                // Set the start values for the starting time variables based on the provided startTimes map
-                // Sort start times to assign events in chronological order
-                List<Map.Entry<Integer, Integer>> sortedEntries = new ArrayList<>(startTimes.entrySet());
-                sortedEntries.sort(Map.Entry.comparingByValue());
-                System.out.println("Sorted start times: " + sortedEntries);
+                    startTimes = DeleteDummyJobs.deleteDummyJobsFromStartTimesMap(startTimes);
 
-                // Event counter starting at 0
-                int event = 0;
-                
-                for (Map.Entry<Integer, Integer> entry : sortedEntries) {
-                    int job = entry.getKey();
-                    int startTime = entry.getValue();
+                    // print start times for debugging
+                    System.out.println("Start times from heuristic: " + startTimes);
                     
-                    // Set jobActiveAtEventVars[job][counter] to 1
-                    GRBVar var1 = model.getVarByName("jobActiveAtEvent[" + job + "][" + event + "]");
-                
-                    // Job is set to be active at one (the corresponding) event
-                    jobActiveAtEventVars[job][event].set(GRB.DoubleAttr.Start, 1.0);
-                    var1.set(GRB.DoubleAttr.Start, 1.0);
+                    // Set the start values for the starting time variables based on the provided startTimes map
+                    // Sort start times to assign events in chronological order
+                    List<Map.Entry<Integer, Integer>> sortedEntries = new ArrayList<>(startTimes.entrySet());
+                    sortedEntries.sort(Map.Entry.comparingByValue());
+                    System.out.println("Sorted start times: " + sortedEntries);
 
-                    // The start time of the event is set to the start time of the job given by the heuristic
-                    GRBVar var2 = model.getVarByName("startOfEvent[" + event + "]");
-                    startOfEventEVars[event].set(GRB.DoubleAttr.Start, startTime);
-                    var2.set(GRB.DoubleAttr.Start, startTime);
+                    // Event counter starting at 0
+                    int event = 0;
                     
-                    event++;
-                }
+                    for (Map.Entry<Integer, Integer> entry : sortedEntries) {
+                        int job = entry.getKey();
+                        int startTime = entry.getValue();
+                        
+                        // Set jobActiveAtEventVars[job][counter] to 1
+                        GRBVar var1 = model.getVarByName("jobActiveAtEvent[" + job + "][" + event + "]");
+                    
+                        // Job is set to be active at one (the corresponding) event
+                        jobActiveAtEventVars[job][event].set(GRB.DoubleAttr.Start, 1.0);
+                        var1.set(GRB.DoubleAttr.Start, 1.0);
 
-                model.update(); // Ensure the model is updated after setting start values
+                        // The start time of the event is set to the start time of the job given by the heuristic
+                        GRBVar var2 = model.getVarByName("startOfEvent[" + event + "]");
+                        startOfEventEVars[event].set(GRB.DoubleAttr.Start, startTime);
+                        var2.set(GRB.DoubleAttr.Start, startTime);
+                        
+                        event++;
+                    }
 
-                // For each job, check all events and set jobActiveAtEventVars accordingly
-                for (Map.Entry<Integer, Integer> jobEntry : startTimes.entrySet()) {
-                    int job = jobEntry.getKey();
-                    int jobStartTime = jobEntry.getValue();
-                    int jobEndTime = jobStartTime + noDummyData.jobDuration.get(job);
-                    
-                    System.out.println("Processing job " + job + ": start=" + jobStartTime + ", end=" + jobEndTime);
-                    
-                    // Check against all events
-                    for (int e = 0; e < noDummyData.numberJob; e++) {
-                        try {
-                            // Get the start time of this event
-                            double eventStartTime = startOfEventEVars[e].get(GRB.DoubleAttr.Start);
-                            
-                            GRBVar jobActiveVar = model.getVarByName("jobActiveAtEvent[" + job + "][" + e + "]");
-                            
-                            if (eventStartTime < jobStartTime) {
-                                // Event starts before job starts -> job not active
-                                jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 0.0);
-                                if (jobActiveVar != null) {
-                                    jobActiveVar.set(GRB.DoubleAttr.Start, 0.0);
+                    model.update(); // Ensure the model is updated after setting start values
+
+                    // For each job, check all events and set jobActiveAtEventVars accordingly
+                    for (Map.Entry<Integer, Integer> jobEntry : startTimes.entrySet()) {
+                        int job = jobEntry.getKey();
+                        int jobStartTime = jobEntry.getValue();
+                        int jobEndTime = jobStartTime + noDummyData.jobDuration.get(job);
+                        
+                        System.out.println("Processing job " + job + ": start=" + jobStartTime + ", end=" + jobEndTime);
+                        
+                        // Check against all events
+                        for (int e = 0; e < noDummyData.numberJob; e++) {
+                            try {
+                                // Get the start time of this event
+                                double eventStartTime = startOfEventEVars[e].get(GRB.DoubleAttr.Start);
+                                
+                                GRBVar jobActiveVar = model.getVarByName("jobActiveAtEvent[" + job + "][" + e + "]");
+                                
+                                if (eventStartTime < jobStartTime) {
+                                    // Event starts before job starts -> job not active
+                                    jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 0.0);
+                                    if (jobActiveVar != null) {
+                                        jobActiveVar.set(GRB.DoubleAttr.Start, 0.0);
+                                    }
+                                } else if (eventStartTime >= jobStartTime && eventStartTime < jobEndTime) {
+                                    // Event starts during job execution -> job active
+                                    jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 1.0);
+                                    if (jobActiveVar != null) {
+                                        jobActiveVar.set(GRB.DoubleAttr.Start, 1.0);
+                                    }
+                                } else if (eventStartTime >= jobEndTime) {
+                                    // Event starts after job ends -> job not active
+                                    jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 0.0);
+                                    if (jobActiveVar != null) {
+                                        jobActiveVar.set(GRB.DoubleAttr.Start, 0.0);
+                                    }
                                 }
-                            } else if (eventStartTime >= jobStartTime && eventStartTime < jobEndTime) {
-                                // Event starts during job execution -> job active
-                                jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 1.0);
-                                if (jobActiveVar != null) {
-                                    jobActiveVar.set(GRB.DoubleAttr.Start, 1.0);
-                                }
-                            } else if (eventStartTime >= jobEndTime) {
-                                // Event starts after job ends -> job not active
-                                jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 0.0);
-                                if (jobActiveVar != null) {
-                                    jobActiveVar.set(GRB.DoubleAttr.Start, 0.0);
-                                }
+
+                                
+                            } catch (Exception ex) {
+                                System.err.println("Error processing job " + job + " event " + e + ": " + ex.getMessage());
                             }
-
-                            
-                        } catch (Exception ex) {
-                            System.err.println("Error processing job " + job + " event " + e + ": " + ex.getMessage());
                         }
                     }
                 }
-            }
-            model.update(); // Ensure the model is updated after modifying variables
+                model.update(); // Ensure the model is updated after modifying variables
+            }        
         } catch (Exception e) {
             System.err.println("Error while creating a start solution from given start times: " 
                 + e.getMessage());

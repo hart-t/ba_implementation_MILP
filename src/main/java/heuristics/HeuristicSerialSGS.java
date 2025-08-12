@@ -83,8 +83,7 @@ public class HeuristicSerialSGS implements HeuristicInterface {
                     break;
 
                 case enums.SamplingType.RBRS:
-                    // TODO: Implement regret-based sampling
-                    eligibleActivities = priorityStrategy.getSampledList(data, eligibleActivities);
+                    eligibleActivities = priorityStrategy.getRegretBasedSampledList(data, eligibleActivities);
                     break;
             }
 
@@ -233,4 +232,4 @@ public class HeuristicSerialSGS implements HeuristicInterface {
         return false;
     }
 }
- 
+

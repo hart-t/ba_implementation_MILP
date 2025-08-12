@@ -70,4 +70,73 @@ public class MostResourceUsageRule implements PriorityRuleInterface {
         
         return result;
     }
+
+    public List<Integer> getRegretBasedSampledList(JobDataInstance data, List<Integer> eligibleActivities) {
+        if (eligibleActivities.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<Integer> result = new ArrayList<>();
+        List<Integer> remaining = new ArrayList<>(eligibleActivities);
+        Random random = new Random();
+        
+        while (!remaining.isEmpty()) {
+            // Calculate regret for each remaining activity
+            List<Double> regrets = new ArrayList<>();
+            double totalRegret = 0.0;
+            
+            // Find the maximum resource usage among remaining activities (best choice for this rule)
+            int maxResourceUsage = remaining.stream()
+                .mapToInt(job -> data.jobResource.get(job).stream().mapToInt(Integer::intValue).sum())
+                .max()
+                .orElse(0);
+            
+            // Calculate regret for each activity (difference from maximum)
+            for (int job : remaining) {
+                int resourceUsage = data.jobResource.get(job).stream().mapToInt(Integer::intValue).sum();
+                double regret = maxResourceUsage - resourceUsage;
+                regrets.add(regret);
+                totalRegret += regret;
+            }
+            
+            // If all activities have the same resource usage (totalRegret = 0), select randomly
+            if (totalRegret == 0.0) {
+                int selectedIndex = random.nextInt(remaining.size());
+                result.add(remaining.remove(selectedIndex));
+                continue;
+            }
+            
+            // Calculate selection probabilities based on inverse regret
+            // Activities with lower regret (closer to maximum) have higher probability
+            List<Double> probabilities = new ArrayList<>();
+            for (int i = 0; i < remaining.size(); i++) {
+                // Inverse regret: higher probability for lower regret
+                double inverseRegret = totalRegret - regrets.get(i);
+                probabilities.add(inverseRegret);
+            }
+            
+            // Normalize probabilities
+            double totalInverseRegret = probabilities.stream().mapToDouble(Double::doubleValue).sum();
+            for (int i = 0; i < probabilities.size(); i++) {
+                probabilities.set(i, probabilities.get(i) / totalInverseRegret);
+            }
+            
+            // Select activity based on probabilities
+            double randomValue = random.nextDouble();
+            double cumulativeProbability = 0.0;
+            int selectedIndex = 0;
+            
+            for (int i = 0; i < probabilities.size(); i++) {
+                cumulativeProbability += probabilities.get(i);
+                if (randomValue <= cumulativeProbability) {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+            
+            result.add(remaining.remove(selectedIndex));
+        }
+        
+        return result;
+    }
 }

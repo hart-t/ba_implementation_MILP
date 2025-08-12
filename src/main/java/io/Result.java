@@ -1,7 +1,6 @@
 package io;
 
 import java.util.HashSet;
-import java.util.List;
 
 import enums.ModelType;
 import interfaces.ModelSolutionInterface;
