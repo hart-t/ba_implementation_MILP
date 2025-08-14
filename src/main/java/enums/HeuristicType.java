@@ -5,6 +5,7 @@ import heuristics.*;
 
 public enum HeuristicType {
     SSGS("SSGS", "Serial Schedule Generation Scheme", true),
+    GA("GA", "Genetic Algorithm", false),
     // Add improvement heuristics here with false flag
     ;
     
@@ -26,6 +27,8 @@ public enum HeuristicType {
         switch (this) {
             case SSGS:
                 return new HeuristicSerialSGS(priorityRule.createRule(), samplingType.createSamplingType());
+            case GA:
+                return new HeuristicGeneticAlgorithm();
             default:
                 throw new UnsupportedOperationException("Heuristic not implemented: " + this);
         }

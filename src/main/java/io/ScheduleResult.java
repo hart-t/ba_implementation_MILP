@@ -39,5 +39,14 @@ public class ScheduleResult {
     public void addStartTimes(Map<Integer,Integer> computedStartTimes) {
         startTimes.add(computedStartTimes);
     }
+
+    public boolean startTimesMatch(Map<Integer,Integer> newStartTimes) {
+        for (Map<Integer,Integer> startTimesMap : startTimes) {
+            if (startTimesMap.equals(newStartTimes)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 

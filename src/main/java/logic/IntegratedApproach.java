@@ -31,24 +31,29 @@ public class IntegratedApproach {
             }
             
             HeuristicType heuristicType = HeuristicType.fromCode(parts[0]);
-            PriorityRuleType priorityRule = PriorityRuleType.fromCode(parts[1]);
 
-            String[] samplingConfigParts = parts[2].split("_");
-            SamplingType samplingType = SamplingType.fromCode(samplingConfigParts[0]);
-
-            String log = "Added heuristic: " + heuristicType.getDescription() + 
-                " with " + priorityRule.getDescription() + " with " + samplingType.getDescription();
-
-            if (samplingType.equals(SamplingType.NS)) {
-                heuristics.add(heuristicType.createHeuristic(priorityRule, samplingType));
+            //TODO make it better
+            if (heuristicType.equals(HeuristicType.GA)) {
+                heuristics.add(heuristicType.createHeuristic(PriorityRuleType.MJS, SamplingType.NS));
             } else {
-                for (int i = 0; i < Integer.parseInt(samplingConfigParts[1]); i++) {
+                PriorityRuleType priorityRule = PriorityRuleType.fromCode(parts[1]);
+
+                String[] samplingConfigParts = parts[2].split("_");
+                SamplingType samplingType = SamplingType.fromCode(samplingConfigParts[0]);
+
+                String log = "Added heuristic: " + heuristicType.getDescription() + 
+                    " with " + priorityRule.getDescription() + " with " + samplingType.getDescription();
+
+                if (samplingType.equals(SamplingType.NS)) {
                     heuristics.add(heuristicType.createHeuristic(priorityRule, samplingType));
+                } else {
+                    for (int i = 0; i < Integer.parseInt(samplingConfigParts[1]); i++) {
+                        heuristics.add(heuristicType.createHeuristic(priorityRule, samplingType));
+                    }
+                    log += " with " + samplingConfigParts[1] + " tries";
                 }
-                log += " with " + samplingConfigParts[1] + " tries";
+                System.out.println(log);
             }
-            
-            System.out.println(log);
         }
         
         return heuristics;

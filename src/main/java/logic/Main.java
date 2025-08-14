@@ -42,6 +42,7 @@ public class Main {
                 //"SSGS-MLST-NS",      // Serial SGS with Minimum Latest Start Time
                 //"SSGS-MLFT-NS",      // Serial SGS with Minimum Latest Finish Time
                 //"SSGS-MJS-NS"       // Serial SGS with Minimum Job Slack
+                //"GA-SPT-NS"
             );
             
             // Configure models using simple string codes
