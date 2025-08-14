@@ -17,9 +17,8 @@ public class GALogic {
     HartmannGA hartmannGA;
 
     public GALogic(JobDataInstance data) {
-        JobDataInstance noDummyData = DeleteDummyJobs.deleteDummyJobs(data);
         // Convert JobDataInstance to Project format
-        this.project = convertToProject(noDummyData);
+        this.project = convertToProject(data);
         this.preprocessor = project.getPreprocessor();
         this.decoder = new SSGSDecoder(project);
         this.listHelper = new ActivityListHelper(project);
@@ -138,47 +137,97 @@ public class GALogic {
     }
     
     private Project convertToProject(JobDataInstance data) {
-        // Convert List<Integer>[] to List<Integer>[]
-        @SuppressWarnings("unchecked")
-        List<Integer>[] P = (List<Integer>[]) new List[data.numberJob + 2];
-        @SuppressWarnings("unchecked")
-        List<Integer>[] S = (List<Integer>[]) new List[data.numberJob + 2];
+        // The genetic algorithm actually EXPECTS dummy jobs in the Project format
+        // Project.J = number of real jobs, but arrays include dummies at indices 0 and J+1
         
-        for (int i = 0; i <= data.numberJob + 1; i++) {
+        int realJobs = data.numberJob - 2;  // 30 real jobs (exclude original dummies)
+        int totalJobs = realJobs + 2;       // 32 total (30 real + 2 new dummies)
+        
+        // Create P, S arrays for ALL jobs (including new dummies at 0 and realJobs+1)
+        @SuppressWarnings("unchecked")
+        List<Integer>[] P = (List<Integer>[]) new List[totalJobs];
+        @SuppressWarnings("unchecked")
+        List<Integer>[] S = (List<Integer>[]) new List[totalJobs];
+        
+        // Initialize all lists
+        for (int i = 0; i < totalJobs; i++) {
             P[i] = new ArrayList<>();
             S[i] = new ArrayList<>();
+        }
+        
+        // Remove original dummy jobs and get clean data
+        JobDataInstance cleanData = DeleteDummyJobs.deleteDummyJobs(data);
+        
+        // Copy clean relationships and shift indices by +1 (to make room for dummy start at 0)
+        for (int i = 0; i < cleanData.numberJob; i++) {
+            int projectIndex = i + 1; // Jobs 1-30 in project format
             
-            if (i < data.jobPredecessors.size() && data.jobPredecessors.get(i) != null) {
-                for (Integer pred : data.jobPredecessors.get(i)) {
-                    P[i].add(pred);
+            // Copy predecessors
+            if (i < cleanData.jobPredecessors.size() && cleanData.jobPredecessors.get(i) != null) {
+                for (Integer pred : cleanData.jobPredecessors.get(i)) {
+                    int predProjectIndex = pred + 1; // Shift by +1
+                    if (predProjectIndex >= 1 && predProjectIndex <= realJobs) {
+                        P[projectIndex].add(predProjectIndex);
+                    }
                 }
             }
             
-            if (i < data.jobSuccessors.size() && data.jobSuccessors.get(i) != null) {
-                for (Integer succ : data.jobSuccessors.get(i)) {
-                    S[i].add(succ);
+            // Copy successors
+            if (i < cleanData.jobSuccessors.size() && cleanData.jobSuccessors.get(i) != null) {
+                for (Integer succ : cleanData.jobSuccessors.get(i)) {
+                    int succProjectIndex = succ + 1; // Shift by +1
+                    if (succProjectIndex >= 1 && succProjectIndex <= realJobs) {
+                        S[projectIndex].add(succProjectIndex);
+                    }
                 }
             }
         }
         
-        // Convert durations to array
-        int[] durations = data.jobDuration.stream().mapToInt(Integer::intValue).toArray();
-        
-        // Convert resource requirements to 2D array
-        int[][] resources = new int[data.jobResource.size()][];
-        for (int i = 0; i < data.jobResource.size(); i++) {
-            resources[i] = data.jobResource.get(i).stream().mapToInt(Integer::intValue).toArray();
+        // Add dummy start job (index 0) - connects to all jobs without predecessors
+        for (int i = 1; i <= realJobs; i++) {
+            if (P[i].isEmpty()) {
+                P[i].add(0);
+                S[0].add(i);
+            }
         }
+        
+        // Add dummy end job (index realJobs+1 = 31) - all jobs without successors connect to it
+        for (int i = 1; i <= realJobs; i++) {
+            if (S[i].isEmpty()) {
+                S[i].add(realJobs + 1);
+                P[realJobs + 1].add(i);
+            }
+        }
+        
+        // Create duration array: [dummy=0, real_jobs_1_to_30, dummy=0]
+        int[] durations = new int[totalJobs];
+        durations[0] = 0; // Dummy start
+        for (int i = 0; i < cleanData.jobDuration.size(); i++) {
+            durations[i + 1] = cleanData.jobDuration.get(i);
+        }
+        durations[realJobs + 1] = 0; // Dummy end
+        
+        // Create resource array: [dummy=0s, real_jobs_1_to_30, dummy=0s]
+        int[][] resources = new int[totalJobs][cleanData.resourceCapacity.size()];
+        // durations[0] and durations[realJobs+1] are already 0 (dummy jobs use no resources)
+        for (int i = 0; i < cleanData.jobResource.size(); i++) {
+            for (int k = 0; k < cleanData.resourceCapacity.size(); k++) {
+                resources[i + 1][k] = cleanData.jobResource.get(i).get(k);
+            }
+        }
+        
+        // Resource capacity array
+        int[] resourceCapacity = cleanData.resourceCapacity.stream().mapToInt(Integer::intValue).toArray();
         
         return new Project(
-            data.numberJob,
-            data.resourceCapacity.size(),
-            durations,
-            resources,
-            data.resourceCapacity.stream().mapToInt(Integer::intValue).toArray(),
-            P,
-            S,
-            data.horizon
+            realJobs,           // J = 30 (real jobs only, dummies not counted)
+            cleanData.resourceCapacity.size(), // K = 4 (number of resources)
+            durations,          // p[0..31] (includes dummies at 0 and 31)
+            resources,          // r[0..31][0..3] (includes dummies at 0 and 31)
+            resourceCapacity,   // R[0..3]
+            P,                  // P[0..31] (includes dummies at 0 and 31)
+            S,                  // S[0..31] (includes dummies at 0 and 31)
+            cleanData.horizon   // horizon
         );
     }
 }

@@ -6649,3 +6649,87 @@ Solution count 1: 43
 Time limit reached
 Best objective 4.300000000000e+01, best bound 3.700000000000e+01, gap 13.9535%
 Warning: constraint name "event 0 starts at time dated 0 (44)" has a space
+
+Gurobi 12.0.2 (linux64) logging started Do 14 Aug 2025 14:17:05 CEST
+
+Set parameter LogFile to value "linear_model.log"
+Gurobi Optimizer version 12.0.2 build v12.0.2rc0 (linux64 - "Ubuntu 22.04.5 LTS")
+
+CPU model: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 4 physical cores, 8 logical processors, using up to 4 threads
+
+Non-default parameters:
+TimeLimit  30
+MIPGap  0
+Method  2
+Threads  4
+
+Academic license 2623289 - for non-commercial use only - registered to ue___@student.kit.edu
+Optimize a model with 713 rows, 4073 columns and 36458 nonzeros
+Model fingerprint: 0xc54e67bf
+Variable types: 0 continuous, 4073 integer (4073 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+02]
+  Objective range  [4e+01, 2e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+01]
+
+User MIP start produced solution with objective 43 (0.01s)
+Loaded user MIP start with objective 43
+
+Presolve removed 670 rows and 4009 columns
+Presolve time: 0.16s
+Presolved: 43 rows, 64 columns, 284 nonzeros
+Variable types: 0 continuous, 64 integer (59 binary)
+
+Explored 0 nodes (0 simplex iterations) in 0.17 seconds (0.21 work units)
+Thread count was 4 (of 8 available processors)
+
+Solution count 1: 43 
+
+Optimal solution found (tolerance 0.00e+00)
+Best objective 4.300000000000e+01, best bound 4.300000000000e+01, gap 0.0000%
+Warning: variable name "startingTime[0] at [0]" has a space
+Warning: to let Gurobi read it back, use rlp format
+
+Gurobi 12.0.2 (linux64) logging started Do 14 Aug 2025 14:19:18 CEST
+
+Set parameter LogFile to value "linear_model.log"
+Gurobi Optimizer version 12.0.2 build v12.0.2rc0 (linux64 - "Ubuntu 22.04.5 LTS")
+
+CPU model: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz, instruction set [SSE2|AVX|AVX2]
+Thread count: 4 physical cores, 8 logical processors, using up to 4 threads
+
+Non-default parameters:
+TimeLimit  30
+MIPGap  0
+Method  2
+Threads  4
+
+Academic license 2623289 - for non-commercial use only - registered to ue___@student.kit.edu
+Optimize a model with 713 rows, 4073 columns and 36458 nonzeros
+Model fingerprint: 0x6539e177
+Variable types: 0 continuous, 4073 integer (4073 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+02]
+  Objective range  [4e+01, 2e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+01]
+
+User MIP start produced solution with objective 43 (0.01s)
+Loaded user MIP start with objective 43
+
+Presolve removed 670 rows and 4009 columns
+Presolve time: 0.20s
+Presolved: 43 rows, 64 columns, 284 nonzeros
+Variable types: 0 continuous, 64 integer (59 binary)
+
+Explored 0 nodes (0 simplex iterations) in 0.20 seconds (0.21 work units)
+Thread count was 4 (of 8 available processors)
+
+Solution count 1: 43 
+
+Optimal solution found (tolerance 0.00e+00)
+Best objective 4.300000000000e+01, best bound 4.300000000000e+01, gap 0.0000%
+Warning: variable name "startingTime[0] at [0]" has a space
+Warning: to let Gurobi read it back, use rlp format

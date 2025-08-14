@@ -9,7 +9,6 @@ import heuristics.geneticAlgorithm.*;
 import interfaces.HeuristicInterface;
 import io.JobDataInstance;
 import io.ScheduleResult;
-import utility.DeleteDummyJobs;
 
 public class HeuristicGeneticAlgorithm implements HeuristicInterface {
 
@@ -50,11 +49,14 @@ public class HeuristicGeneticAlgorithm implements HeuristicInterface {
     }
 
     private ScheduleResult determineStartTimes(JobDataInstance data) {
-        JobDataInstance noDummyData = DeleteDummyJobs.deleteDummyJobs(data);
-        Individual result = GeneticAlgorithmRunner.solve(noDummyData);
-
-        // Convert the result to a ScheduleResult
-        return convertToScheduleResult(result);
+        try {
+            Individual result = GeneticAlgorithmRunner.solve(data);
+            return convertToScheduleResult(result);
+        } catch (Exception e) {
+            System.err.println("Error in genetic algorithm: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to maintain original behavior
+        }
     }
 
     private ScheduleResult convertToScheduleResult(Individual individual) {
