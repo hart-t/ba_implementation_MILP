@@ -171,11 +171,13 @@ public class DiscreteTimeModel implements ModelInterface {
         GRBVar[][] startingTimeVars;
         GRBModel model;
         int[][] earliestLatestStartTimes;
+        long timeToCreateVariables;
 
-        public DiscreteTimeModelSolution(GRBVar[][] startingTimeVars, GRBModel model, int[][] earliestLatestStartTimes) {
+        public DiscreteTimeModelSolution(GRBVar[][] startingTimeVars, GRBModel model, int[][] earliestLatestStartTimes, long timeToCreateVariables) {
             this.startingTimeVars = startingTimeVars;
             this.model = model;
             this.earliestLatestStartTimes = earliestLatestStartTimes;
+            this.timeToCreateVariables = timeToCreateVariables;
         }
 
         @Override
@@ -194,6 +196,11 @@ public class DiscreteTimeModel implements ModelInterface {
         @Override
         public ModelType getModelType() {
             return ModelType.DISC;
+        }
+
+        @Override
+        public long getTimeToCreateVariables() {
+            return timeToCreateVariables;
         }
     }
 

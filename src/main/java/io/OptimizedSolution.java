@@ -23,4 +23,9 @@ public class OptimizedSolution implements ModelSolutionInterface {
     public ModelType getModelType() {
         return modelType;
     }
+
+    @Override
+    public long getTimeToCreateVariables() {
+        return 0;
+    }
 }

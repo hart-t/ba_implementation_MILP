@@ -18,6 +18,9 @@ public class BuildFlowSolution implements CompletionMethodInterface {
     public ModelSolutionInterface buildSolution(List<Map<Integer, Integer>> startTimesList, JobDataInstance data,
     GRBModel model) {
 
+        long timeToCreateVariablesStart = System.nanoTime();
+        long timeToCreateVariables = 0;
+
         GRBVar[] startingTimeVars = new GRBVar[data.numberJob];
         GRBVar[][] precedenceVars =new GRBVar[data.numberJob][data.numberJob];
         GRBVar[][][] continuousFlowVars =new GRBVar[data.numberJob][data.numberJob][data.resourceCapacity.size()];
@@ -54,6 +57,8 @@ public class BuildFlowSolution implements CompletionMethodInterface {
             }
 
             model.update(); // Ensure the model is updated after adding variables
+            timeToCreateVariables = (System.nanoTime() - timeToCreateVariablesStart) / 1_000_000; // Convert to milliseconds
+
             if (!startTimesList.isEmpty()) {
                 Map<Integer, Integer> startTimes = null;
                 model.set(GRB.IntAttr.NumStart, startTimesList.size());
@@ -141,7 +146,7 @@ public class BuildFlowSolution implements CompletionMethodInterface {
         FlowBasedContinuousTimeModel flowBasedContinuousTimeModel = new FlowBasedContinuousTimeModel();
         FlowBasedContinuousTimeModelSolution solution = flowBasedContinuousTimeModel.new 
                                         FlowBasedContinuousTimeModelSolution(startingTimeVars, precedenceVars,
-                                         continuousFlowVars, model, earliestLatestStartTimes);
+                                         continuousFlowVars, model, earliestLatestStartTimes, timeToCreateVariables);
 
         return solution;
     }

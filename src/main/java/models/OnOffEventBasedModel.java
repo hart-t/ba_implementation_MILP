@@ -327,14 +327,16 @@ public class OnOffEventBasedModel implements ModelInterface {
 
         GRBModel model;
         int[][] earliestLatestStartTimes;
+        long timeToCreateVariables;
 
         public OnOffEventBasedModelSolution(GRBVar makespanVar, GRBVar[] startOfEventE, GRBVar[][] jobActiveAtEvent, 
-                                            GRBModel model, int[][] earliestLatestStartTimes) {
+                                            GRBModel model, int[][] earliestLatestStartTimes, long timeToCreateVariables) {
             this.makespanVar = makespanVar;
             this.startOfEventEVars = startOfEventE;
             this.jobActiveAtEventVars = jobActiveAtEvent;
             this.earliestLatestStartTimes = earliestLatestStartTimes;
             this.model = model;
+            this.timeToCreateVariables = timeToCreateVariables;
         }
 
         @Override
@@ -361,6 +363,11 @@ public class OnOffEventBasedModel implements ModelInterface {
         @Override
         public ModelType getModelType() {
             return ModelType.EVENT;
+        }
+
+        @Override
+        public long getTimeToCreateVariables() {
+            return timeToCreateVariables;
         }
     }
 

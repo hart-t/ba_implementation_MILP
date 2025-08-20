@@ -75,6 +75,7 @@ public class IntegratedApproach {
         ScheduleResult scheduleResult = new ScheduleResult(new HashSet<>(), new ArrayList<Map<Integer,Integer>>());
         Result result;
         if (!heuristics.isEmpty()) {
+            long startTime = System.nanoTime();
             List<HeuristicInterface> openingHeuristics = new ArrayList<>();
             List<HeuristicInterface> improvementHeuristics = new ArrayList<>();
 
@@ -97,6 +98,9 @@ public class IntegratedApproach {
             for (HeuristicInterface heuristic : improvementHeuristics) {
                 scheduleResult = heuristic.determineScheduleResult(data, scheduleResult);
             }
+
+            long timeComputingHeuristicStartTimes = System.nanoTime() - startTime;
+            scheduleResult.setTimeComputingHeuristicStartTimes(timeComputingHeuristicStartTimes);
             result = solver.solve(data, scheduleResult);
         } else {
             result = solver.solve(data, scheduleResult);

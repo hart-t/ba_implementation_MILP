@@ -8,4 +8,6 @@ public interface ModelSolutionInterface {
     public GRBModel getModel();
 
     public ModelType getModelType();
+
+    public long getTimeToCreateVariables();
 }

@@ -39,7 +39,9 @@ public class WarmstartSolver {
             GRBModel grbOptimizationModel = new GRBModel(env);
 
             // Build the solution using the completion method
+            long startTime = System.nanoTime();
             ModelSolutionInterface initialSolution = completionMethod.buildSolution(scheduleResult.getStartTimes(), data, grbOptimizationModel);
+            long timeComputingAndBuildingHeuristicStartSolution = System.nanoTime() - startTime - initialSolution.getTimeToCreateVariables() + scheduleResult.getTimeComputingHeuristicStartTimes();
 
             // print the start times used to build the initial solution
             System.out.println("Initial start times used to build the solution: " + scheduleResult.getStartTimes());
@@ -79,7 +81,7 @@ public class WarmstartSolver {
             int[][] startAndFinishTimes = model.getStartAndFinishTimes(grbOptimizationModel, data);
 
             SolverResults solverResults = buildSolverResults(grbOptimizationModel);
-            Result result = new Result(new OptimizedSolution(grbOptimizationModel, initialSolution.getModelType()), solverResults, startAndFinishTimes, scheduleResult, data.instanceName);
+            Result result = new Result(new OptimizedSolution(grbOptimizationModel, initialSolution.getModelType()), solverResults, startAndFinishTimes, scheduleResult, data.instanceName, timeComputingAndBuildingHeuristicStartSolution);
 
             // Clean up Gurobi model and environment
             grbOptimizationModel.dispose();

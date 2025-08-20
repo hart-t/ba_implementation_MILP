@@ -162,14 +162,16 @@ public class IntervalEventBasedModel implements ModelInterface {
         private GRBVar[][][] ziefVars;
         private GRBModel model;
         private int[][] earliestLatestStartTimes;
+        private long timeToCreateVariables;
 
         public IntervalEventBasedModelSolution(GRBVar[] startOfEventVars, 
                                                 GRBVar[][][] ziefVars, GRBModel model, 
-                                                int[][] earliestLatestStartTimes) {
+                                                int[][] earliestLatestStartTimes, long timeToCreateVariables) {
             this.startOfEventVars = startOfEventVars;
             this.ziefVars = ziefVars;
             this.model = model;
             this.earliestLatestStartTimes = earliestLatestStartTimes;
+            this.timeToCreateVariables = timeToCreateVariables;
         }
 
         @Override
@@ -192,6 +194,11 @@ public class IntervalEventBasedModel implements ModelInterface {
         
         public int[][] getEarliestLatestStartTimes() {
             return earliestLatestStartTimes;
+        }
+
+        @Override
+        public long getTimeToCreateVariables() {
+            return timeToCreateVariables;
         }
     }
 

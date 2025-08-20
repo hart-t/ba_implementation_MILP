@@ -9,6 +9,7 @@ public class ScheduleResult {
     // Can contain multiple start times, where job starting times may vary but the makespans are the same
     private List<Map<Integer, Integer>> startTimes;
     private int makespan;
+    private long timeComputingHeuristicStartTimes;
 
    public ScheduleResult(HashSet<String> usedHeuristics, List<Map<Integer, Integer>> startTimes) {
         this.usedHeuristics = usedHeuristics;
@@ -47,6 +48,14 @@ public class ScheduleResult {
             }
         }
         return false;
+    }
+
+    public void setTimeComputingHeuristicStartTimes(long timeComputingHeuristicStartTimes) {
+        this.timeComputingHeuristicStartTimes = timeComputingHeuristicStartTimes;
+    }
+
+    public long getTimeComputingHeuristicStartTimes() {
+        return timeComputingHeuristicStartTimes;
     }
 }
 

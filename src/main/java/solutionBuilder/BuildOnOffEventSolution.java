@@ -18,6 +18,9 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
 
     public ModelSolutionInterface buildSolution(List<Map<Integer, Integer>> startTimesList, JobDataInstance data,
     GRBModel model) {
+
+        long timeToCreateVariablesStart = System.nanoTime();
+        long timeToCreateVariables = 0;
         int[][] earliestLatestStartTimes = DAGLongestPath.generateEarliestAndLatestStartTimes
                         (data.jobPredecessors, data.jobDuration, data.horizon);
         earliestLatestStartTimes = DeleteDummyJobs.deleteDummyJobsFromEarliestLatestStartTimes(earliestLatestStartTimes);
@@ -43,9 +46,9 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
                 startOfEventEVars[e] = model.addVar(0.0, noDummyData.horizon, 0.0, GRB.CONTINUOUS, "startOfEvent[" + e + "]");
             }
 
-
-
             model.update(); // Ensure the model is updated after adding variables
+            timeToCreateVariables = (System.nanoTime() - timeToCreateVariablesStart) / 1_000_000; // Convert to milliseconds
+
             if (!startTimesList.isEmpty()) {
                 Map<Integer, Integer> startTimes = null;
                 model.set(GRB.IntAttr.NumStart, startTimesList.size());
@@ -150,7 +153,7 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
         OnOffEventBasedModel onOffEventBasedModel = new OnOffEventBasedModel();
         OnOffEventBasedModelSolution solution = onOffEventBasedModel.new 
                                         OnOffEventBasedModelSolution(makespanVar, startOfEventEVars, jobActiveAtEventVars, model,
-                                        earliestLatestStartTimes);
+                                        earliestLatestStartTimes, timeToCreateVariables);
 
         return solution;
     }

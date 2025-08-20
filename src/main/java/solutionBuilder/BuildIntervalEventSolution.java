@@ -18,6 +18,9 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
 
     public ModelSolutionInterface buildSolution(List<Map<Integer, Integer>> startTimesList, JobDataInstance data,
     GRBModel model) {
+
+        long timeToCreateVariablesStart = System.nanoTime();
+        long timeToCreateVariables = 0;
         int[][] earliestLatestStartTimes = DAGLongestPath.generateEarliestAndLatestStartTimes
                         (data.jobPredecessors, data.jobDuration, data.horizon);
 
@@ -43,9 +46,9 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
                 }
             }
 
-
-
             model.update(); // Ensure the model is updated after adding variables
+            timeToCreateVariables = (System.nanoTime() - timeToCreateVariablesStart) / 1_000_000; // Convert to milliseconds
+
             if (!startTimesList.isEmpty()) {
                 Map<Integer, Integer> startTimes = null;
                 model.set(GRB.IntAttr.NumStart, startTimesList.size());
@@ -122,7 +125,7 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
         IntervalEventBasedModel intervalEventBasedModel = new IntervalEventBasedModel();
         IntervalEventBasedModelSolution solution = intervalEventBasedModel.new
                                         IntervalEventBasedModelSolution(startOfEventVars, jobActiveAtIntervalVars, model,
-                                        earliestLatestStartTimes);
+                                        earliestLatestStartTimes, timeToCreateVariables);
 
         return solution;
     }

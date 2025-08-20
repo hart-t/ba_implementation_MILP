@@ -309,18 +309,20 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
         GRBVar[] startingTimeVars;
         GRBVar[][] precedenceVars;
         GRBVar[][][] continuousFlowVars;
+        long timeToCreateVariables;
 
         GRBModel model;
         int[][] earliestLatestStartTimes;
 
         public FlowBasedContinuousTimeModelSolution(GRBVar[] startingTimeVars, GRBVar[][] precedenceVars,
-                        GRBVar[][][] continuousFlowVars, GRBModel model, int[][] earliestLatestStartTimes) {
-            
+                        GRBVar[][][] continuousFlowVars, GRBModel model, int[][] earliestLatestStartTimes, long timeToCreateVariables) {
+
             this.startingTimeVars = startingTimeVars;
             this.precedenceVars = precedenceVars;
             this.continuousFlowVars = continuousFlowVars;
             this.model = model;
             this.earliestLatestStartTimes = earliestLatestStartTimes;
+            this.timeToCreateVariables = timeToCreateVariables;
         }
 
         @Override
@@ -347,6 +349,11 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
         @Override
         public ModelType getModelType() {
             return ModelType.FLOW;
+        }
+
+        @Override
+        public long getTimeToCreateVariables() {
+            return timeToCreateVariables;
         }
     }
 
