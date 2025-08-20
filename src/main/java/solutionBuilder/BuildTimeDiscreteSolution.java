@@ -7,8 +7,7 @@ import com.gurobi.gurobi.GRBVar;
 import interfaces.CompletionMethodInterface;
 import interfaces.ModelSolutionInterface;
 import io.JobDataInstance;
-import models.DiscreteTimeModel;
-import models.DiscreteTimeModel.DiscreteTimeModelSolution;
+import modelSolutions.DiscreteTimeModelSolution;
 import utility.DAGLongestPath;
 
 import java.util.*;
@@ -83,8 +82,7 @@ public class BuildTimeDiscreteSolution implements CompletionMethodInterface {
             return null;
         }
 
-        DiscreteTimeModel discreteTimeModel = new DiscreteTimeModel();
-        DiscreteTimeModelSolution solution = discreteTimeModel.new DiscreteTimeModelSolution(startingTimeVars,
+        DiscreteTimeModelSolution solution = new DiscreteTimeModelSolution(startingTimeVars,
                                                     model, earliestLatestStartTimes, timeToCreateVariables);
         return solution;
     }

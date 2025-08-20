@@ -3,6 +3,9 @@ package logic;
 import com.gurobi.gurobi.GRB;
 import com.gurobi.gurobi.GRBEnv;
 import com.gurobi.gurobi.GRBModel;
+
+import gurobi.ObjValueCallback;
+
 import com.gurobi.gurobi.GRBConstr;
 
 import interfaces.CompletionMethodInterface;
@@ -58,6 +61,11 @@ public class WarmstartSolver {
             grbOptimizationModel.set(GRB.IntParam.OutputFlag, 1);         // Enable output
             grbOptimizationModel.set(GRB.StringParam.LogFile, logFile);   // Write log to file
         
+            // Callback
+            ObjValueCallback objValueCallback = new ObjValueCallback();
+            grbOptimizationModel.setCallback(objValueCallback);
+            
+
             // Optimize and check solution quality
             grbOptimizationModel.optimize();
 
@@ -81,7 +89,7 @@ public class WarmstartSolver {
             int[][] startAndFinishTimes = model.getStartAndFinishTimes(grbOptimizationModel, data);
 
             SolverResults solverResults = buildSolverResults(grbOptimizationModel);
-            Result result = new Result(new OptimizedSolution(grbOptimizationModel, initialSolution.getModelType()), solverResults, startAndFinishTimes, scheduleResult, data.instanceName, timeComputingAndBuildingHeuristicStartSolution);
+            Result result = new Result(new OptimizedSolution(grbOptimizationModel, initialSolution.getModelType()), solverResults, startAndFinishTimes, scheduleResult, data.instanceName, timeComputingAndBuildingHeuristicStartSolution, objValueCallback.getCallbackValues());
 
             // Clean up Gurobi model and environment
             grbOptimizationModel.dispose();

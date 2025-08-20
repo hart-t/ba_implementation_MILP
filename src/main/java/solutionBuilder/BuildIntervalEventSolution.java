@@ -9,8 +9,7 @@ import interfaces.ModelSolutionInterface;
 import io.JobDataInstance;
 import utility.DAGLongestPath;
 import utility.DeleteDummyJobs;
-import models.IntervalEventBasedModel;
-import models.IntervalEventBasedModel.IntervalEventBasedModelSolution;
+import modelSolutions.IntervalEventBasedModelSolution;
 
 import java.util.*;
 
@@ -122,10 +121,8 @@ public class BuildIntervalEventSolution implements CompletionMethodInterface {
             return null;
         }
 
-        IntervalEventBasedModel intervalEventBasedModel = new IntervalEventBasedModel();
-        IntervalEventBasedModelSolution solution = intervalEventBasedModel.new
-                                        IntervalEventBasedModelSolution(startOfEventVars, jobActiveAtIntervalVars, model,
-                                        earliestLatestStartTimes, timeToCreateVariables);
+        IntervalEventBasedModelSolution solution = new IntervalEventBasedModelSolution(startOfEventVars, jobActiveAtIntervalVars, model,
+                earliestLatestStartTimes, timeToCreateVariables);
 
         return solution;
     }

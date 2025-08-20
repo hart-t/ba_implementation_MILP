@@ -12,14 +12,16 @@ public class Result {
     ScheduleResult scheduleResult;
     String instanceName;
     long timeComputingAndBuildingHeuristicStartSolution;
+    CallbackValues callbackValues;
 
-    public Result(ModelSolutionInterface modelSolution, SolverResults solverResults, int[][] startAndFinishTimes, ScheduleResult scheduleResult, String instanceName, long timeComputingAndBuildingHeuristicStartSolution) {
+    public Result(ModelSolutionInterface modelSolution, SolverResults solverResults, int[][] startAndFinishTimes, ScheduleResult scheduleResult, String instanceName, long timeComputingAndBuildingHeuristicStartSolution, CallbackValues callbackValues) {
         this.modelSolution = modelSolution;
         this.solverResults = solverResults;
         this.startAndFinishTimes = startAndFinishTimes;
         this.scheduleResult = scheduleResult;
         this.instanceName = instanceName;
         this.timeComputingAndBuildingHeuristicStartSolution = timeComputingAndBuildingHeuristicStartSolution;
+        this.callbackValues = callbackValues;
     }
 
 

@@ -2,13 +2,13 @@ package models;
 
 import com.gurobi.gurobi.*;
 
-import enums.ModelType;
 import io.JobDataInstance;
 import interfaces.ModelInterface;
 import interfaces.ModelSolutionInterface;
 import interfaces.CompletionMethodInterface;
 import solutionBuilder.BuildOnOffEventSolution;
 import utility.DeleteDummyJobs;
+import modelSolutions.OnOffEventBasedModelSolution;
 
 /**
  * On off Event-Based Model
@@ -318,57 +318,6 @@ public class OnOffEventBasedModel implements ModelInterface {
     public boolean usesDummyJobs() {
         // This model does not use dummy jobs
         return false;
-    }
-
-    public class OnOffEventBasedModelSolution implements ModelSolutionInterface {
-        GRBVar makespanVar;
-        GRBVar[] startOfEventEVars;
-        GRBVar[][] jobActiveAtEventVars;
-
-        GRBModel model;
-        int[][] earliestLatestStartTimes;
-        long timeToCreateVariables;
-
-        public OnOffEventBasedModelSolution(GRBVar makespanVar, GRBVar[] startOfEventE, GRBVar[][] jobActiveAtEvent, 
-                                            GRBModel model, int[][] earliestLatestStartTimes, long timeToCreateVariables) {
-            this.makespanVar = makespanVar;
-            this.startOfEventEVars = startOfEventE;
-            this.jobActiveAtEventVars = jobActiveAtEvent;
-            this.earliestLatestStartTimes = earliestLatestStartTimes;
-            this.model = model;
-            this.timeToCreateVariables = timeToCreateVariables;
-        }
-
-        @Override
-        public GRBModel getModel() {
-            return model;
-        }
-
-        public int[][] getEarliestLatestStartTimes() {
-            return earliestLatestStartTimes;
-        }
-
-        public GRBVar getMakespanVar() {
-            return makespanVar;
-        }
-
-        public GRBVar[] getStartOfEventEVars() {
-            return startOfEventEVars;
-        }
-
-        public GRBVar[][] getJobActiveAtEventVars() {
-            return jobActiveAtEventVars;
-        }
-
-        @Override
-        public ModelType getModelType() {
-            return ModelType.EVENT;
-        }
-
-        @Override
-        public long getTimeToCreateVariables() {
-            return timeToCreateVariables;
-        }
     }
 
     @Override

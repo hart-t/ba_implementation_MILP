@@ -7,8 +7,7 @@ import com.gurobi.gurobi.GRBVar;
 import interfaces.CompletionMethodInterface;
 import interfaces.ModelSolutionInterface;
 import io.JobDataInstance;
-import models.FlowBasedContinuousTimeModel;
-import models.FlowBasedContinuousTimeModel.FlowBasedContinuousTimeModelSolution;
+import modelSolutions.FlowBasedContinuousTimeModelSolution;
 import utility.DAGLongestPath;
 
 import java.util.*;
@@ -143,10 +142,8 @@ public class BuildFlowSolution implements CompletionMethodInterface {
             return null;
         }
 
-        FlowBasedContinuousTimeModel flowBasedContinuousTimeModel = new FlowBasedContinuousTimeModel();
-        FlowBasedContinuousTimeModelSolution solution = flowBasedContinuousTimeModel.new 
-                                        FlowBasedContinuousTimeModelSolution(startingTimeVars, precedenceVars,
-                                         continuousFlowVars, model, earliestLatestStartTimes, timeToCreateVariables);
+        FlowBasedContinuousTimeModelSolution solution = new FlowBasedContinuousTimeModelSolution(startingTimeVars, precedenceVars,
+                continuousFlowVars, model, earliestLatestStartTimes, timeToCreateVariables);
 
         return solution;
     }

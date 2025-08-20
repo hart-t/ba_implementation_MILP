@@ -9,8 +9,7 @@ import interfaces.ModelSolutionInterface;
 import io.JobDataInstance;
 import utility.DAGLongestPath;
 import utility.DeleteDummyJobs;
-import models.OnOffEventBasedModel;
-import models.OnOffEventBasedModel.OnOffEventBasedModelSolution;
+import modelSolutions.OnOffEventBasedModelSolution;
 
 import java.util.*;
 
@@ -150,9 +149,7 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
             return null;
         }
 
-        OnOffEventBasedModel onOffEventBasedModel = new OnOffEventBasedModel();
-        OnOffEventBasedModelSolution solution = onOffEventBasedModel.new 
-                                        OnOffEventBasedModelSolution(makespanVar, startOfEventEVars, jobActiveAtEventVars, model,
+        OnOffEventBasedModelSolution solution = new OnOffEventBasedModelSolution(makespanVar, startOfEventEVars, jobActiveAtEventVars, model,
                                         earliestLatestStartTimes, timeToCreateVariables);
 
         return solution;

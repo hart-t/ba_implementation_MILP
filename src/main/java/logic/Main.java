@@ -16,7 +16,17 @@ import io.JobDataInstance;
  * https://www.sciencedirect.com/science/article/pii/S0377221724005162?via%3Dihub 4.0
  * sequencing model
  * 
- * 30 vars zu viel bei IEE vermutlich erste einfach nicht mitgezählt?
+ * 
+ * 
+ * 
+ * 
+ * TODO 14.08.2025
+ * 
+ * Callback done
+ * time tracking of heuristics done
+ * ba schreiben
+ * letztes model
+ * aws server und laufen lassen
  * 
  */
 
@@ -34,7 +44,7 @@ public class Main {
              * heuristic and the schedule with the lowest makespan will be chosen.
              */
             List<String> heuristicConfigs = Arrays.asList(
-                "SSGS-SPT-RBRS_500"        // Serial SGS with Shortest Processing Time
+                //"SSGS-SPT-RBRS_500"        // Serial SGS with Shortest Processing Time
                 //"SSGS-GRPW-NS",      // Serial SGS with Greatest Rank Positional Weight
                 //"SSGS-MRU-NS",       // Serial SGS with Most Resource Usage
                 //"SSGS-RSM-NS",       // Serial SGS with Resource Scheduling Method
@@ -48,8 +58,8 @@ public class Main {
             // Configure models using simple string codes
             List<String> modelConfigs = Arrays.asList(
                  //"FLOW-30"      // Flow-Based Continuous Time Model
-                 "DISC-30"     // Discrete Time Model
-                 //"EVENT-30"     // On-Off Event Based Model
+                 //"DISC-30"     // Discrete Time Model
+                 "EVENT-30"     // On-Off Event Based Model
                  //"IEE-10"     // Interval Event Based Model
             );
 

@@ -2,7 +2,6 @@ package models;
 
 import com.gurobi.gurobi.*;
 
-import enums.ModelType;
 import io.JobDataInstance;
 import utility.TEMatrix;
 
@@ -10,6 +9,7 @@ import interfaces.CompletionMethodInterface;
 import interfaces.ModelInterface;
 import interfaces.ModelSolutionInterface;
 import solutionBuilder.BuildFlowSolution;
+import modelSolutions.FlowBasedContinuousTimeModelSolution;
 
 /**
  * Flow-based continuous time model for the Resource-Constrained Project Scheduling Problem (RCPSP).
@@ -303,58 +303,6 @@ public class FlowBasedContinuousTimeModel implements ModelInterface {
     public boolean usesDummyJobs() {
         // This model uses dummy jobs (supersource and supersink)
         return true;
-    }
-
-    public class FlowBasedContinuousTimeModelSolution implements ModelSolutionInterface {
-        GRBVar[] startingTimeVars;
-        GRBVar[][] precedenceVars;
-        GRBVar[][][] continuousFlowVars;
-        long timeToCreateVariables;
-
-        GRBModel model;
-        int[][] earliestLatestStartTimes;
-
-        public FlowBasedContinuousTimeModelSolution(GRBVar[] startingTimeVars, GRBVar[][] precedenceVars,
-                        GRBVar[][][] continuousFlowVars, GRBModel model, int[][] earliestLatestStartTimes, long timeToCreateVariables) {
-
-            this.startingTimeVars = startingTimeVars;
-            this.precedenceVars = precedenceVars;
-            this.continuousFlowVars = continuousFlowVars;
-            this.model = model;
-            this.earliestLatestStartTimes = earliestLatestStartTimes;
-            this.timeToCreateVariables = timeToCreateVariables;
-        }
-
-        @Override
-        public GRBModel getModel() {
-            return model;
-        }
-
-        public int[][] getEarliestLatestStartTimes() {
-            return earliestLatestStartTimes;
-        }
-
-        public GRBVar[] getStartingTimeVars() {
-            return startingTimeVars;
-        }
-
-        public GRBVar[][] getPrecedenceVars() {
-            return precedenceVars;
-        }
-
-        public GRBVar[][][] getContinuousFlowVars() {
-            return continuousFlowVars;
-        }
-
-        @Override
-        public ModelType getModelType() {
-            return ModelType.FLOW;
-        }
-
-        @Override
-        public long getTimeToCreateVariables() {
-            return timeToCreateVariables;
-        }
     }
 
     @Override
