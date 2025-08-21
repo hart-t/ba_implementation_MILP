@@ -7,8 +7,9 @@ public enum ModelType {
     FLOW("FLOW", "Flow-Based Continuous Time Model", FlowBasedContinuousTimeModel::new),
     DISC("DISC", "Discrete Time Model", DiscreteTimeModel::new),
     EVENT("EVENT", "On-Off Event Based Model", OnOffEventBasedModel::new),
-    IEE("IEE", "Interval Event Based Model", IntervalEventBasedModel::new);
-    
+    IEE("IEE", "Interval Event Based Model", IntervalEventBasedModel::new),
+    SEQ("SEQ", "Sequencing Model", SequencingModel::new);
+
     private final String code;
     private final String description;
     private final ModelSupplier supplier;

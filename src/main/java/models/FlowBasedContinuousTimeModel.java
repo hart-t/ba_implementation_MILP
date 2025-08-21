@@ -20,14 +20,6 @@ import modelSolutions.FlowBasedContinuousTimeModelSolution;
  * https://www.sciencedirect.com/science/article/pii/S0305054809003360
  *      flow based continuous
  *
- *      public final int numberJob;
- *      public final int horizon;
- *      public final List<Integer> jobNumSuccessors;
- *      public final List<List<Integer>> jobSuccessors;
- *      public final List<List<Integer>> jobPredecessors;
- *      public final List<Integer> jobDuration;
- *      public final List<List<Integer>> jobResource;
- *      public final List<Integer> resourceCapacity;
  * */
 
 public class FlowBasedContinuousTimeModel implements ModelInterface {
