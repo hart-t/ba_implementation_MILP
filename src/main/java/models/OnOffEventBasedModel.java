@@ -62,14 +62,6 @@ public class OnOffEventBasedModel implements ModelInterface {
 
             // delete dummy jobs from data and earliestLatestStartTimes
             data = DeleteDummyJobs.deleteDummyJobs(data);
-            /*
-             * int[] newEarliestStartTime = new int[data.numberJob];
-                int[] newLatestStartTime = new int[data.numberJob];
-                for (int i = 1; i < earliestStartTime.length - 1; i++) {
-                    newEarliestStartTime[i - 1] = earliestStartTime[i];
-                    newLatestStartTime[i - 1] = latestStartTime[i];
-                }
-             */
             
             // (41) We also use one single extra continuous variable Cmax to represent the makespan of the 
             // schedule. Set the objective to minimize Cmax
@@ -77,6 +69,7 @@ public class OnOffEventBasedModel implements ModelInterface {
             obj.addTerm(1, makespanVar);
             model.setObjective(obj, GRB.MINIMIZE);
 
+            int counter = 0;
             // (42) Constraints (42) ensure that each activity is processed at least once during the project.
             for (int i = 0; i < data.numberJob; i++) {
                 GRBLinExpr expr1 = new GRBLinExpr();
@@ -84,6 +77,7 @@ public class OnOffEventBasedModel implements ModelInterface {
                     expr1.addTerm(1, jobActiveAtEventVars[i][e]);
                 }
                 model.addConstr(expr1, GRB.GREATER_EQUAL, 1, "(42)");
+
             }
 
             // (43) Constraints (43) link the makespan to the event dates: Cmax >= te + (zie - zi,e-1)pi
