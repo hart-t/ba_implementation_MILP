@@ -4,7 +4,6 @@ import interfaces.CompletionMethodInterface;
 import interfaces.ModelInterface;
 import solutionBuilder.BuildSequencingSolution;
 import utility.TEMatrix;
-import modelSolutions.FlowBasedContinuousTimeModelSolution;
 import modelSolutions.SequencingModelSolution;
 import interfaces.ModelSolutionInterface;
 import com.gurobi.gurobi.*;
@@ -32,14 +31,10 @@ public class SequencingModel implements ModelInterface {
             GRBVar[] si;
             GRBVar[][] yij;
             GRBVar[][] zij;
-            int[] earliestStartTime;
-            int[] latestStartTime;
             if (initialSolution instanceof SequencingModelSolution) {
                 si = ((SequencingModelSolution) initialSolution).getsiVars();
                 yij = ((SequencingModelSolution) initialSolution).getyijVars();
                 zij = ((SequencingModelSolution) initialSolution).getzijVars();
-                earliestStartTime = ((SequencingModelSolution) initialSolution).getEarliestLatestStartTimes()[0];
-                latestStartTime = ((SequencingModelSolution) initialSolution).getEarliestLatestStartTimes()[1];
             } else {
                 throw new IllegalArgumentException("Expected DiscreteTimeModelSolution but got " + 
                                                  initialSolution.getClass().getSimpleName());
@@ -63,13 +58,14 @@ public class SequencingModel implements ModelInterface {
                 for (int j = 0; j < data.numberJob; j++) {
                     if (i == j) continue; // Skip self-precedence
                     GRBLinExpr leftSide = new GRBLinExpr();
+                    
                     leftSide.addTerm(1, si[i]);
                     leftSide.addConstant(data.jobDuration.get(i));
 
                     GRBLinExpr rightSide = new GRBLinExpr();
                     rightSide.addTerm(1, si[j]);
                     rightSide.addConstant(data.horizon);
-                    rightSide.addTerm(data.horizon, yij[i][j]);
+                    rightSide.addTerm(-data.horizon, yij[i][j]);
 
                     model.addConstr(leftSide, GRB.LESS_EQUAL, rightSide, "seq_" + i + "_" + j + "_(2)");
                 }
@@ -79,6 +75,7 @@ public class SequencingModel implements ModelInterface {
             for (int i = 0; i < data.numberJob; i++) {
                 for (int j = 0; j < data.numberJob; j++) {
                     if (teMatrix[i][j] == 1) {
+
                         GRBLinExpr exprOne = new GRBLinExpr();
                         GRBLinExpr exprTwo = new GRBLinExpr();
 
@@ -91,7 +88,35 @@ public class SequencingModel implements ModelInterface {
                 }
             }
 
-            
+            // (4) assure that the novel start-start sequencing variables are set according to the timing variables 
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int j = 0; j < data.numberJob; j++) {
+                    if (i == j || teMatrix[i][j] == 1 || teMatrix[j][i] == 1) continue; // Skip self-precedence
+                    GRBLinExpr leftSide = new GRBLinExpr();
+                    GRBLinExpr rightSide = new GRBLinExpr();
+                    leftSide.addTerm(data.horizon, zij[i][j]);
+                    rightSide.addTerm(1, si[j]);
+                    rightSide.addTerm(-1, si[i]);
+                    rightSide.addConstant(1);
+                    model.addConstr(leftSide, GRB.GREATER_EQUAL, rightSide, "seq_" + i + "_" + j + "_(4)");
+                }
+            }
+
+            // (5) model the storage resource constraints. Since we are considering the special case of “standard rcpsp,” we can ignore these constraints.
+            // (6) model renewable resource constraints.
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int k = 0; k < data.resourceCapacity.size(); k++) {
+                    if (data.jobResource.get(i).get(k) == 0) continue;
+                    GRBLinExpr expr = new GRBLinExpr();
+                    expr.addConstant(data.jobResource.get(i).get(k));
+                    for (int j = 0; j < teMatrix.length; j++) {
+                        if (i == j || teMatrix[i][j] == 1 || teMatrix[j][i] == 1) continue; // Skip self-precedence
+                        expr.addTerm(data.jobResource.get(j).get(k), zij[j][i]);
+                        expr.addTerm(-data.jobResource.get(j).get(k), yij[j][i]);
+                    }
+                    model.addConstr(expr, GRB.LESS_EQUAL, data.resourceCapacity.get(k), "renewable_" + i + "_" + k);
+                }
+            }
 
 
             return model;
@@ -150,5 +175,5 @@ public class SequencingModel implements ModelInterface {
         }
         return null;
     }
-    }
+    
 }

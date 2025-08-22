@@ -10,7 +10,7 @@ import com.gurobi.gurobi.GRBVar;
 import interfaces.CompletionMethodInterface;
 import interfaces.ModelSolutionInterface;
 import io.JobDataInstance;
-import modelSolutions.FlowBasedContinuousTimeModelSolution;
+import modelSolutions.SequencingModelSolution;
 import utility.DAGLongestPath;
 import utility.TEMatrix;
 
@@ -75,62 +75,25 @@ public class BuildSequencingSolution implements CompletionMethodInterface{
                     System.out.println("Setting MIP start for index: " + s);
                     startTimes = startTimesList.get(s);
 
-                    // Set the start values for the starting time variables based on the provided startTimes map
                     for (int i = 0; i < data.numberJob; i++) {
-                        int startTime = startTimes.get(i);
-                        GRBVar var = startingTimeVars[i];
-                        if (var != null) {
-                            // Set the start value for the variable (job i starts at startTime)
-                            var.set(GRB.DoubleAttr.Start, startTime);
-                        } else {
-                            System.err.println("Variable for job " + i + " at time " + startTime + " not found.");
-                        }   
+                        si[i].set(GRB.DoubleAttr.Start, startTimes.get(i));
                     }
 
-                    // Set the precedence variables based on the starting times
                     for (int i = 0; i < data.numberJob; i++) {
                         for (int j = i + 1; j < data.numberJob; j++) {
-                            //if (i == j) continue; // Skip self-precedence
-                            GRBVar var1 = precedenceVars[i][j];
-                            GRBVar var2 = precedenceVars[j][i];
-
                             if (startTimes.get(i) + data.jobDuration.get(i) <= startTimes.get(j)) {
-                                // Set the precedence value for the precedence variable
-                                var1.set(GRB.DoubleAttr.Start, 1.0);
+                                yij[i][j].set(GRB.DoubleAttr.Start, 1.0);
+                            } else {
+                                yij[i][j].set(GRB.DoubleAttr.Start, 0.0);
                             }
-                            else if (startTimes.get(i) >= startTimes.get(j) + data.jobDuration.get(j)) {
-                                // Set the precedence value for the precedence variable
-                                var2.set(GRB.DoubleAttr.Start, 1.0);
-                            }
-                        }
-                    }
 
-                    // Set flow variables using NetworkFlowProblem utility
-                    utility.NetworkFlowProblem networkFlow = new utility.NetworkFlowProblem();
-                    int[][][] flowVars = networkFlow.findFlowVariables(data, startTimes);
-                    
-                    // Set the flow variables in the Gurobi model
-                    for (int i = 0; i < data.numberJob; i++) {
-                        for (int j = 0; j < data.numberJob; j++) {
-                            if (i == j) continue; // Skip self-transfer
-                            
-                            for (int k = 0; k < data.resourceCapacity.size(); k++) {
-                                GRBVar flowVar = continuousFlowVars[i][j][k];
-                                double flowAmount = flowVars[i][j][k];
-                                flowVar.set(GRB.DoubleAttr.Start, flowAmount);
+                            if (teMatrix[i][j] == 1 || teMatrix[j][i] == 1) continue; // Skip transitive edges
+                            if (startTimes.get(i) <= startTimes.get(j)) {
+                                zij[i][j].set(GRB.DoubleAttr.Start, 1.0);
+                            } else {
+                                zij[i][j].set(GRB.DoubleAttr.Start, 0.0);
                             }
                         }
-                    }
-
-                    // Set flow variables from supersink (last job) to supersource (first job) to resource 
-                    // capacity for Constraint (18)
-                    int supersource = 0;
-                    int supersink = data.numberJob - 1;
-
-                    for (int k = 0; k < data.resourceCapacity.size(); k++) {
-                        GRBVar flowVar = model.getVarByName("quantity of resource " + k + "transferred from " + supersink + " to " + supersource);
-                        double resourceCapacity = data.resourceCapacity.get(k);
-                            flowVar.set(GRB.DoubleAttr.Start, resourceCapacity);
                     }
                     model.update(); // Update the model after setting starts
                 }
@@ -144,8 +107,7 @@ public class BuildSequencingSolution implements CompletionMethodInterface{
             return null;
         }
 
-        FlowBasedContinuousTimeModelSolution solution = new FlowBasedContinuousTimeModelSolution(startingTimeVars, precedenceVars,
-                continuousFlowVars, model, earliestLatestStartTimes, timeToCreateVariables);
+        SequencingModelSolution solution = new SequencingModelSolution(si, yij, zij, model, earliestLatestStartTimes, timeToCreateVariables);
 
         return solution;
     }

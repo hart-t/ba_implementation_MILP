@@ -53,9 +53,11 @@ public class TestAllModelInstanceCombinations {
         
         // Configure all models to test
         List<String> modelConfigs = Arrays.asList(
-            "FLOW",     // Flow-Based Continuous Time Model
-            "DISC",     // Discrete Time Model
-            "EVENT"     // On-Off Event Based Model
+            "FLOW-30",     // Flow-Based Continuous Time Model
+            "DISC-30",     // Discrete Time Model
+            "EVENT-30",    // On-Off Event Based Model
+            "IEE-30",      // Interval Event Based Model
+            "SEQ-30"       // Sequencing Model
         );
 
         FileWriter fileWriter = new FileWriter();
@@ -93,8 +95,8 @@ public class TestAllModelInstanceCombinations {
                 
                 // Write results to file immediately after processing this instance
                 try {
-                    fileWriter.writeResults(".", "test6.txt", results);
-                    System.out.println("Results updated in test6.txt (total results: " + results.size() + ")");
+                    fileWriter.writeResults(".", "test7.txt", results);
+                    System.out.println("Results updated in test7.txt (total results: " + results.size() + ")");
                 } catch (Exception e) {
                     System.err.println("Error writing results after processing " + file.getName() + ": " + e.getMessage());
                 }
