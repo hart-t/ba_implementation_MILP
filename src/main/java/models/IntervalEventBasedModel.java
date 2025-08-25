@@ -57,7 +57,13 @@ public class IntervalEventBasedModel implements ModelInterface {
             obj.addTerm(1, startOfEventIntervalVars[startOfEventIntervalVars.length - 1]);
             model.setObjective(obj, GRB.MINIMIZE);
 
-            // int counter = 0;
+            // TODO delete?
+            // Event ordering constraints: events must be in non-decreasing order
+            for (int e = 0; e < startOfEventIntervalVars.length - 1; e++) {
+                model.addConstr(startOfEventIntervalVars[e], GRB.LESS_EQUAL, startOfEventIntervalVars[e + 1], 
+                    "event_ordering_" + e);
+            }
+
             // (36) Add constraints for the jobActiveAtIntervalVars
             for (int i = 0; i < data.numberJob; i++) {
                 GRBLinExpr expr = new GRBLinExpr();
@@ -67,11 +73,7 @@ public class IntervalEventBasedModel implements ModelInterface {
                     }
                 }
                 model.addConstr(expr, GRB.EQUAL, 1, "jobActiveAtIntervalVarsSum_" + i);
-                // counter++;
             }
-
-            // System.out.println(counter);
-            // counter = 0;
 
             // (37) Event e must not exceed the resource capacities
             for (int k = 0; k < data.resourceCapacity.size(); k++) {
@@ -86,12 +88,8 @@ public class IntervalEventBasedModel implements ModelInterface {
                         }
                     }
                     model.addConstr(expr, GRB.LESS_EQUAL, data.resourceCapacity.get(k), "resourceCapacity_" + k + "_event_" + e);
-                    // counter++;
                 }
             }
-
-            // System.out.println(counter);
-            // counter = 0;
 
             // (38)
             for (int i = 0; i < data.numberJob; i++) {
@@ -110,7 +108,6 @@ public class IntervalEventBasedModel implements ModelInterface {
                         expr2.addTerm(1, startOfEventIntervalVars[f]);
 
                         model.addConstr(expr, GRB.LESS_EQUAL, expr2, "job_" + i + "_event_" + e + "_" + f);
-                        // counter++;
                     }
                 }
             }
@@ -121,7 +118,6 @@ public class IntervalEventBasedModel implements ModelInterface {
             // (39)
             for (int j = 0; j < data.numberJob; j++) {
                 for (int i : data.jobPredecessors.get(j)) {
-                    if (j == 5) System.out.println("Processing predecessor constraint for job " + j + " and predecessor " + i);
                     for (int e = 0; e < startOfEventIntervalVars.length - 1; e++) {
                         GRBLinExpr expr = new GRBLinExpr();
 
@@ -138,12 +134,30 @@ public class IntervalEventBasedModel implements ModelInterface {
                         }
                         model.addConstr(expr, GRB.LESS_EQUAL, 1, j + "predecessor_" + i + "_" + e);
                         // counter++;
+                        /*
+                         * // For each pair of intervals where j could be active
+                    for (int e_j = 0; e_j < startOfEventIntervalVars.length - 1; e_j++) {
+                        for (int f_j = e_j + 1; f_j < startOfEventIntervalVars.length; f_j++) {
+                            GRBLinExpr expr = new GRBLinExpr();
+                            
+                            // If job j is active in interval [e_j, f_j), then job i must be 
+                            // active in some interval [e_i, f_i) where f_i <= e_j
+                            expr.addTerm(1, jobActiveAtIntervalVars[j][e_j][f_j]);
+                            
+                            // Sum all intervals where job i can be active and finish before j starts
+                            for (int e_i = 0; e_i < startOfEventIntervalVars.length - 1; e_i++) {
+                                for (int f_i = e_i + 1; f_i <= e_j; f_i++) {
+                                    expr.addTerm(-1, jobActiveAtIntervalVars[i][e_i][f_i]);
+                                }
+                            }
+                            
+                            model.addConstr(expr, GRB.LESS_EQUAL, 0, 
+                                "precedence_job" + j + "_pred" + i + "_interval" + e_j + "_" + f_j);
+                        }
+                         */
                     }
                 }
             }
-
-            // System.out.println(counter);
-            // counter = 0;
 
             return model;
         } catch (GRBException e) {
@@ -160,6 +174,23 @@ public class IntervalEventBasedModel implements ModelInterface {
     @Override
     public int[][] getStartAndFinishTimes(GRBModel model, JobDataInstance data) {
         try {
+            // Check if the model has a feasible solution
+            int status = model.get(GRB.IntAttr.Status);
+            int solutionCount = model.get(GRB.IntAttr.SolCount);
+            
+            if (status != GRB.Status.OPTIMAL && status != GRB.Status.SUBOPTIMAL && status != GRB.Status.TIME_LIMIT) {
+                System.out.println("No feasible solution found. Model status: " + status);
+                return null;
+            }
+            
+            if (solutionCount == 0) {
+                System.out.println("No feasible solution found. Solution count: " + solutionCount);
+                return null;
+            }
+            
+            System.out.println("Found " + solutionCount + " solution(s). Model status: " + status + 
+                             " (Best objective: " + model.get(GRB.DoubleAttr.ObjVal) + ")");
+            
             // This model uses dummy jobs, so we need to work with the data without dummy jobs
             JobDataInstance noDummyData = DeleteDummyJobs.deleteDummyJobs(data);
             

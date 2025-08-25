@@ -1,0 +1,23 @@
+INFEASIBLE MODEL DETECTED
+Instance: j301_1
+Timestamp: 2025-08-25_15-17-37
+========================================
+
+INFEASIBLE CONSTRAINTS (IIS):
+------------------------------
+Constraint: jobActiveAtIntervalVarsSum_15
+Type: =
+RHS: 1.0
+---
+Constraint: jobActiveAtIntervalVarsSum_20
+Type: =
+RHS: 1.0
+---
+Constraint: precedence_job20_pred15_event29
+Type: <
+RHS: 1.0
+---
+
+Total infeasible constraints: 3
+
+IIS analysis completed.

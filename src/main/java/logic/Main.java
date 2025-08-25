@@ -32,7 +32,7 @@ import io.JobDataInstance;
 
 public class Main {
     public static void main(String[] args) {
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j301_1.sm";
+        String filename = "/home/tobsi/university/kit/benchmarkSets/j3022_3.sm";
 
         try {
             FileReader fileReader = new FileReader();
@@ -60,7 +60,7 @@ public class Main {
                  //"FCT-30"      // Flow-Based Continuous Time Model
                  //"DT-30"     // Discrete Time Model
                 //"OOE-30"     // On-Off Event Based Model
-                 "IEE-120"     // Interval Event Based Model
+                 "IEE-300"     // Interval Event Based Model
                 //"SEQ-30"     // Sequencing Model
             );
 

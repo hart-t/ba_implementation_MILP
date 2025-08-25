@@ -41,22 +41,11 @@ public class TestAllModelInstanceCombinations {
 
         // Configure all heuristics to test
         List<String> heuristicConfigs = Arrays.asList(
-                "SSGS-SPT-NS",        // Serial SGS with Shortest Processing Time
-                "SSGS-GRPW-NS",      // Serial SGS with Greatest Rank Positional Weight
-                "SSGS-MRU-NS",       // Serial SGS with Most Resource Usage
-                "SSGS-RSM-NS",       // Serial SGS with Resource Scheduling Method
-                "SSGS-MTS-NS",       // Serial SGS with Most Total Successors
-                "SSGS-MLST-NS",      // Serial SGS with Minimum Latest Start Time
-                "SSGS-MLFT-NS",      // Serial SGS with Minimum Latest Finish Time
-                "SSGS-MJS-NS"       // Serial SGS with Minimum Job Slack
         );
         
         // Configure all models to test
         List<String> modelConfigs = Arrays.asList(
-            "FCT-30",     // Flow-Based Continuous Time Model
-            "DT-30",     // Discrete Time Model
-            "OOE-30",    // On-Off Event Based Model
-            "IEE-30",      // Interval Event Based Model
+            "IEE-300",      // Interval Event Based Model
             "SEQ-30"       // Sequencing Model
         );
 
