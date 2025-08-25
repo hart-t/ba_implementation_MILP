@@ -69,7 +69,6 @@ public class OnOffEventBasedModel implements ModelInterface {
             obj.addTerm(1, makespanVar);
             model.setObjective(obj, GRB.MINIMIZE);
 
-            int counter = 0;
             // (42) Constraints (42) ensure that each activity is processed at least once during the project.
             for (int i = 0; i < data.numberJob; i++) {
                 GRBLinExpr expr1 = new GRBLinExpr();
@@ -104,7 +103,7 @@ public class OnOffEventBasedModel implements ModelInterface {
             // (44), (45) Constraints (44), (45) ensure event sequencing.
             GRBLinExpr expr01 = new GRBLinExpr();
             expr01.addTerm(1, startOfEventVars[0]);
-            model.addConstr(expr01, GRB.EQUAL, 0, "event 0 starts at time dated 0 (44)");
+            model.addConstr(expr01, GRB.EQUAL, 0, "event_0_starts_at_time_dated_0_(44)");
 
             // skip event n
             for (int e = 0; e < startOfEventVars.length - 1; e++) {
@@ -114,7 +113,7 @@ public class OnOffEventBasedModel implements ModelInterface {
                 expr1.addTerm(1, startOfEventVars[e + 1]);
                 expr2.addTerm(1, startOfEventVars[e]);
 
-                model.addConstr(expr1, GRB.GREATER_EQUAL, expr2, expr1 + " starts after " + expr2 + "(45)");
+                model.addConstr(expr1, GRB.GREATER_EQUAL, expr2, "event_" + (e+1) + "_starts_after_event_" + e + "_(45)");
             }
 
             // (46) Constraints (46) link the binary optimization variables zie to the continuous optimization
@@ -140,7 +139,7 @@ public class OnOffEventBasedModel implements ModelInterface {
                         rightSide.addConstant(- data.jobDuration.get(i));
 
                         model.addConstr(leftSide, GRB.GREATER_EQUAL, rightSide, 
-                            leftSide + " greater equal " + rightSide + "(46) for job " + i + " from event " + e + " to event " + f);
+                            "constraint_" + i + "_" + e + "_" + f + "_(46)");
                     }
                 }
             }
@@ -161,7 +160,7 @@ public class OnOffEventBasedModel implements ModelInterface {
                     expr2.addTerm(- e, jobActiveAtEventVars[i][e]);
                     expr2.addTerm(e, jobActiveAtEventVars[i][e - 1]);
 
-                    model.addConstr(expr1, GRB.LESS_EQUAL, expr2, expr1 + " less equal " + expr2 + " (47)");
+                    model.addConstr(expr1, GRB.LESS_EQUAL, expr2, "contiguity_constraint_" + i + "_" + e + "_(47)");
                 }
             }
 
@@ -179,7 +178,7 @@ public class OnOffEventBasedModel implements ModelInterface {
                     expr2.addTerm((data.numberJob - e), jobActiveAtEventVars[i][e]);
                     expr2.addTerm(- (data.numberJob - e), jobActiveAtEventVars[i][e - 1]);
 
-                    model.addConstr(expr1, GRB.LESS_EQUAL, expr2, expr1 + " less equal " + expr2 + " (48)");
+                    model.addConstr(expr1, GRB.LESS_EQUAL, expr2, "contiguity_constraint_" + i + "_" + e + "_(48)");
                 }
             }
 
@@ -201,8 +200,8 @@ public class OnOffEventBasedModel implements ModelInterface {
                         rightSide.addConstant(eventIndex);
                         rightSide.addTerm(-eventIndex, jobActiveAtEventVars[predecessor][eventIndex]);
 
-                        model.addConstr(leftSide, GRB.LESS_EQUAL, rightSide, "Job: " + jobIndex + " Predecessor: " 
-                            + predecessor + " Event: " + eventIndex + " (49)");
+                        model.addConstr(leftSide, GRB.LESS_EQUAL, rightSide, "Job_" + jobIndex + "_Predecessor_" 
+                            + predecessor + "_Event_" + eventIndex + "_(49)");
                     }
                 }
             }
@@ -243,54 +242,11 @@ public class OnOffEventBasedModel implements ModelInterface {
                     }
 
                     model.addConstr(leftSide, GRB.LESS_EQUAL, middleSide,
-                        "Index: " + jobIndex + " earliest start time: " + earliestStartTime[jobIndex] 
-                        + " job active at event: " + eventIndex + " (51)");
+                        "earliest_start_time_job_" + jobIndex + "_event_" + eventIndex + "_(51)");
                     model.addConstr(middleSide, GRB.LESS_EQUAL, rightSide,
-                        middleSide + " less equal " + rightSide + " (51)");
+                        "latest_start_time_job_" + jobIndex + "_event_" + eventIndex + "_(51)");
                 }
             }
-
-            /*
-             * // (51) Constraints (51) and (52) set the start time of any activity i between its earliest start 
-            // time ESi and its latest start time LSi.
-            for (int e = 1; e < startOfEventEVars.length; e++) {
-                for (int i = 0; i < noDummyData.numberJob; i++) {
-                    GRBLinExpr expr1 = new GRBLinExpr();
-                    GRBLinExpr expr2 = new GRBLinExpr();
-                    GRBLinExpr expr3 = new GRBLinExpr();
-
-                    expr1.addTerm(newEarliestStartTime[i], jobActiveAtEventVars[i][e]);
-
-                    expr2.addTerm(1, startOfEventEVars[e]);
-
-                    expr3.addTerm(newLatestStartTime[i], jobActiveAtEventVars[i][e]);
-                    expr3.addTerm(- newLatestStartTime[i], jobActiveAtEventVars[i][e - 1]);
-                    expr3.addConstant(newLatestStartTime[newLatestStartTime.length - 1]);
-                    expr3.addTerm(- newLatestStartTime[newLatestStartTime.length - 1], jobActiveAtEventVars[i][e]);
-                    expr3.addTerm(newLatestStartTime[newLatestStartTime.length - 1], jobActiveAtEventVars[i][e - 1]);
-
-
-                    model.addConstr(expr1, GRB.LESS_EQUAL, expr2, "Index: " + i + " earliest start time: " + newEarliestStartTime[i] + " job active at event: " + e + " (51)");
-                    model.addConstr(expr2, GRB.LESS_EQUAL, expr3, expr2 + " less equal " + expr3 + " (51)");   
-                }
-            }
-             */
-
-            /*
-             * // (52) TODO für alle e und für alle i?
-            // ESi <= makespanVar <= LSi
-            GRBLinExpr expr02 = new GRBLinExpr();
-            expr02.addTerm(1, makespanVar);
-            model.addConstr(newEarliestStartTime[newEarliestStartTime.length - 1], GRB.LESS_EQUAL, expr02,
-                "ESn+1 less equal makespanVar (52)");
-            model.addConstr(expr02, GRB.LESS_EQUAL, newLatestStartTime[newLatestStartTime.length - 1],
-                "makespanVar less equal LSn+1 (52)");
-             */
-
-            // (53) te >= 0 for all e in E, unnessesary as we set the lower bound to 0 when creating the 
-            // variable
-            // (54) zie element {0,1} for all i in A, e in E, unnessesary as we set the type to binary when
-            // creating the variable
 
             // Write model to file for debugging
             try {
