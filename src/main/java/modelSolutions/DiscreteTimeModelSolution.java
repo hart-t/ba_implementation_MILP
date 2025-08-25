@@ -31,7 +31,7 @@ public class DiscreteTimeModelSolution implements ModelSolutionInterface {
     
     @Override
     public ModelType getModelType() {
-        return ModelType.DISC;
+        return ModelType.DT;
     }
 
     @Override

@@ -48,7 +48,7 @@ public class FlowBasedContinuousTimeModelSolution implements ModelSolutionInterf
 
         @Override
         public ModelType getModelType() {
-            return ModelType.FLOW;
+            return ModelType.FCT;
         }
 
         @Override

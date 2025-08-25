@@ -47,7 +47,7 @@ public class OnOffEventBasedModelSolution implements ModelSolutionInterface {
 
     @Override
     public ModelType getModelType() {
-        return ModelType.EVENT;
+        return ModelType.OOE;
     }
 
     @Override

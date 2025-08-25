@@ -53,9 +53,9 @@ public class TestAllModelInstanceCombinations {
         
         // Configure all models to test
         List<String> modelConfigs = Arrays.asList(
-            "FLOW-30",     // Flow-Based Continuous Time Model
-            "DISC-30",     // Discrete Time Model
-            "EVENT-30",    // On-Off Event Based Model
+            "FCT-30",     // Flow-Based Continuous Time Model
+            "DT-30",     // Discrete Time Model
+            "OOE-30",    // On-Off Event Based Model
             "IEE-30",      // Interval Event Based Model
             "SEQ-30"       // Sequencing Model
         );

@@ -4,9 +4,9 @@ import interfaces.ModelInterface;
 import models.*;
 
 public enum ModelType {
-    FLOW("FLOW", "Flow-Based Continuous Time Model", FlowBasedContinuousTimeModel::new),
-    DISC("DISC", "Discrete Time Model", DiscreteTimeModel::new),
-    EVENT("OOE", "On-Off Event Based Model", OnOffEventBasedModel::new),
+    FCT("FCT", "Flow-Based Continuous Time Model", FlowBasedContinuousTimeModel::new),
+    DT("DT", "Discrete Time Model", DiscreteTimeModel::new),
+    OOE("OOE", "On-Off Event Based Model", OnOffEventBasedModel::new),
     IEE("IEE", "Interval Event Based Model", IntervalEventBasedModel::new),
     SEQ("SEQ", "Sequencing Model", SequencingModel::new);
 
