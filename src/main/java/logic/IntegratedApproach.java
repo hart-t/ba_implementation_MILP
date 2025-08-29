@@ -105,6 +105,8 @@ public class IntegratedApproach {
         } else {
             result = solver.solve(data, scheduleResult);
         }
+        result.setSamplingMethod("SomeMethod");
+        result.setSamplingSize("SomeSize");
         result.printResult();
         return result;
     }

@@ -303,11 +303,12 @@ public class ResultFormatter {
         
         List<String> shortNames = new ArrayList<>();
         for (String heuristic : heuristics) {
-            // Try to find matching priority rule by description
+            // Try to find matching priority rule by description, code, or heuristic name
             String shortName = null;
             for (PriorityRuleType ruleType : PriorityRuleType.values()) {
                 if (heuristic.contains(ruleType.getDescription().toUpperCase().replace(" ", "")) ||
-                    heuristic.contains(ruleType.getCode())) {
+                    heuristic.contains(ruleType.getCode()) ||
+                    heuristic.toUpperCase().contains(ruleType.name().toUpperCase())) {
                     shortName = "SSGS-" + ruleType.getCode();
                     break;
                 }

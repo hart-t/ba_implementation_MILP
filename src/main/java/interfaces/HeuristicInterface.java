@@ -10,6 +10,8 @@ public interface HeuristicInterface {
      */
     public boolean isOpeningHeuristic();
 
+    public String getHeuristicCode();
+
     /*
      * returns a ScheduleResult
      */

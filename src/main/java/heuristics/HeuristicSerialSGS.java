@@ -208,12 +208,16 @@ public class HeuristicSerialSGS implements HeuristicInterface {
         }
     }
         
-
     private String getPriorityCode() {
         // TODO
         // i need to store the priority rule type or extract it from the priorityStrategy
         // For now, this is a placeholder - i might need to modify the constructor
         return priorityStrategy.getClass().getSimpleName().replace("Rule", "").toUpperCase();
+    }
+
+    @Override
+    public String getHeuristicCode() {
+        return heuristicCode;
     }
 }
 

@@ -71,5 +71,10 @@ public class HeuristicGeneticAlgorithm implements HeuristicInterface {
     private String getPriorityCode() {
         return enums.PriorityRuleType.MLFT.getCode();
     }
+
+    @Override
+    public String getHeuristicCode() {
+        return heuristicCode;
+    }
 }
 

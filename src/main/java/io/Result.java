@@ -13,6 +13,8 @@ public class Result {
     String instanceName;
     long timeComputingAndBuildingHeuristicStartSolution;
     CallbackValues callbackValues;
+    private String samplingMethod;
+    private String samplingSize;
 
     public Result(ModelSolutionInterface modelSolution, SolverResults solverResults, int[][] startAndFinishTimes, ScheduleResult scheduleResult, String instanceName, long timeComputingAndBuildingHeuristicStartSolution, CallbackValues callbackValues) {
         this.modelSolution = modelSolution;
@@ -64,5 +66,21 @@ public class Result {
 
     public ModelType getModelType() {
         return modelSolution.getModelType();
+    }
+
+    public String getSamplingMethod() {
+        return samplingMethod;
+    }
+
+    public String getSamplingSize() {
+        return samplingSize;
+    }
+
+    public void setSamplingMethod(String samplingMethod) {
+        this.samplingMethod = samplingMethod;
+    }
+
+    public void setSamplingSize(String samplingSize) {
+        this.samplingSize = samplingSize;
     }
 }
