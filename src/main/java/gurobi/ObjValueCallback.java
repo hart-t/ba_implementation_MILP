@@ -2,37 +2,64 @@ package gurobi;
 
 import com.gurobi.gurobi.GRB;
 import com.gurobi.gurobi.GRBCallback;
-import com.gurobi.gurobi.GRBException;
-import io.CallbackValues;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ObjValueCallback extends GRBCallback {
-    private CallbackValues callbackValues = new CallbackValues();
-
-    private long startTime;
+    private Map<Integer, Integer> targetFunctionValueCurve;
+    private List<Map<String, Object>> callbackValues;
 
     public ObjValueCallback() {
-        this.startTime = System.nanoTime();
+        this.callbackValues = new ArrayList<>();
+    }
+
+    // Add this method to set the target function value curve reference
+    public void setTargetFunctionValueCurve(Map<Integer, Integer> targetFunctionValueCurve) {
+        this.targetFunctionValueCurve = targetFunctionValueCurve;
     }
 
     @Override
     protected void callback() {
         try {
             if (where == GRB.CB_MIPSOL) {
-                // Wenn eine neue zulässige Lösung gefunden wurde
-                double obj = getDoubleInfo(GRB.CB_MIPSOL_OBJ);
-                double time = (System.nanoTime() - startTime) / 1_000_000_000.0;
-
-                callbackValues.addValues(obj, time, callbackValues.getSolutions().size() + 1);
-
-                System.out.println("Neue Lösung #" + callbackValues.getSolutions().size() +
-                        " -> Obj: " + obj + ", Zeit: " + time + "s");
+                // New incumbent solution found
+                double objVal = getDoubleInfo(GRB.CB_MIPSOL_OBJ);
+                double runtime = getDoubleInfo(GRB.CB_RUNTIME);
+                
+                // Store in target function value curve (time in seconds as key)
+                if (targetFunctionValueCurve != null) {
+                    targetFunctionValueCurve.put((int) Math.round(runtime), (int) Math.round(objVal));
+                }
+                
+                // Also store in callback values for detailed tracking
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("time", runtime);
+                entry.put("objValue", objVal);
+                entry.put("type", "MIPSOL");
+                callbackValues.add(entry);
+                
+                System.out.println("New incumbent found at time " + runtime + "s with objective value: " + objVal);
+                
+            } else if (where == GRB.CB_MIPNODE) {
+                // New node in branch-and-bound tree (optional - for bound tracking)
+                double objBound = getDoubleInfo(GRB.CB_MIPNODE_OBJBND);
+                double runtime = getDoubleInfo(GRB.CB_RUNTIME);
+                
+                // Store bound information
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("time", runtime);
+                entry.put("objBound", objBound);
+                entry.put("type", "MIPNODE");
+                callbackValues.add(entry);
             }
-        } catch (GRBException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Error in callback: " + e.getMessage());
         }
     }
 
-    public CallbackValues getCallbackValues() {
+    public List<Map<String, Object>> getCallbackValues() {
         return callbackValues;
     }
 }

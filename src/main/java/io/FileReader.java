@@ -367,6 +367,8 @@ public class FileReader {
         public String heuristics;
         public String samplingMethod;
         public String samplingSize;
+        public String noHTargetFunctionValueCurve;
+        public String hTargetFunctionValueCurve;
     }
 }
 

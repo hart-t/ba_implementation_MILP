@@ -19,13 +19,17 @@ import io.SolverResults;
 import java.io.FileWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import io.CallbackValues;
 
 public class WarmstartSolver {
 
     private ModelInterface model;
     private CompletionMethodInterface completionMethod;
     private int maxRuntime;
-    
+    private Map<Integer, Integer> targetFunctionValueCurve;
+
     public WarmstartSolver(ModelInterface model, int maxRuntime) {
         this.model = model;
         this.maxRuntime = maxRuntime;
@@ -36,6 +40,9 @@ public class WarmstartSolver {
             String logFile = "linear_model.log";
             completionMethod = model.getCompletionMethod();
             System.out.println("Using completion method: " + completionMethod.getClass().getSimpleName());
+
+            // Initialize the target function value curve map
+            targetFunctionValueCurve = new HashMap<>();
 
             // Initialize the Gurobi environment and model
             GRBEnv env = new GRBEnv();
@@ -60,11 +67,11 @@ public class WarmstartSolver {
             grbOptimizationModel.set(GRB.IntParam.Method, 2);             // Use barrier method
             grbOptimizationModel.set(GRB.IntParam.OutputFlag, 1);         // Enable output
             grbOptimizationModel.set(GRB.StringParam.LogFile, logFile);   // Write log to file
-        
-            // Callback
+    
+            // Callback with reference to the target function value curve
             ObjValueCallback objValueCallback = new ObjValueCallback();
+            objValueCallback.setTargetFunctionValueCurve(targetFunctionValueCurve); // You'll need to add this method
             grbOptimizationModel.setCallback(objValueCallback);
-            
 
             // Optimize and check solution quality
             grbOptimizationModel.optimize();
@@ -88,8 +95,26 @@ public class WarmstartSolver {
             grbOptimizationModel.write("logFile.lp"); // Write the model to a file for debugging
             int[][] startAndFinishTimes = model.getStartAndFinishTimes(grbOptimizationModel, data);
 
-            SolverResults solverResults = buildSolverResults(grbOptimizationModel);
-            Result result = new Result(new OptimizedSolution(grbOptimizationModel, initialSolution.getModelType()), solverResults, startAndFinishTimes, scheduleResult, data.instanceName, timeComputingAndBuildingHeuristicStartSolution, objValueCallback.getCallbackValues());
+            SolverResults solverResults = buildSolverResults(grbOptimizationModel, targetFunctionValueCurve);
+            
+            // Create CallbackValues object and populate it with the captured data
+            CallbackValues callbackValues = new CallbackValues();
+            
+            // Add data from targetFunctionValueCurve
+            for (Map.Entry<Integer, Integer> entry : targetFunctionValueCurve.entrySet()) {
+                callbackValues.addValues(entry.getValue().doubleValue(), entry.getKey().doubleValue(), 1); // 1 indicates it's a solution
+            }
+            
+            // Optionally, add data from detailed callback values
+            for (Map<String, Object> callbackEntry : objValueCallback.getCallbackValues()) {
+                if ("MIPSOL".equals(callbackEntry.get("type"))) {
+                    Double objValue = (Double) callbackEntry.get("objValue");
+                    Double time = (Double) callbackEntry.get("time");
+                    callbackValues.addValues(objValue, time, 1);
+                }
+            }
+            
+            Result result = new Result(new OptimizedSolution(grbOptimizationModel, initialSolution.getModelType()), solverResults, startAndFinishTimes, scheduleResult, data.instanceName, timeComputingAndBuildingHeuristicStartSolution, callbackValues);
 
             // Clean up Gurobi model and environment
             grbOptimizationModel.dispose();
@@ -147,7 +172,7 @@ public class WarmstartSolver {
         }
     }
 
-    public SolverResults buildSolverResults(GRBModel model) {
+    public SolverResults buildSolverResults(GRBModel model, Map<Integer, Integer> targetFunctionValueCurve) {
         double lowerBound = 0;
         double upperBound = 0;
         double objectiveValue = 0;
@@ -168,6 +193,6 @@ public class WarmstartSolver {
             System.err.println("Error while retrieving solver results: " + e.getMessage());
             e.printStackTrace();
         }
-        return new SolverResults(lowerBound, upperBound, objectiveValue, timeInSeconds, mipGap, timeLimitReached);
+        return new SolverResults(lowerBound, upperBound, objectiveValue, timeInSeconds, mipGap, timeLimitReached, targetFunctionValueCurve);
     }
 }

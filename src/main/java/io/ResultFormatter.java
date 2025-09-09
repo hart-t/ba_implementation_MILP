@@ -135,6 +135,8 @@ public class ResultFormatter {
         String timeLimitReached = "N/A";
         String errorStr = "N/A";
         String heuristicsStr = "N/A";
+        String hTargetFunctionValueCurve = "N/A";
+        String noHTargetFunctionValueCurve = "N/A";
 
         // Fill values from heuristic result
         if (heuristicResult != null) {
@@ -158,7 +160,6 @@ public class ResultFormatter {
                 hLB = "INFEASIBLE";
             }
             
-            
             hTime = formatTime(heuristicResult.solverResults.timeInSeconds);
             if (heuristicResult.getBestHeuristicMakespan() > 0) {
                 heuristicMakespan = String.valueOf(heuristicResult.getBestHeuristicMakespan());
@@ -168,6 +169,11 @@ public class ResultFormatter {
             timeLimitReached = String.valueOf(heuristicResult.solverResults.wasStoppedByTimeLimit());
             errorStr = String.valueOf(checkError(heuristicResult, optimalMakespan));
             heuristicsStr = getHeuristicShortNames(heuristicResult.getUsedHeuristics());
+            
+            // Extract heuristic target function value curve
+            if (heuristicResult.solverResults.targetFunctionValueCurve != null) {
+                hTargetFunctionValueCurve = formatTargetFunctionValueCurve(heuristicResult.solverResults.targetFunctionValueCurve);
+            }
         }
         
         // Fill values from non-heuristic result
@@ -184,6 +190,11 @@ public class ResultFormatter {
             if ("N/A".equals(errorStr)) {
                 errorStr = String.valueOf(checkError(nonHeuristicResult, optimalMakespan));
             }
+            
+            // Extract non-heuristic target function value curve
+            if (nonHeuristicResult.solverResults.targetFunctionValueCurve != null) {
+                noHTargetFunctionValueCurve = formatTargetFunctionValueCurve(nonHeuristicResult.solverResults.targetFunctionValueCurve);
+            }
         }
         
         // Merge with existing data if available
@@ -197,7 +208,12 @@ public class ResultFormatter {
             if (existingData.heuristicMakespan != null) heuristicMakespan = existingData.heuristicMakespan;
             if (existingData.timeLimitReached != null) timeLimitReached = existingData.timeLimitReached;
             if (existingData.error != null) errorStr = existingData.error;
-            if (existingData.heuristics != null) heuristicsStr = existingData.heuristics;
+            // Only use existing heuristics if current result has none
+            if ((heuristicsStr == null || heuristicsStr.equals("N/A")) && existingData.heuristics != null) {
+                heuristicsStr = existingData.heuristics;
+            }
+            if (existingData.hTargetFunctionValueCurve != null) hTargetFunctionValueCurve = existingData.hTargetFunctionValueCurve;
+            if (existingData.noHTargetFunctionValueCurve != null) noHTargetFunctionValueCurve = existingData.noHTargetFunctionValueCurve;
         }
         
         // Calculate time difference if both times are available
@@ -228,10 +244,10 @@ public class ResultFormatter {
         }
         
         // Format the final line (i dont even know xd there is propably a better way to do this)
-        return String.format("%s\t\t\t%s\t\t\t%s\t\t%s\t\t\t\t%s\t\t\t\t%s\t\t%s\t\t%s\t\t\t\t\t%s\t%s\t\t%s\t\t%s\t\t\t%s\t\t\t\t%s\t%s",
+        return String.format("%s\t\t\t%s\t\t\t%s\t\t%s\t\t\t\t%s\t\t\t\t%s\t\t%s\t\t%s\t\t\t\t\t%s\t%s\t\t%s\t\t%s\t\t\t%s\t\t\t\t%s\t%s\t\t\t\t\t%s\t\t\t\t\t\t\t%s",
             parameterCol, instanceCol, model, hMakespan, noHMakespan, hUB, hLB,
             optimalStr, hTime, noHTime, timeDiff, heuristicMakespan,
-            timeLimitReached, errorStr, heuristicsStr);
+            timeLimitReached, errorStr, heuristicsStr, hTargetFunctionValueCurve, noHTargetFunctionValueCurve);
     }
     
     // Create header for the result file
@@ -239,7 +255,7 @@ public class ResultFormatter {
     // cause it is used to indicate the start of the data section
     private List<String> createHeader() {
         List<String> header = new ArrayList<>();
-        header.add("====================================================================================================================================================================================================");
+        header.add("===========================================================================================================================================================================================================================================================================================================================================================================================================================================================================================");
         header.add("Instance Set            : j30");
         header.add("Type                    : sm");
         header.add("");
@@ -258,15 +274,9 @@ public class ResultFormatter {
         header.add("time_limit_reached\t: if the solver was stopped cause the given time limit to solve the problem instance is reached");
         header.add("Error\t\t\t\t: if the optimal makespan is not within the computed bounds by either the use of the model with or without the use of a heuristic start solution");
         header.add("Heuristics\t\t\t: a list of the abbrevations of the used heuristic start solutions");
-        header.add("");
-        header.add("Total time the models with the heuristic start solution were able to compute the problem instances faster than the models without the heuristic start solution: ");
-        header.add("count every instance: ");
-        header.add("average time difference: ");
-        header.add("count only the instances where the time limit was not reached: ");
-        header.add("average time difference: ");
-        header.add("=====================================================================================================================================================================================================");
-        header.add("Paramter\tInstance\tModel\tH_M_Makespan\tnoH_M_Makespan\tH_UB\tH_LB\tOptimal_Makespan\tH_Time\tnoH_Time\tTime_Diff\tH_Makespan\ttime_limit_reached\tError\tHeuristics");
-        header.add("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        header.add("============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================");
+        header.add("Paramter\tInstance\tModel\tH_M_Makespan\tnoH_M_Makespan\tH_UB\tH_LB\tOptimal_Makespan\tH_Time\tnoH_Time\tTime_Diff\tH_Makespan\ttime_limit_reached\tError\tHeuristics\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tH_target_function_value_curve\t\t\t\t\t\t\tnoH_target_function_value_curve");
+        header.add("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         return header;
     }
     
@@ -338,5 +348,18 @@ public class ResultFormatter {
         if (optimalMakespan == null) return false;
         double computedMakespan = result.solverResults.objectiveValue;
         return computedMakespan < optimalMakespan.doubleValue();
+    }
+    
+    private String formatTargetFunctionValueCurve(Map<Integer, Integer> curve) {
+        if (curve == null || curve.isEmpty()) {
+            return "N/A";
+        }
+        
+        List<String> pairs = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : curve.entrySet()) {
+            pairs.add("(" + entry.getKey() + ", " + entry.getValue() + ")");
+        }
+        
+        return String.join(", ", pairs);
     }
 }
