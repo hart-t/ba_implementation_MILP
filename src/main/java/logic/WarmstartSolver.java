@@ -28,7 +28,8 @@ public class WarmstartSolver {
     private ModelInterface model;
     private CompletionMethodInterface completionMethod;
     private int maxRuntime;
-    private Map<Integer, Integer> targetFunctionValueCurve;
+    // Change from Map<Integer, Integer> to Map<Double, Integer>
+    private Map<Double, Integer> targetFunctionValueCurve;
 
     public WarmstartSolver(ModelInterface model, int maxRuntime) {
         this.model = model;
@@ -101,7 +102,7 @@ public class WarmstartSolver {
             CallbackValues callbackValues = new CallbackValues();
             
             // Add data from targetFunctionValueCurve
-            for (Map.Entry<Integer, Integer> entry : targetFunctionValueCurve.entrySet()) {
+            for (Map.Entry<Double, Integer> entry : targetFunctionValueCurve.entrySet()) {
                 callbackValues.addValues(entry.getValue().doubleValue(), entry.getKey().doubleValue(), 1); // 1 indicates it's a solution
             }
             
@@ -172,7 +173,7 @@ public class WarmstartSolver {
         }
     }
 
-    public SolverResults buildSolverResults(GRBModel model, Map<Integer, Integer> targetFunctionValueCurve) {
+    public SolverResults buildSolverResults(GRBModel model, Map<Double, Integer> targetFunctionValueCurve) {
         double lowerBound = 0;
         double upperBound = 0;
         double objectiveValue = 0;

@@ -242,12 +242,16 @@ public class ResultFormatter {
         } else {
             instanceCol = "";
         }
-        
-        // Format the final line (i dont even know xd there is propably a better way to do this)
-        return String.format("%s\t\t\t%s\t\t\t%s\t\t%s\t\t\t\t%s\t\t\t\t%s\t\t%s\t\t%s\t\t\t\t\t%s\t%s\t\t%s\t\t%s\t\t\t%s\t\t\t\t%s\t%s\t\t\t\t\t%s\t\t\t\t\t\t\t%s",
+
+        // Format the string to a fixed width (e.g., 90 characters)
+        String formattedHeuristics = String.format("%-90s", heuristicsStr);
+        String formattedhTFVCString = String.format("%-90s", hTargetFunctionValueCurve);
+
+        // Format the final line with proper alignment
+        return String.format("%s\t\t\t%s\t\t\t%s\t\t%s\t\t\t\t%s\t\t\t\t%s\t\t%s\t\t%s\t\t\t\t\t%s\t%s\t\t%s\t\t%s\t\t\t%s\t\t\t\t%s\t%s\t%s\t\t\t\t\t\t\t\t\t\t\t\t\t%s",
             parameterCol, instanceCol, model, hMakespan, noHMakespan, hUB, hLB,
             optimalStr, hTime, noHTime, timeDiff, heuristicMakespan,
-            timeLimitReached, errorStr, heuristicsStr, hTargetFunctionValueCurve, noHTargetFunctionValueCurve);
+            timeLimitReached, errorStr, formattedHeuristics, formattedhTFVCString, noHTargetFunctionValueCurve);
     }
     
     // Create header for the result file
@@ -275,7 +279,10 @@ public class ResultFormatter {
         header.add("Error\t\t\t\t: if the optimal makespan is not within the computed bounds by either the use of the model with or without the use of a heuristic start solution");
         header.add("Heuristics\t\t\t: a list of the abbrevations of the used heuristic start solutions");
         header.add("============================================================================================================================================================================================================================================================================================================================================================================================================================================================================================");
-        header.add("Paramter\tInstance\tModel\tH_M_Makespan\tnoH_M_Makespan\tH_UB\tH_LB\tOptimal_Makespan\tH_Time\tnoH_Time\tTime_Diff\tH_Makespan\ttime_limit_reached\tError\tHeuristics\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tH_target_function_value_curve\t\t\t\t\t\t\tnoH_target_function_value_curve");
+        
+        // Format the header with fixed width for heuristics column
+        String headerLine = String.format("Paramter\tInstance\tModel\tH_M_Makespan\tnoH_M_Makespan\tH_UB\tH_LB\tOptimal_Makespan\tH_Time\tnoH_Time\tTime_Diff\tH_Makespan\ttime_limit_reached\tError\t%-90s\t%-138s\tnoH_target_function_value_curve", "Heuristics", "H_target_function_value_curve");
+        header.add(headerLine);
         header.add("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         return header;
     }
@@ -350,14 +357,15 @@ public class ResultFormatter {
         return computedMakespan < optimalMakespan.doubleValue();
     }
     
-    private String formatTargetFunctionValueCurve(Map<Integer, Integer> curve) {
+    private String formatTargetFunctionValueCurve(Map<Double, Integer> curve) {
         if (curve == null || curve.isEmpty()) {
             return "N/A";
         }
         
         List<String> pairs = new ArrayList<>();
-        for (Map.Entry<Integer, Integer> entry : curve.entrySet()) {
-            pairs.add("(" + entry.getKey() + ", " + entry.getValue() + ")");
+        for (Map.Entry<Double, Integer> entry : curve.entrySet()) {
+            String formattedTime = String.format("%.2f", entry.getKey());
+            pairs.add("(" + formattedTime + ", " + entry.getValue() + ")");
         }
         
         return String.join(", ", pairs);

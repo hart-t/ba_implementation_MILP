@@ -10,7 +10,7 @@ public class SolverResults {
     double mipGap;
     boolean timeLimitReached;
     boolean error;
-    Map<Integer, Integer> targetFunctionValueCurve;
+    Map<Double, Integer> targetFunctionValueCurve;
 
     public SolverResults(double lowerBound, double upperBound, double objectiveValue, double timeInSeconds, double mipGap, boolean timeLimitReached) {
         this.lowerBound = lowerBound;
@@ -23,7 +23,7 @@ public class SolverResults {
     }
 
     // Add this new constructor that accepts the targetFunctionValueCurve
-    public SolverResults(double lowerBound, double upperBound, double objectiveValue, double timeInSeconds, double mipGap, boolean timeLimitReached, Map<Integer, Integer> targetFunctionValueCurve) {
+    public SolverResults(double lowerBound, double upperBound, double objectiveValue, double timeInSeconds, double mipGap, boolean timeLimitReached, Map<Double, Integer> targetFunctionValueCurve) {
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
         this.objectiveValue = objectiveValue;
@@ -42,12 +42,12 @@ public class SolverResults {
         return error;
     }
 
-    public void setTargetFunctionValueCurve(Map<Integer, Integer> targetFunctionValueCurve) {
+    public void setTargetFunctionValueCurve(Map<Double, Integer> targetFunctionValueCurve) {
         this.targetFunctionValueCurve = targetFunctionValueCurve;
     }
 
     // Add getter method for the targetFunctionValueCurve
-    public Map<Integer, Integer> getTargetFunctionValueCurve() {
+    public Map<Double, Integer> getTargetFunctionValueCurve() {
         return targetFunctionValueCurve;
     }
 

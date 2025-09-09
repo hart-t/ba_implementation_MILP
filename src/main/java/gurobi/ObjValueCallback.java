@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ObjValueCallback extends GRBCallback {
-    private Map<Integer, Integer> targetFunctionValueCurve;
+    private Map<Double, Integer> targetFunctionValueCurve; // Changed from Integer to Double
     private List<Map<String, Object>> callbackValues;
 
     public ObjValueCallback() {
@@ -16,7 +16,7 @@ public class ObjValueCallback extends GRBCallback {
     }
 
     // Add this method to set the target function value curve reference
-    public void setTargetFunctionValueCurve(Map<Integer, Integer> targetFunctionValueCurve) {
+    public void setTargetFunctionValueCurve(Map<Double, Integer> targetFunctionValueCurve) {
         this.targetFunctionValueCurve = targetFunctionValueCurve;
     }
 
@@ -28,9 +28,9 @@ public class ObjValueCallback extends GRBCallback {
                 double objVal = getDoubleInfo(GRB.CB_MIPSOL_OBJ);
                 double runtime = getDoubleInfo(GRB.CB_RUNTIME);
                 
-                // Store in target function value curve (time in seconds as key)
+                // Store with exact time (not rounded)
                 if (targetFunctionValueCurve != null) {
-                    targetFunctionValueCurve.put((int) Math.round(runtime), (int) Math.round(objVal));
+                    targetFunctionValueCurve.put(runtime, (int) Math.round(objVal));
                 }
                 
                 // Also store in callback values for detailed tracking
