@@ -244,11 +244,12 @@ public class FileReader {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(
                 new FileInputStream("/home/tobsi/university/kit/RCPSP_Benchmark_Solutions/j30opt.sm/j30opt.sm")))) {
             String line;
+            boolean skipHeader = true; // Move this outside the loop
+            
             while ((line = br.readLine()) != null) {
                 line = line.trim();
 
                 // Skip empty lines and header content
-                boolean skipHeader = true;
                 if (skipHeader && (line.isEmpty() || !line.startsWith("-"))) {
                     continue;
                 } else if (skipHeader && line.startsWith("-")) {
@@ -256,6 +257,7 @@ public class FileReader {
                     continue;
                 }
                 
+                // Now process the actual data lines
                 String[] parts = line.split("\\s+");
                 if (parts.length >= 3) {
                     try {
@@ -266,6 +268,7 @@ public class FileReader {
                         String key = String.format("j30%d_%d", parameter, instance);
                         optimalValues.put(key, makespan);
                     } catch (NumberFormatException e) {
+                        // Skip lines that can't be parsed as numbers
                         continue;
                     }
                 }
@@ -381,4 +384,3 @@ public class FileReader {
 
 
 
-                    
