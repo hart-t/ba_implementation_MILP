@@ -182,7 +182,7 @@ public int[][] getStartAndFinishTimes(GRBModel model, JobDataInstance data) {
         for (int i = 0; i < data.numberJob; i++) {
             for (int t = 0; t < data.horizon; t++) {
                 try {
-                    GRBVar var = model.getVarByName("startingTime[" + i + "] at [" + t + "]");
+                    GRBVar var = model.getVarByName("startingTime[" + i + "]_at_[" + t + "]");
                     if (var != null && var.get(GRB.DoubleAttr.X) > 0.5) {
                         startTimes[i] = t;
                         break; // Found the start time for this job
