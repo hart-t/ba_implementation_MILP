@@ -1,10 +1,6 @@
 package io;
 
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +14,8 @@ public class FileWriter {
     
     /**
      * Writes results to a file. If the file doesn't exist, creates a new file with appropriate format.
-     * If the file exists, merges the new results with existing data.
+     * For parameter=1, instance=1, creates a new file with header.
+     * For other instances, appends to existing file.
      * 
      * @param directory The directory where the file should be written
      * @param filename The name of the file
@@ -26,63 +23,72 @@ public class FileWriter {
      * @throws Exception if there's an error writing to the file
      */
     public void writeResults(String directory, String filename, List<Result> results) throws Exception {
-        // Create directory if it doesn't exist
-        File dir = new File(directory);
-        if (!dir.exists()) {
-            dir.mkdirs();
+        if (results == null || results.isEmpty()) {
+            throw new IllegalArgumentException("Results list cannot be null or empty");
         }
         
-        // Create full file path
-        File file = new File(dir, filename);
-        
-        // Load optimal values
+        String filepath = directory + "/" + filename;
         Map<String, Integer> optimalValues = fileReader.loadOptimalValues();
         
-        // Load existing results if file exists
-        Map<String, FileReader.ExistingResultData> existingResults = new HashMap<>();
-        if (file.exists()) {
-            existingResults = fileReader.loadExistingResults(file.getAbsolutePath());
-        }
-        
-        // Create formatter with optimal values
+        // Format the new results - no reading of existing file
         ResultFormatter formatter = new ResultFormatter(optimalValues);
+        List<String> lines = formatter.formatResults(results, null);  // Pass null for existingResults
         
-        // Format the results using the formatter
-        List<String> lines = formatter.formatResults(results, existingResults);
+        // Determine whether to append or overwrite
+        boolean shouldAppend = true;
+        Result firstResult = results.get(0);
+        String[] instanceParts = extractInstanceInfo(firstResult.instanceName);
         
-        // Write the lines to the file
-        writeLinesToFile(file, lines);
-    }
-    
-    /**
-     * Writes a list of strings to a file, overwriting any existing content.
-     * 
-     * @param file The file to write to
-     * @param lines The lines to write
-     * @throws Exception if there's an error writing to the file
-     */
-    private void writeLinesToFile(File file, List<String> lines) throws Exception {
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, false)))) {
+        if (instanceParts.length >= 2 && !instanceParts[0].isEmpty()) {
+            try {
+                int parameter = Integer.parseInt(instanceParts[0]);
+                int instance = Integer.parseInt(instanceParts[1]);
+                
+                // Overwrite file if this is parameter 1, instance 1
+                if (parameter == 1 && instance == 1) {
+                    shouldAppend = false;
+                }
+            } catch (NumberFormatException e) {
+                // If parsing fails, default to append to be safe
+                System.err.println("Warning: Could not parse parameter/instance from " + 
+                                   firstResult.instanceName + ", defaulting to append mode");
+            }
+        }
+        
+        // Write to file
+        try (java.io.FileWriter writer = new java.io.FileWriter(filepath, shouldAppend);
+             BufferedWriter bw = new BufferedWriter(writer)) {
             for (String line : lines) {
-                writer.write(line);
-                writer.newLine();
+                bw.write(line);
+                bw.newLine();
             }
         }
     }
     
     /**
-     * Appends a list of strings to an existing file.
+     * Extracts parameter and instance numbers from an instance name.
+     * Expected format: j30{parameter}_{instance}.sm
      * 
-     * @param file The file to append to
-     * @param lines The lines to append
-     * @throws Exception if there's an error writing to the file
+     * @param instanceName The instance name to parse
+     * @return Array with [parameter, instance] as strings, or empty strings if parsing fails
      */
-    public void appendLinesToFile(File file, List<String> lines) throws Exception {
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true)))) {
-            for (String line : lines) {
-                writer.write(line);
-                writer.newLine();
-            }
+    private String[] extractInstanceInfo(String instanceName) {
+        if (instanceName == null || !instanceName.startsWith("j30")) {
+            return new String[]{"", ""};
         }
+        
+        try {
+            String withoutPrefix = instanceName.substring(3);
+            String withoutExtension = withoutPrefix.split("\\.")[0];
+            String[] parts = withoutExtension.split("_");
+            
+            if (parts.length >= 2) {
+                return new String[]{parts[0], parts[1]};
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Error parsing instance name: " + instanceName);
+        }
+        
+        return new String[]{"", ""};
     }
 }

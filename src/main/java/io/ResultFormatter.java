@@ -20,9 +20,6 @@ public class ResultFormatter {
     public List<String> formatResults(List<Result> results, Map<String, FileReader.ExistingResultData> existingResults) throws Exception {
         List<String> lines = new ArrayList<>();
         
-        // Always add header
-        lines.addAll(createHeader());
-        
         // Group results by parameter, instance, and model for proper merging
         Map<String, List<Result>> groupedResults = new HashMap<>();
         for (Result result : results) {
@@ -39,9 +36,6 @@ public class ResultFormatter {
             }
             resultList.add(result);
         }
-        
-        int currentParameter = -1;
-        int currentInstance = -1;
         
         // Sort the keys
         List<String> sortedKeys = new ArrayList<>(groupedResults.keySet());
@@ -63,40 +57,49 @@ public class ResultFormatter {
             return parts1[2].compareTo(parts2[2]);
         });
         
+        // Check if we should add header (only if first result is parameter=1, instance=1)
+        if (!sortedKeys.isEmpty()) {
+            String firstKey = sortedKeys.get(0);
+            String[] parts = firstKey.split("_");
+            int firstParameter = Integer.parseInt(parts[0]);
+            int firstInstance = Integer.parseInt(parts[1]);
+            
+            if (firstParameter == 1 && firstInstance == 1) {
+                lines.addAll(createHeader());
+            }
+        }
+        
+        int currentParameter = -1;
+        int currentInstance = -1;
+        
         for (String key : sortedKeys) {
             String[] parts = key.split("_");
             int parameter = Integer.parseInt(parts[0]);
             int instance = Integer.parseInt(parts[1]);
             String model = parts[2];
             
-            // Check if this is the first model for this instance
-            boolean isFirstModelForInstance = parameter != currentParameter || instance != currentInstance;
-            
-            // Get results for this key if available
             List<Result> resultsForKey = groupedResults.get(key);
-            FileReader.ExistingResultData existingData = existingResults != null ? existingResults.get(key) : null;
-            
             Result heuristicResult = null;
             Result nonHeuristicResult = null;
             
-            // check if we have heuristic and/or non-heuristic results
             for (Result result : resultsForKey) {
-                boolean hasHeuristics = result.getUsedHeuristics() != null && !result.getUsedHeuristics().isEmpty();
-                if (hasHeuristics) {
+                // Check if result has heuristics used
+                HashSet<String> resultHeuristics = result.getUsedHeuristics();
+                if (resultHeuristics != null && !resultHeuristics.isEmpty()) {
                     heuristicResult = result;
                 } else {
                     nonHeuristicResult = result;
                 }
             }
             
-            // Create merged line
-            String formattedLine = formatMergedResultLine(heuristicResult, nonHeuristicResult, 
-                                                         parameter, instance, model, 
-                                                         isFirstModelForInstance, existingData);
-            lines.add(formattedLine);
-            
+            boolean isFirstModelForInstance = (parameter != currentParameter || instance != currentInstance);
             currentParameter = parameter;
             currentInstance = instance;
+            
+            // Add line without merging with existing data
+            lines.add(formatMergedResultLine(heuristicResult, nonHeuristicResult,
+                                            parameter, instance, model,
+                                            isFirstModelForInstance, null));
         }
         
         return lines;
@@ -118,7 +121,7 @@ public class ResultFormatter {
         Integer optimalMakespan = optimalValues.get(instanceName);
         String optimalStr;
         if (optimalMakespan != null) {
-            optimalStr = optimalMakespan.toString();
+            optimalStr = String.valueOf(optimalMakespan);
         } else {
             optimalStr = "N/A";
         }
@@ -140,37 +143,42 @@ public class ResultFormatter {
 
         // Fill values from heuristic result
         if (heuristicResult != null) {
-            // Check if objective value is reasonable (not indicating infeasible solution)
             if (isReasonableObjectiveValue(heuristicResult.solverResults.objectiveValue)) {
-                hMakespan = String.valueOf((int)heuristicResult.solverResults.objectiveValue);
+                hMakespan = String.valueOf(Math.round(heuristicResult.solverResults.objectiveValue));
             } else {
                 hMakespan = "INFEASIBLE";
             }
             
-            // Check bounds similarly
+            // upperBound and lowerBound are primitive doubles, not Double objects
+            // So we can't check for null, just check if reasonable
             if (isReasonableObjectiveValue(heuristicResult.solverResults.upperBound)) {
-                hUB = String.valueOf((int)heuristicResult.solverResults.upperBound);
-            } else {
-                hUB = "INFEASIBLE";
+                hUB = String.valueOf(Math.round(heuristicResult.solverResults.upperBound));
             }
             
             if (isReasonableObjectiveValue(heuristicResult.solverResults.lowerBound)) {
-                hLB = String.valueOf((int)heuristicResult.solverResults.lowerBound);
-            } else {
-                hLB = "INFEASIBLE";
+                hLB = String.valueOf(Math.round(heuristicResult.solverResults.lowerBound));
             }
             
             hTime = formatTime(heuristicResult.solverResults.timeInSeconds);
-            if (heuristicResult.getBestHeuristicMakespan() > 0) {
-                heuristicMakespan = String.valueOf(heuristicResult.getBestHeuristicMakespan());
-            } else {
-                heuristicMakespan = "N/A";
-            }
-            timeLimitReached = String.valueOf(heuristicResult.solverResults.wasStoppedByTimeLimit());
-            errorStr = String.valueOf(checkError(heuristicResult, optimalMakespan));
-            heuristicsStr = getHeuristicShortNames(heuristicResult.getUsedHeuristics());
             
-            // Extract heuristic target function value curve
+            // Use the correct method to get heuristic makespan
+            int bestHeuristicMakespan = heuristicResult.getBestHeuristicMakespan();
+            if (bestHeuristicMakespan > 0) {
+                heuristicMakespan = String.valueOf(bestHeuristicMakespan);
+            }
+            
+            timeLimitReached = String.valueOf(heuristicResult.solverResults.wasStoppedByTimeLimit());
+            
+            if (optimalMakespan != null) {
+                errorStr = String.valueOf(checkError(heuristicResult, optimalMakespan));
+            }
+            
+            // Use the correct method to get used heuristics
+            HashSet<String> usedHeuristics = heuristicResult.getUsedHeuristics();
+            if (usedHeuristics != null && !usedHeuristics.isEmpty()) {
+                heuristicsStr = getHeuristicShortNames(usedHeuristics);
+            }
+            
             if (heuristicResult.solverResults.targetFunctionValueCurve != null) {
                 hTargetFunctionValueCurve = formatTargetFunctionValueCurve(heuristicResult.solverResults.targetFunctionValueCurve);
             }
@@ -178,51 +186,27 @@ public class ResultFormatter {
         
         // Fill values from non-heuristic result
         if (nonHeuristicResult != null) {
-            // Check if objective value is reasonable (not indicating infeasible solution)
             if (isReasonableObjectiveValue(nonHeuristicResult.solverResults.objectiveValue)) {
-                noHMakespan = String.valueOf((int)nonHeuristicResult.solverResults.objectiveValue);
+                noHMakespan = String.valueOf(Math.round(nonHeuristicResult.solverResults.objectiveValue));
             } else {
                 noHMakespan = "INFEASIBLE";
             }
             
             noHTime = formatTime(nonHeuristicResult.solverResults.timeInSeconds);
-            // Update error if we don't have it from heuristic result
-            if ("N/A".equals(errorStr)) {
-                errorStr = String.valueOf(checkError(nonHeuristicResult, optimalMakespan));
-            }
             
-            // Extract non-heuristic target function value curve
             if (nonHeuristicResult.solverResults.targetFunctionValueCurve != null) {
                 noHTargetFunctionValueCurve = formatTargetFunctionValueCurve(nonHeuristicResult.solverResults.targetFunctionValueCurve);
             }
         }
         
-        // Merge with existing data if available
-        if (existingData != null) {
-            if (existingData.hMakespan != null) hMakespan = existingData.hMakespan;
-            if (existingData.noHMakespan != null) noHMakespan = existingData.noHMakespan;
-            if (existingData.hUB != null) hUB = existingData.hUB;
-            if (existingData.hLB != null) hLB = existingData.hLB;
-            if (existingData.hTime != null) hTime = existingData.hTime;
-            if (existingData.noHTime != null) noHTime = existingData.noHTime;
-            if (existingData.heuristicMakespan != null) heuristicMakespan = existingData.heuristicMakespan;
-            if (existingData.timeLimitReached != null) timeLimitReached = existingData.timeLimitReached;
-            if (existingData.error != null) errorStr = existingData.error;
-            // Only use existing heuristics if current result has none
-            if ((heuristicsStr == null || heuristicsStr.equals("N/A")) && existingData.heuristics != null) {
-                heuristicsStr = existingData.heuristics;
-            }
-            if (existingData.hTargetFunctionValueCurve != null) hTargetFunctionValueCurve = existingData.hTargetFunctionValueCurve;
-            if (existingData.noHTargetFunctionValueCurve != null) noHTargetFunctionValueCurve = existingData.noHTargetFunctionValueCurve;
-        }
+        // No merging with existing data anymore
         
         // Calculate time difference if both times are available
         if (!"N/A".equals(hTime) && !"N/A".equals(noHTime)) {
             try {
                 double hTimeVal = Double.parseDouble(hTime);
                 double noHTimeVal = Double.parseDouble(noHTime);
-                double diff = hTimeVal - noHTimeVal;
-                timeDiff = formatTime(diff);
+                timeDiff = formatTime(hTimeVal - noHTimeVal);
             } catch (NumberFormatException e) {
                 timeDiff = "N/A";
             }
@@ -353,8 +337,9 @@ public class ResultFormatter {
     
     private boolean checkError(Result result, Integer optimalMakespan) {
         if (optimalMakespan == null) return false;
-        double computedMakespan = result.solverResults.objectiveValue;
-        return computedMakespan < optimalMakespan.doubleValue();
+        // Round to nearest integer before comparing
+        long computedMakespan = Math.round(result.solverResults.objectiveValue);
+        return computedMakespan < optimalMakespan.longValue();
     }
     
     private String formatTargetFunctionValueCurve(Map<Double, Integer> curve) {

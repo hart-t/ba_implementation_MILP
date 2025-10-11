@@ -8,6 +8,8 @@ import modelSolutions.SequencingModelSolution;
 import interfaces.ModelSolutionInterface;
 import com.gurobi.gurobi.*;
 import io.JobDataInstance;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SequencingModel implements ModelInterface {
     CompletionMethodInterface completionMethod;
@@ -118,6 +120,179 @@ public class SequencingModel implements ModelInterface {
                 }
             }
 
+            // for further enhancements, we compute two sets of Variables: F2 and F3
+
+            // Compute F2: pairs (i,j) where i < j, no precedence relation exists,
+            // and combined resource requirement exceeds capacity of at least one resource
+            List<int[]> F2 = new ArrayList<>();
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int j = i + 1; j < data.numberJob; j++) {
+                    // Check if (i,j) and (j,i) are not in TE (no precedence relation)
+                    if (teMatrix[i][j] == 1 || teMatrix[j][i] == 1) continue;
+                    
+                    // Check if there exists a resource k where r_ik + r_jk > R_k
+                    boolean exceedsCapacity = false;
+                    for (int k = 0; k < data.resourceCapacity.size(); k++) {
+                        int resourceSum = data.jobResource.get(i).get(k) + data.jobResource.get(j).get(k);
+                        if (resourceSum > data.resourceCapacity.get(k)) {
+                            exceedsCapacity = true;
+                            break;
+                        }
+                    }
+                    
+                    if (exceedsCapacity) {
+                        F2.add(new int[]{i, j});
+                    }
+                }
+            }
+
+            // Compute F3: triples (i,j,h) where i < j < h, no precedence relations exist between any pair,
+            // none of the pairs (i,j), (i,h), (j,h) are in F2,
+            // and combined resource requirement exceeds capacity of at least one resource
+            List<int[]> F3 = new ArrayList<>();
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int j = i + 1; j < data.numberJob; j++) {
+                    for (int h = j + 1; h < data.numberJob; h++) {
+                        // Check if no precedence relations exist
+                        if (teMatrix[i][j] == 1 || teMatrix[j][i] == 1 ||
+                            teMatrix[i][h] == 1 || teMatrix[h][i] == 1 ||
+                            teMatrix[j][h] == 1 || teMatrix[h][j] == 1) continue;
+                        
+                        // Check if (i,j), (i,h), (j,h) are not in F2
+                        boolean inF2 = false;
+                        for (int[] pair : F2) {
+                            if ((pair[0] == i && pair[1] == j) ||
+                                (pair[0] == i && pair[1] == h) ||
+                                (pair[0] == j && pair[1] == h)) {
+                                inF2 = true;
+                                break;
+                            }
+                        }
+                        if (inF2) continue;
+                        
+                        // Check if there exists a resource k where r_ik + r_jk + r_hk > R_k
+                        boolean exceedsCapacity = false;
+                        for (int k = 0; k < data.resourceCapacity.size(); k++) {
+                            int resourceSum = data.jobResource.get(i).get(k) + 
+                                            data.jobResource.get(j).get(k) + 
+                                            data.jobResource.get(h).get(k);
+                            if (resourceSum > data.resourceCapacity.get(k)) {
+                                exceedsCapacity = true;
+                                break;
+                            }
+                        }
+                        
+                        if (exceedsCapacity) {
+                            F3.add(new int[]{i, j, h});
+                        }
+                    }
+                }
+            }
+
+            // (7) For each pair in F2, at least one sequencing variable must be 1
+            for (int[] pair : F2) {
+                int i = pair[0];
+                int j = pair[1];
+                GRBLinExpr expr = new GRBLinExpr();
+                expr.addTerm(1, yij[i][j]);
+                expr.addTerm(1, yij[j][i]);
+                model.addConstr(expr, GRB.GREATER_EQUAL, 1, "F2_" + i + "_" + j + "_(7)");
+            }
+
+            // (8) For each triple in F3, at least one sequencing variable must be 1
+            // This ensures that for three activities that cannot run simultaneously,
+            // at least one pair has a completion-start ordering
+            for (int[] triple : F3) {
+                int i = triple[0];
+                int j = triple[1];
+                int h = triple[2];
+                GRBLinExpr expr = new GRBLinExpr();
+                expr.addTerm(1, yij[i][j]);
+                expr.addTerm(1, yij[j][i]);
+                expr.addTerm(1, yij[i][h]);
+                expr.addTerm(1, yij[h][i]);
+                expr.addTerm(1, yij[j][h]);
+                expr.addTerm(1, yij[h][j]);
+                model.addConstr(expr, GRB.GREATER_EQUAL, 1, "F3_" + i + "_" + j + "_" + h + "_(8)");
+            }
+
+            // (9) Transitivity constraints: activity i cannot be completed before the start of activity j
+            // if activity j is completed before the start of activity i
+            // This applies to all pairs (i,j) where i < j and no precedence relation exists
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int j = i + 1; j < data.numberJob; j++) {
+                    // Check if (i,j) and (j,i) are not in TE (no precedence relation)
+                    if (teMatrix[i][j] == 1 || teMatrix[j][i] == 1) continue;
+                    
+                    GRBLinExpr expr = new GRBLinExpr();
+                    expr.addTerm(1, yij[i][j]);
+                    expr.addTerm(1, yij[j][i]);
+                    model.addConstr(expr, GRB.LESS_EQUAL, 1, "transitivity_" + i + "_" + j + "_(9)");
+                }
+            }
+
+            // (10) For any pair of activities, at least one activity has to start before the other
+            // or both activities must start at the same time
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int j = i + 1; j < data.numberJob; j++) {
+                    // Check if (i,j) and (j,i) are not in TE (no precedence relation)
+                    if (teMatrix[i][j] == 1 || teMatrix[j][i] == 1) continue;
+                    
+                    GRBLinExpr expr = new GRBLinExpr();
+                    expr.addTerm(1, zij[i][j]);
+                    expr.addTerm(1, zij[j][i]);
+                    model.addConstr(expr, GRB.GREATER_EQUAL, 1, "start_ordering_" + i + "_" + j + "_(10)");
+                }
+            }
+
+            // (11) If activity i is completed before the start of activity j,
+            // then activity i also has to start before j
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int j = 0; j < data.numberJob; j++) {
+                    if (i == j || teMatrix[i][j] == 1 || teMatrix[j][i] == 1) continue;
+                    
+                    GRBLinExpr leftSide = new GRBLinExpr();
+                    leftSide.addTerm(1, zij[i][j]);
+                    
+                    GRBLinExpr rightSide = new GRBLinExpr();
+                    rightSide.addTerm(1, yij[i][j]);
+                    
+                    model.addConstr(leftSide, GRB.GREATER_EQUAL, rightSide, "start_before_complete_" + i + "_" + j + "_(11)");
+                }
+            }
+
+            // (12) If both z_ij and z_ji are equal to one, then the two activities must start at the same time
+            // This is modeled as: 2 - z_ij - z_ji >= (1/T)(S_i - S_j)
+            // Since we need this for both directions, we add constraints for both (S_i - S_j) and (S_j - S_i)
+            for (int i = 0; i < data.numberJob; i++) {
+                for (int j = i + 1; j < data.numberJob; j++) {
+                    if (teMatrix[i][j] == 1 || teMatrix[j][i] == 1) continue;
+                    
+                    // 2 - z_ij - z_ji >= (1/T)(S_i - S_j)
+                    GRBLinExpr leftSide1 = new GRBLinExpr();
+                    leftSide1.addConstant(2);
+                    leftSide1.addTerm(-1, zij[i][j]);
+                    leftSide1.addTerm(-1, zij[j][i]);
+                    
+                    GRBLinExpr rightSide1 = new GRBLinExpr();
+                    rightSide1.addTerm(1.0 / data.horizon, si[i]);
+                    rightSide1.addTerm(-1.0 / data.horizon, si[j]);
+                    
+                    model.addConstr(leftSide1, GRB.GREATER_EQUAL, rightSide1, "same_start_" + i + "_" + j + "_(12a)");
+                    
+                    // 2 - z_ij - z_ji >= (1/T)(S_j - S_i)
+                    GRBLinExpr leftSide2 = new GRBLinExpr();
+                    leftSide2.addConstant(2);
+                    leftSide2.addTerm(-1, zij[i][j]);
+                    leftSide2.addTerm(-1, zij[j][i]);
+                    
+                    GRBLinExpr rightSide2 = new GRBLinExpr();
+                    rightSide2.addTerm(1.0 / data.horizon, si[j]);
+                    rightSide2.addTerm(-1.0 / data.horizon, si[i]);
+                    
+                    model.addConstr(leftSide2, GRB.GREATER_EQUAL, rightSide2, "same_start_" + j + "_" + i + "_(12b)");
+                }
+            }
 
             return model;
         } catch (GRBException e) {
