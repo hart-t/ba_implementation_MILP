@@ -86,5 +86,8 @@ It is therefore recommended to start the program with the following command:
 The complete console output is written to `TerminalOutput.txt`.  
 This output can then be processed with a separate parser to extract the desired metrics into a CSV file.
 
+### CSV Files
+
+There are two csv files in the csv_files folder, containing all j30 intance runs and a few of the j120
 
 **Bachelor Thesis** | KIT 2025 | Tobias Hart
