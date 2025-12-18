@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import io.CallbackValues;
+import enums.WarmstartStrategy;
 
 public class WarmstartSolver {
 
@@ -30,10 +31,12 @@ public class WarmstartSolver {
     private int maxRuntime;
     // Change from Map<Integer, Integer> to Map<Double, Integer>
     private Map<Double, Integer> targetFunctionValueCurve;
+    private WarmstartStrategy strategy;
 
-    public WarmstartSolver(ModelInterface model, int maxRuntime) {
+    public WarmstartSolver(ModelInterface model, int maxRuntime, WarmstartStrategy strategy) {
         this.model = model;
         this.maxRuntime = maxRuntime;
+        this.strategy = strategy;
     }
 
     public Result solve(JobDataInstance data, ScheduleResult scheduleResult) {
@@ -51,8 +54,12 @@ public class WarmstartSolver {
 
             // Build the solution using the completion method
             long startTime = System.nanoTime();
-            ModelSolutionInterface initialSolution = completionMethod.buildSolution(scheduleResult.getStartTimes(), data, grbOptimizationModel);
-            long timeComputingAndBuildingHeuristicStartSolution = System.nanoTime() - startTime - initialSolution.getTimeToCreateVariables() + scheduleResult.getTimeComputingHeuristicStartTimes();
+            ModelSolutionInterface initialSolution = completionMethod.buildSolution(scheduleResult.getStartTimes(), data, grbOptimizationModel, strategy);
+            long variableCreationTime = 0;
+            if (strategy != WarmstartStrategy.STD) {
+                variableCreationTime = initialSolution.getTimeToCreateVariables();
+            }
+            long timeComputingAndBuildingHeuristicStartSolution = System.nanoTime() - startTime - variableCreationTime + scheduleResult.getTimeComputingHeuristicStartTimes();
 
             // print the start times used to build the initial solution
             System.out.println("Initial start times used to build the solution: " + scheduleResult.getStartTimes());
@@ -84,7 +91,7 @@ public class WarmstartSolver {
             System.out.println("Number of binary variables: " + grbOptimizationModel.get(GRB.IntAttr.NumBinVars));
             System.out.println("Number of integer variables: " + grbOptimizationModel.get(GRB.IntAttr.NumIntVars));
 
-            // TODO delete later
+            // TODO delete later maybe useful for further models
             // Check if model is infeasible and log infeasible constraints
             if (grbOptimizationModel.get(GRB.IntAttr.Status) == GRB.Status.INFEASIBLE) {
                 logInfeasibleConstraints(grbOptimizationModel, data.instanceName);

@@ -7,6 +7,7 @@ import com.gurobi.gurobi.GRB;
 import com.gurobi.gurobi.GRBModel;
 import com.gurobi.gurobi.GRBVar;
 
+import enums.WarmstartStrategy;
 import interfaces.CompletionMethodInterface;
 import interfaces.ModelSolutionInterface;
 import io.JobDataInstance;
@@ -16,7 +17,7 @@ import utility.TEMatrix;
 
 public class BuildSequencingSolution implements CompletionMethodInterface{
     public ModelSolutionInterface buildSolution(List<Map<Integer, Integer>> startTimesList, JobDataInstance data,
-    GRBModel model) {
+    GRBModel model, enums.WarmstartStrategy strategy) {
 
         long timeToCreateVariablesStart = System.nanoTime();
         long timeToCreateVariables = 0;
@@ -62,7 +63,7 @@ public class BuildSequencingSolution implements CompletionMethodInterface{
 
             if (!startTimesList.isEmpty()) {
                 Map<Integer, Integer> startTimes = null;
-                model.set(GRB.IntAttr.NumStart, startTimesList.size());
+                // model.set(GRB.IntAttr.NumStart, startTimesList.size());
                 model.update();
 
                 // Iterate through the list of start times and set the start values for the variables
@@ -70,33 +71,53 @@ public class BuildSequencingSolution implements CompletionMethodInterface{
                 // by Gurobi to find a feasible solution faster.
                 // If there are multiple start times, Gurobi will try each one in sequence and choose the best one.
                 
-                for (int s = 0; s < model.get(GRB.IntAttr.NumStart); s++) {
-                    model.set(GRB.IntParam.StartNumber, s);
-                    System.out.println("Setting MIP start for index: " + s);
-                    startTimes = startTimesList.get(s);
+                // for (int s = 0; s < model.get(GRB.IntAttr.NumStart); s++) {
+                    // model.set(GRB.IntParam.StartNumber, s);
+                    // System.out.println("Setting MIP start for index: " + s);
+                    startTimes = startTimesList.get(0);
 
                     for (int i = 0; i < data.numberJob; i++) {
-                        si[i].set(GRB.DoubleAttr.Start, startTimes.get(i));
+                        if (strategy == WarmstartStrategy.VS) {
+                            si[i].set(GRB.DoubleAttr.Start, startTimes.get(i));
+                        } else if (strategy == WarmstartStrategy.VH) {
+                            si[i].set(GRB.DoubleAttr.VarHintVal, startTimes.get(i));
+                        }
                     }
 
                     for (int i = 0; i < data.numberJob; i++) {
                         for (int j = i + 1; j < data.numberJob; j++) {
                             if (startTimes.get(i) + data.jobDuration.get(i) <= startTimes.get(j)) {
-                                yij[i][j].set(GRB.DoubleAttr.Start, 1.0);
+                                if (strategy == WarmstartStrategy.VS) {
+                                    yij[i][j].set(GRB.DoubleAttr.Start, 1.0);
+                                } else if (strategy == WarmstartStrategy.VH) {
+                                    yij[i][j].set(GRB.DoubleAttr.VarHintVal, 1.0);
+                                }
                             } else {
-                                yij[i][j].set(GRB.DoubleAttr.Start, 0.0);
+                                if (strategy == WarmstartStrategy.VS) {
+                                    yij[i][j].set(GRB.DoubleAttr.Start, 0.0);
+                                } else if (strategy == WarmstartStrategy.VH) {
+                                    yij[i][j].set(GRB.DoubleAttr.VarHintVal, 0.0);
+                                }
                             }
 
                             if (teMatrix[i][j] == 1 || teMatrix[j][i] == 1) continue; // Skip transitive edges
                             if (startTimes.get(i) <= startTimes.get(j)) {
-                                zij[i][j].set(GRB.DoubleAttr.Start, 1.0);
+                                if (strategy == WarmstartStrategy.VS) {
+                                    zij[i][j].set(GRB.DoubleAttr.Start, 1.0);
+                                } else if (strategy == WarmstartStrategy.VH) {
+                                    zij[i][j].set(GRB.DoubleAttr.VarHintVal, 1.0);
+                                }
                             } else {
-                                zij[i][j].set(GRB.DoubleAttr.Start, 0.0);
+                                if (strategy == WarmstartStrategy.VS) {
+                                    zij[i][j].set(GRB.DoubleAttr.Start, 0.0);
+                                } else if (strategy == WarmstartStrategy.VH) {
+                                    zij[i][j].set(GRB.DoubleAttr.VarHintVal, 0.0);
+                                }
                             }
                         }
                     }
                     model.update(); // Update the model after setting starts
-                }
+                // }
                 model.update(); // Ensure the model is updated after modifying variables
             } else {
                 System.out.println("No start times provided, using default values.");

@@ -14,10 +14,10 @@ public class IntegratedApproach {
     private WarmstartSolver solver;
     private int maxRuntime;
 
-    public IntegratedApproach(List<String> heuristicConfigs, String modelConfig) {
+    public IntegratedApproach(List<String> heuristicConfigs, String modelConfig, WarmstartStrategy strategy) {
         this.heuristics = createHeuristics(heuristicConfigs);
         ModelInterface model = createModel(modelConfig);
-        this.solver = new WarmstartSolver(model, maxRuntime);
+        this.solver = new WarmstartSolver(model, maxRuntime, strategy);
     }
     
     private List<HeuristicInterface> createHeuristics(List<String> configs) {

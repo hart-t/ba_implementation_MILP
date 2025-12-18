@@ -4,6 +4,7 @@ import com.gurobi.gurobi.GRB;
 import com.gurobi.gurobi.GRBModel;
 import com.gurobi.gurobi.GRBVar;
 
+import enums.WarmstartStrategy;
 import interfaces.CompletionMethodInterface;
 import interfaces.ModelSolutionInterface;
 import io.JobDataInstance;
@@ -15,7 +16,7 @@ import java.util.*;
 public class BuildTimeDiscreteSolution implements CompletionMethodInterface {
 
     public ModelSolutionInterface buildSolution(List<Map<Integer, Integer>> startTimesList, JobDataInstance data,
-    GRBModel model) {
+    GRBModel model, enums.WarmstartStrategy strategy) {
 
         long timeToCreateVariablesStart = System.nanoTime();
         long timeToCreateVariables = 0;
@@ -42,41 +43,47 @@ public class BuildTimeDiscreteSolution implements CompletionMethodInterface {
             model.update(); // Ensure the model is updated after adding variables
             timeToCreateVariables = (System.nanoTime() - timeToCreateVariablesStart) / 1_000_000; // Convert to milliseconds
 
-                if (!startTimesList.isEmpty()) {
-                    Map<Integer, Integer> startTimes = null;
-                    model.set(GRB.IntAttr.NumStart, startTimesList.size());
-                    model.update();
+            if (!startTimesList.isEmpty()) {
+                Map<Integer, Integer> startTimes = null;
+                // model.set(GRB.IntAttr.NumStart, startTimesList.size());
+                model.update();
 
-                    // Iterate through the list of start times and set the start values for the variables
-                    // This allows for multiple MIP starts, where each start time configuration can be tried
-                    // by Gurobi to find a feasible solution faster.
-                    // If there are multiple start times, Gurobi will try each one in sequence and choose the best one.
-                    
-                    for (int s = 0; s < model.get(GRB.IntAttr.NumStart); s++) {
-                        model.set(GRB.IntParam.StartNumber, s);
-                        model.update();
-                        System.out.println("Setting MIP start for index: " + s);
-                        startTimes = startTimesList.get(s);
+                // Iterate through the list of start times and set the start values for the variables
+                // This allows for multiple MIP starts, where each start time configuration can be tried
+                // by Gurobi to find a feasible solution faster.
+                // If there are multiple start times, Gurobi will try each one in sequence and choose the best one.
+                
+                // for (int s = 0; s < model.get(GRB.IntAttr.NumStart); s++) {
+                    // model.set(GRB.IntParam.StartNumber, s);
+                    // System.out.println("Setting MIP start for index: " + s);
+                    startTimes = startTimesList.get(0);
 
-                        for (int i = 0; i < data.numberJob; i++) {
-                            for (int j = earliestStartTime[i]; j < latestStartTime[i]; j++) {
-                                GRBVar var = model.getVarByName("startingTime[" + i + "]_at_[" + j + "]");
-                                if (var != null) {
-                                    if (startTimes.get(i).equals(j)) {
-                                        System.out.println("Setting variable for job " + i + " at time " + j + " to 1.0");
-                                        var.set(GRB.DoubleAttr.Start, 1.0);
-                                    } else {
-                                        var.set(GRB.DoubleAttr.Start, 0.0);
+                    for (int i = 0; i < data.numberJob; i++) {
+                        for (int t = earliestStartTime[i]; t <= latestStartTime[i]; t++) {
+                            if (startingTimeVars[i][t] != null) {
+                                if (startTimes.get(i).equals(t)) {
+                                    System.out.println("Setting variable for job " + i + " at time " + t + " to 1.0");
+                                    if (strategy == WarmstartStrategy.VS) {
+                                        startingTimeVars[i][t].set(GRB.DoubleAttr.Start, 1.0);
+                                    } else if (strategy == WarmstartStrategy.VH) {
+                                        startingTimeVars[i][t].set(GRB.DoubleAttr.VarHintVal, 1.0);
                                     }
                                 } else {
-                                    System.err.println("Variable for job " + i + " at time " + j + " not found.");
-                                }   
-                            }  
-                        }
-                        model.update(); // Update the model after setting starts
+                                    if (strategy == WarmstartStrategy.VS) {
+                                        startingTimeVars[i][t].set(GRB.DoubleAttr.Start, 0.0);
+                                    } else if (strategy == WarmstartStrategy.VH) {
+                                        startingTimeVars[i][t].set(GRB.DoubleAttr.VarHintVal, 0.0);
+                                    }
+                                }
+                            } else {
+                                System.err.println("Variable for job " + i + " at time " + t + " is null.");
+                            }   
+                        }  
                     }
-                }
+                    model.update(); // Update the model after setting starts
+                // }
                 model.update(); // Ensure the model is updated after modifying variables
+            }
         } catch (Exception e) {
             System.err.println("Error while creating a start solution from given start times: " + e.getMessage());
             return null;

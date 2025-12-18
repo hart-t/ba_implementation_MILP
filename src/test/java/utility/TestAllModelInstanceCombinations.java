@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.io.File;
 import java.util.ArrayList;
+import static enums.WarmstartStrategy.*;
 
 public class TestAllModelInstanceCombinations {
     
@@ -17,7 +18,7 @@ public class TestAllModelInstanceCombinations {
 
         List<Result> results = new ArrayList<>();
 
-        File[] files = new File("/home/tobsi/university/kit/benchmarkSets").listFiles();
+        File[] files = new File("/path/to/benchmarkSets").listFiles();
         assert files != null;
         
         // Limit to just the first 2 files for testing
@@ -40,25 +41,26 @@ public class TestAllModelInstanceCombinations {
         });
 
         // Configure all heuristics to test
+        // Rule-PriorityStrategy-SamplingMethod_NumberOfSchedules
         List<String> heuristicConfigs = Arrays.asList(
-                 "SSGS-SPT-BRS_250"        // Serial SGS with Shortest Processing Time
-                /* "SSGS-GRPW-BRS_250",      // Serial SGS with Greatest Rank Positional Weight
+                 "SSGS-SPT-BRS_250",        // Serial SGS with Shortest Processing Time
+                "SSGS-GRPW-BRS_250",      // Serial SGS with Greatest Rank Positional Weight
                 "SSGS-MRU-BRS_250",       // Serial SGS with Most Resource Usage
                 "SSGS-RSM-BRS_250",       // Serial SGS with Resource Scheduling Method
                 "SSGS-MTS-BRS_250",       // Serial SGS with Most Total Successors
                 "SSGS-MLST-BRS_250",      // Serial SGS with Minimum Latest Start Time
                 "SSGS-MLFT-BRS_250",      // Serial SGS with Minimum Latest Finish Time
                 "SSGS-MJS-BRS_250",      // Serial SGS with Minimum Job Slack
-                "GA-SPT-NS"*/
+                "GA-SPT-NS"
             );
             
         // Configure models using simple string codes
         List<String> modelConfigs = Arrays.asList(
-                //"FCT-300",      // Flow-Based Continuous Time Model
-                "DT-30",           // Discrete Time Model
-            //"OOE-300",           // On-Off Event Based Model
-            //"IEE-30",         // Interval Event Based Model
-            "SEQ-30"            // Sequencing Model
+                "FCT-300",      // Flow-Based Continuous Time Model
+                "DT-300",           // Discrete Time Model
+            "OOE-300",           // On-Off Event Based Model
+            "IEE-300",         // Interval Event Based Model
+            "SEQ-300"            // Sequencing Model
         );
 
         FileWriter fileWriter = new FileWriter();
@@ -75,29 +77,44 @@ public class TestAllModelInstanceCombinations {
                 // Create a separate results list for this file's results
                 List<Result> fileResults = new ArrayList<>();
                 
-                // Test each model with heuristics
+                // Test each model with heuristics (VS)
                 for (String modelConfig : modelConfigs) {
                     System.out.println("--- Model: " + modelConfig + " (with heuristics) ---");
                     
-                    IntegratedApproach integratedApproach = new IntegratedApproach(heuristicConfigs, modelConfig);
+                    IntegratedApproach integratedApproach = new IntegratedApproach(heuristicConfigs, modelConfig, VS);
                     fileResults.add(integratedApproach.solve(data));
+                    // dont store results cause the hetzner server memory leaks and the parser into csv file approach is better
+                    fileResults = new ArrayList<>();
+                }
+
+                 
+                // Test each model with heuristics (VH)
+                for (String modelConfig : modelConfigs) {
+                    System.out.println("--- Model: " + modelConfig + " (with heuristics) ---");
+                    
+                    IntegratedApproach integratedApproach = new IntegratedApproach(heuristicConfigs, modelConfig, VH);
+                    fileResults.add(integratedApproach.solve(data));
+                    // dont store results cause the hetzner server memory leaks and the parser into csv file approach is better
+                    fileResults = new ArrayList<>();
                 }
                 
                 // Test each model without heuristics
                 for (String modelConfig : modelConfigs) {
                     System.out.println("--- Model: " + modelConfig + " (without heuristics) ---");
                     
-                    IntegratedApproach integratedApproach = new IntegratedApproach(Arrays.asList(), modelConfig); // Empty heuristics list
+                    IntegratedApproach integratedApproach = new IntegratedApproach(Arrays.asList(), modelConfig, STD); // Empty heuristics list
                     fileResults.add(integratedApproach.solve(data));
+                    // dont store results cause the hetzner server memory leaks and the parser into csv file approach is better
+                    fileResults = new ArrayList<>();
                 }
-
+                
                 // Add to overall results list
-                results.addAll(fileResults);
+                //results.addAll(fileResults);
                 
                 // Write results to file immediately after processing this instance
                 try {
-                    fileWriter.writeResults(".", "test9.txt", results);
-                    System.out.println("Results updated in test9.txt (total results: " + results.size() + ")");
+                    fileWriter.writeResults(".", "test.txt", results);
+                    System.out.println("Results updated in test.txt (total results: " + results.size() + ")");
                 } catch (Exception e) {
                     System.err.println("Error writing results after processing " + file.getName() + ": " + e.getMessage());
                 }

@@ -15,7 +15,7 @@ import java.util.*;
 public class BuildFlowSolution implements CompletionMethodInterface {
 
     public ModelSolutionInterface buildSolution(List<Map<Integer, Integer>> startTimesList, JobDataInstance data,
-    GRBModel model) {
+    GRBModel model, enums.WarmstartStrategy strategy) {
 
         long timeToCreateVariablesStart = System.nanoTime();
         long timeToCreateVariables = 0;
@@ -60,7 +60,8 @@ public class BuildFlowSolution implements CompletionMethodInterface {
 
             if (!startTimesList.isEmpty()) {
                 Map<Integer, Integer> startTimes = null;
-                model.set(GRB.IntAttr.NumStart, startTimesList.size());
+                // model.set(GRB.IntAttr.NumStart, startTimesList.size());
+                // model.set(GRB.IntAttr.NumStart, 1);
                 model.update();
 
                 // Iterate through the list of start times and set the start values for the variables
@@ -68,10 +69,10 @@ public class BuildFlowSolution implements CompletionMethodInterface {
                 // by Gurobi to find a feasible solution faster.
                 // If there are multiple start times, Gurobi will try each one in sequence and choose the best one.
                 
-                for (int s = 0; s < model.get(GRB.IntAttr.NumStart); s++) {
-                    model.set(GRB.IntParam.StartNumber, s);
-                    System.out.println("Setting MIP start for index: " + s);
-                    startTimes = startTimesList.get(s);
+                // for (int s = 0; s < model.get(GRB.IntAttr.NumStart); s++) {
+                    // model.set(GRB.IntParam.StartNumber, s);
+                    // System.out.println("Setting MIP start for index: " + s);
+                    startTimes = startTimesList.get(0); // For now, just use the first set of start times
 
                     // Set the start values for the starting time variables based on the provided startTimes map
                     for (int i = 0; i < data.numberJob; i++) {
@@ -79,7 +80,11 @@ public class BuildFlowSolution implements CompletionMethodInterface {
                         GRBVar var = startingTimeVars[i];
                         if (var != null) {
                             // Set the start value for the variable (job i starts at startTime)
-                            var.set(GRB.DoubleAttr.Start, startTime);
+                            if(strategy == enums.WarmstartStrategy.VS) {
+                                var.set(GRB.DoubleAttr.Start, startTime);
+                            } else if (strategy == enums.WarmstartStrategy.VH) {
+                                var.set(GRB.DoubleAttr.VarHintVal, startTime);
+                            }
                         } else {
                             System.err.println("Variable for job " + i + " at time " + startTime + " not found.");
                         }   
@@ -94,11 +99,19 @@ public class BuildFlowSolution implements CompletionMethodInterface {
 
                             if (startTimes.get(i) + data.jobDuration.get(i) <= startTimes.get(j)) {
                                 // Set the precedence value for the precedence variable
-                                var1.set(GRB.DoubleAttr.Start, 1.0);
+                                if(strategy == enums.WarmstartStrategy.VS) {
+                                    var1.set(GRB.DoubleAttr.Start, 1.0);
+                                } else if (strategy == enums.WarmstartStrategy.VH) {
+                                    var1.set(GRB.DoubleAttr.VarHintVal, 1.0);
+                                }
                             }
                             else if (startTimes.get(i) >= startTimes.get(j) + data.jobDuration.get(j)) {
                                 // Set the precedence value for the precedence variable
-                                var2.set(GRB.DoubleAttr.Start, 1.0);
+                                if(strategy == enums.WarmstartStrategy.VS) {
+                                    var2.set(GRB.DoubleAttr.Start, 1.0);
+                                } else if (strategy == enums.WarmstartStrategy.VH) {
+                                    var2.set(GRB.DoubleAttr.VarHintVal, 1.0);
+                                }
                             }
                         }
                     }
@@ -115,7 +128,11 @@ public class BuildFlowSolution implements CompletionMethodInterface {
                             for (int k = 0; k < data.resourceCapacity.size(); k++) {
                                 GRBVar flowVar = continuousFlowVars[i][j][k];
                                 double flowAmount = flowVars[i][j][k];
-                                flowVar.set(GRB.DoubleAttr.Start, flowAmount);
+                                if(strategy == enums.WarmstartStrategy.VS) {
+                                    flowVar.set(GRB.DoubleAttr.Start, flowAmount);
+                                } else if (strategy == enums.WarmstartStrategy.VH) {
+                                    flowVar.set(GRB.DoubleAttr.VarHintVal, flowAmount);
+                                }
                             }
                         }
                     }
@@ -128,10 +145,15 @@ public class BuildFlowSolution implements CompletionMethodInterface {
                     for (int k = 0; k < data.resourceCapacity.size(); k++) {
                         GRBVar flowVar = model.getVarByName("quantity of resource " + k + "transferred from " + supersink + " to " + supersource);
                         double resourceCapacity = data.resourceCapacity.get(k);
+
+                        if(strategy == enums.WarmstartStrategy.VS) {
                             flowVar.set(GRB.DoubleAttr.Start, resourceCapacity);
+                        } else if (strategy == enums.WarmstartStrategy.VH) {
+                            flowVar.set(GRB.DoubleAttr.VarHintVal, resourceCapacity);
+                        }
                     }
                     model.update(); // Update the model after setting starts
-                }
+                // }
                 model.update(); // Ensure the model is updated after modifying variables
             } else {
                 System.out.println("No start times provided, using default values.");

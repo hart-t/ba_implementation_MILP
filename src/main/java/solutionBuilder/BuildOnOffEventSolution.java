@@ -4,6 +4,7 @@ import com.gurobi.gurobi.GRB;
 import com.gurobi.gurobi.GRBModel;
 import com.gurobi.gurobi.GRBVar;
 
+import enums.WarmstartStrategy;
 import interfaces.CompletionMethodInterface;
 import interfaces.ModelSolutionInterface;
 import io.JobDataInstance;
@@ -16,7 +17,7 @@ import java.util.*;
 public class BuildOnOffEventSolution implements CompletionMethodInterface {
 
     public ModelSolutionInterface buildSolution(List<Map<Integer, Integer>> startTimesList, JobDataInstance data,
-    GRBModel model) {
+    GRBModel model, enums.WarmstartStrategy strategy) {
 
         long timeToCreateVariablesStart = System.nanoTime();
         long timeToCreateVariables = 0;
@@ -50,7 +51,7 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
 
             if (!startTimesList.isEmpty()) {
                 Map<Integer, Integer> startTimes = null;
-                model.set(GRB.IntAttr.NumStart, startTimesList.size());
+                // model.set(GRB.IntAttr.NumStart, startTimesList.size());
                 model.update();
 
                 // Iterate through the list of start times and set the start values for the variables
@@ -58,19 +59,19 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
                 // by Gurobi to find a feasible solution faster.
                 // If there are multiple start times, Gurobi will try each one in sequence and choose the best one.
                 
-                for (int s = 0; s < model.get(GRB.IntAttr.NumStart); s++) {
-                    model.set(GRB.IntParam.StartNumber, s);
-                    System.out.println("Setting MIP start for index: " + s);
-                    startTimes = startTimesList.get(s);
+                // for (int s = 0; s < model.get(GRB.IntAttr.NumStart); s++) {
+                    // model.set(GRB.IntParam.StartNumber, s);
+                    // System.out.println("Setting MIP start for index: " + s);
+                    startTimes = startTimesList.get(0);
 
-                    startTimes = DeleteDummyJobs.deleteDummyJobsFromStartTimesMap(startTimes);
+                    Map<Integer, Integer> noDummyStartTimes = DeleteDummyJobs.deleteDummyJobsFromStartTimesMap(startTimes);
 
                     // print start times for debugging
-                    System.out.println("Start times from heuristic: " + startTimes);
+                    System.out.println("Start times from heuristic: " + noDummyStartTimes);
                     
                     // Set the start values for the starting time variables based on the provided startTimes map
                     // Sort start times to assign events in chronological order
-                    List<Map.Entry<Integer, Integer>> sortedEntries = new ArrayList<>(startTimes.entrySet());
+                    List<Map.Entry<Integer, Integer>> sortedEntries = new ArrayList<>(noDummyStartTimes.entrySet());
                     sortedEntries.sort(Map.Entry.comparingByValue());
                     System.out.println("Sorted start times: " + sortedEntries);
 
@@ -81,17 +82,19 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
                         int job = entry.getKey();
                         int startTime = entry.getValue();
                         
-                        // Set jobActiveAtEventVars[job][counter] to 1
-                        GRBVar var1 = model.getVarByName("jobActiveAtEvent[" + job + "][" + event + "]");
-                    
                         // Job is set to be active at one (the corresponding) event
-                        jobActiveAtEventVars[job][event].set(GRB.DoubleAttr.Start, 1.0);
-                        var1.set(GRB.DoubleAttr.Start, 1.0);
+                        if (strategy == WarmstartStrategy.VS) {
+                            jobActiveAtEventVars[job][event].set(GRB.DoubleAttr.Start, 1.0);
+                        } else if (strategy == WarmstartStrategy.VH) {
+                            jobActiveAtEventVars[job][event].set(GRB.DoubleAttr.VarHintVal, 1.0);
+                        }
 
                         // The start time of the event is set to the start time of the job given by the heuristic
-                        GRBVar var2 = model.getVarByName("startOfEvent[" + event + "]");
-                        startOfEventEVars[event].set(GRB.DoubleAttr.Start, startTime);
-                        var2.set(GRB.DoubleAttr.Start, startTime);
+                        if (strategy == WarmstartStrategy.VS) {
+                            startOfEventEVars[event].set(GRB.DoubleAttr.Start, startTime);
+                        } else if (strategy == WarmstartStrategy.VH) {
+                            startOfEventEVars[event].set(GRB.DoubleAttr.VarHintVal, startTime);
+                        }
                         
                         event++;
                     }
@@ -99,48 +102,47 @@ public class BuildOnOffEventSolution implements CompletionMethodInterface {
                     model.update(); // Ensure the model is updated after setting start values
 
                     // For each job, check all events and set jobActiveAtEventVars accordingly
-                    for (Map.Entry<Integer, Integer> jobEntry : startTimes.entrySet()) {
+                    for (Map.Entry<Integer, Integer> jobEntry : noDummyStartTimes.entrySet()) {
                         int job = jobEntry.getKey();
                         int jobStartTime = jobEntry.getValue();
                         int jobEndTime = jobStartTime + noDummyData.jobDuration.get(job);
                         
                         System.out.println("Processing job " + job + ": start=" + jobStartTime + ", end=" + jobEndTime);
                         
-                        // Check against all events
+                        // Check against all events using the stored start times
                         for (int e = 0; e < noDummyData.numberJob; e++) {
                             try {
-                                // Get the start time of this event
-                                double eventStartTime = startOfEventEVars[e].get(GRB.DoubleAttr.Start);
-                                
-                                GRBVar jobActiveVar = model.getVarByName("jobActiveAtEvent[" + job + "][" + e + "]");
+                                // Get event start time from sorted entries
+                                int eventStartTime = (e < sortedEntries.size()) ? sortedEntries.get(e).getValue() : 0;
                                 
                                 if (eventStartTime < jobStartTime) {
                                     // Event starts before job starts -> job not active
-                                    jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 0.0);
-                                    if (jobActiveVar != null) {
-                                        jobActiveVar.set(GRB.DoubleAttr.Start, 0.0);
+                                    if (strategy == WarmstartStrategy.VS) {
+                                        jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 0.0);
+                                    } else if (strategy == WarmstartStrategy.VH) {
+                                        jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.VarHintVal, 0.0);
                                     }
                                 } else if (eventStartTime >= jobStartTime && eventStartTime < jobEndTime) {
                                     // Event starts during job execution -> job active
-                                    jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 1.0);
-                                    if (jobActiveVar != null) {
-                                        jobActiveVar.set(GRB.DoubleAttr.Start, 1.0);
+                                    if (strategy == WarmstartStrategy.VS) {
+                                        jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 1.0);
+                                    } else if (strategy == WarmstartStrategy.VH) {
+                                        jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.VarHintVal, 1.0);
                                     }
                                 } else if (eventStartTime >= jobEndTime) {
                                     // Event starts after job ends -> job not active
-                                    jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 0.0);
-                                    if (jobActiveVar != null) {
-                                        jobActiveVar.set(GRB.DoubleAttr.Start, 0.0);
+                                    if (strategy == WarmstartStrategy.VS) {
+                                        jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.Start, 0.0);
+                                    } else if (strategy == WarmstartStrategy.VH) {
+                                        jobActiveAtEventVars[job][e].set(GRB.DoubleAttr.VarHintVal, 0.0);
                                     }
                                 }
-
-                                
                             } catch (Exception ex) {
                                 System.err.println("Error processing job " + job + " event " + e + ": " + ex.getMessage());
                             }
                         }
                     }
-                }
+                // }
                 model.update(); // Ensure the model is updated after modifying variables
             }        
         } catch (Exception e) {

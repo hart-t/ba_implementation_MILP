@@ -32,7 +32,7 @@ import io.JobDataInstance;
 
 public class Main {
     public static void main(String[] args) {
-        String filename = "/home/tobsi/university/kit/benchmarkSets/j305_5.sm";
+        String filename = "/path/to/j301_1.sm";
 
         try {
             FileReader fileReader = new FileReader();
@@ -42,9 +42,10 @@ public class Main {
              * Configure heuristics using simple string codes
              * If multiple heuristics/priority rules are selected, start times will be generated for each 
              * heuristic and the schedule with the lowest makespan will be chosen.
+             * Rule-PriorityStrategy-SamplingMethod_NumberOfSchedules
              */
             List<String> heuristicConfigs = Arrays.asList(
-                //"SSGS-SPT-RBRS_500"        // Serial SGS with Shortest Processing Time
+                "SSGS-SPT-BRS_5"        // Serial SGS with Shortest Processing Time
                 //"SSGS-GRPW-NS",      // Serial SGS with Greatest Rank Positional Weight
                 //"SSGS-MRU-NS",       // Serial SGS with Most Resource Usage
                 //"SSGS-RSM-NS",       // Serial SGS with Resource Scheduling Method
@@ -56,21 +57,23 @@ public class Main {
             );
             
             // Configure models using simple string codes
+            // Model-Time
             List<String> modelConfigs = Arrays.asList(
-                 //"FCT-30"      // Flow-Based Continuous Time Model
+                 "FCT-300"      // Flow-Based Continuous Time Model
                  //"DT-30"     // Discrete Time Model
                 //"OOE-30"     // On-Off Event Based Model
-                 //"IEE-600"     // Interval Event Based Model
-                "SEQ-30"     // Sequencing Model
+                 //"IEE-60"     // Interval Event Based Model
+                //"SEQ-30"     // Sequencing Model
             );
 
             // Solve with each model
             for (String modelConfig : modelConfigs) {
-                IntegratedApproach integratedApproach = new IntegratedApproach(heuristicConfigs, modelConfig);
+                IntegratedApproach integratedApproach = new IntegratedApproach(heuristicConfigs, modelConfig, enums.WarmstartStrategy.VS);
                 integratedApproach.solve(data);
             }
             
         } catch (Exception e) {
+            e.printStackTrace();
             System.err.println("Error: " + e.getMessage());
             return;
         }

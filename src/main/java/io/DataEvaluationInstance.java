@@ -11,7 +11,7 @@ public class DataEvaluationInstance {
     private String[] modelType;
     private int[] hMakespan;                            // best computed makespan from the model with the use of a heuristic start solution
     private int[] noHMakespan;                          // best computed makespan from the model without the use of a heuristic start solution
-    private int[] hUB;                                  // TODO, replace with nhLB upper bound on the makespan (with the use of a heuristic start solution)
+    private int[] hUB;                                  // 
     private int[] hLB;                                  // lower bound on the makespan (with the use of a heuristic start solution)
     private int[] optimalMakespan;                      // optimal makespan
     private double[] hTime;                             // time it took to compute with the use of a start solution, computed with the use of start times from the heuristics
